@@ -6,6 +6,9 @@ use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
+use Spatie\Activitylog\Models\Activity;
+
+use function Spatie\Activitylog\activity;
 
 class AuthController extends Controller
 {
@@ -34,7 +37,7 @@ class AuthController extends Controller
             return $this->error(
                 'No role assigned to this account. Please contact the administrator.'
             );
-        }else if ($user->hasRole('School Account') && !$user->school_code) {
+        }else if ($user->hasRole('School Account') && !$user->school_id) {
             return $this->error(
                 'No school assigned to this account. Please contact the administrator.'
             );
@@ -46,6 +49,12 @@ class AuthController extends Controller
         }
 
     $token = $user->createToken('api-token')->plainTextToken;
+    
+    activity()
+        ->causedBy($user)
+        ->performedOn($user)
+        ->log('User logged in');
+
 
         return $this->success('User Logged in successfully', [
             'User' => new UserResource($user),
@@ -61,6 +70,10 @@ class AuthController extends Controller
             $token = $request->user()->currentAccessToken();
             if ($token) {
                 $token->delete();
+                activity()
+                    ->causedBy($request->user())
+                    ->performedOn($request->user())
+                    ->log('User logged out');
                 return $this->success('User Logged Out Successfully');
             }
             return $this->error('Invalid token used');
