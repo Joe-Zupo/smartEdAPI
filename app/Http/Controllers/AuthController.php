@@ -14,32 +14,43 @@ class AuthController extends Controller
      */
     public function login(Request $request){
         $credentials = $request->validate([
-            'username' => 'required|string',
-            'password' => 'required|string'
-        ]);
+        'username' => 'required|string',
+        'password' => 'required|string',
+    ]);
 
-        $query = User::query();
-        $user = $query->where('username', 'like', '%' . $request->query('username') . "%")->first();
+    $user = User::where('username', $request->username)->first();
 
-        if(!$user->is_active){
+        // Check if user exists first
+        if (!$user) {
+            return $this->error('Invalid credentials');
+        }
+
+        // Custom checks
+        if (!$user->is_active) {
             return $this->error('User is inactive!');
         }
 
-        if($user->hasRole('School Account') && !$user->school_code){
-            return $this->error('No school assigned to this account. Please contact the administrator.');
+        if(!$user->roles()->exists()){
+            return $this->error(
+                'No role assigned to this account. Please contact the administrator.'
+            );
+        }else if ($user->hasRole('School Account') && !$user->school_code) {
+            return $this->error(
+                'No school assigned to this account. Please contact the administrator.'
+            );
         }
 
-        if (Auth::attempt($credentials)){
-            $user = Auth::user();
+        // Check password
+        if (!Auth::attempt($credentials)) {
+            return $this->error('Invalid credentials. Please contact the administrator.');
+        }
 
-            $token = $user->createToken('api-token')->plainTextToken;
-            return $this->success('User Logged in successfuly',[
+    $token = $user->createToken('api-token')->plainTextToken;
+
+        return $this->success('User Logged in successfully', [
             'User' => new UserResource($user),
-            'Token' => $token
-            ]);
-        }
-
-        return $this->error('Invalid Credentials');
+            'Token' => $token,
+        ]);
     }
 
     /**
