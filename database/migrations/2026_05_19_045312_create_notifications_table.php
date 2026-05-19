@@ -12,13 +12,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('enrollment_data', function (Blueprint $table) {
+        Schema::create('notifications', function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor(Submission::class)->constrained()->onDelete('cascade');
-            $table->string('grade_level');
-            $table->smallInteger('male_count');
-            $table->smallInteger('female_count');
-            $table->smallInteger('total_count');
+            $table->foreignIdFor(Submission::class)->constrained()->cascadeOnDelete();
+            $table->string('title');
+            $table->text('message');
+            $table->boolean('is_read')->default(false);
             $table->timestamps();
         });
     }
@@ -28,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('enrollment_data');
+        Schema::dropIfExists('notifications');
     }
 };
