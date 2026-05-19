@@ -17,10 +17,11 @@ return new class extends Migration
             $table->string('school_name');
             $table->string('school_code');
             $table->year('year_established');
-            $table->foreignID('school_id_type')->constrained('school_types')->cascadeOnDelete();
+            $table->foreignID('school_type_id')->constrained('school_types')->cascadeOnDelete();
             
             //location
             $table->string('address');
+            $table->string('district');
             $table->decimal('longitude', 8, 2);
             $table->decimal('latitude', 8, 2);
 

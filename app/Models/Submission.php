@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Submissions extends Model
+class Submission extends Model
 {
     //
 }

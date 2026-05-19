@@ -1,0 +1,19 @@
+<?php
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\UserController;
+
+Route::post('login', [AuthController::class, 'login']);
+Route::post('logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
+
+
+Route::group([
+    'middleware' => 'auth:sanctum',
+    'prefix' => 'users'
+    ], function ($r) {
+    $r->apiResource('/', UserController::class)->except('destroy');
+    $r->post('/{user}/change-status', [UserController::class, 'changeStatus'])->name('users.changeStatus');
+    $r->post('/{user}/change-password', [UserController::class, 'changePassword'])->name('users.changePassword');
+});

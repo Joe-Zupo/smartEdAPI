@@ -50,14 +50,14 @@ class User extends Authenticatable
 
     //User Relationships
     public function school(){
-        $this->belongsTo(School::class);
+        return $this->belongsTo(School::class, 'school_id');
     }
 
     public function submissions(){
-        $this->hasMany(Submission::class);
+        return $this->hasMany(Submission::class);
     }
 
     public function comments(){
-        $this->hasMany(Comment::class);
+        return $this->hasMany(Comment::class);
     }
 }
