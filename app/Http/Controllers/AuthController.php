@@ -48,7 +48,7 @@ class AuthController extends Controller
 
         // Check if user exists first
         if (!$user) {
-            return $this->error('Invalid credentials');
+            return $this->error('Invalid credentials.');
         }
 
         // Custom checks
@@ -68,7 +68,7 @@ class AuthController extends Controller
 
         // Check password
         if (!Auth::attempt($credentials)) {
-            return $this->error('Invalid credentials. Please contact the administrator.');
+            return $this->error('Invalid credentials.');
         }
 
     $token = $user->createToken('api-token')->plainTextToken;
