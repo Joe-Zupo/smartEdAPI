@@ -92,22 +92,27 @@ class AuthController extends Controller
      * Logout
      */
     public function logout(Request $request){
-        if ($request->user()) {
-            $token = $request->user()->currentAccessToken();
-            if ($token) {
-                $token->delete();
-                $user = $request->user();
-                activity('Logged Out')
-                        ->causedBy($user)
-                        ->performedOn($user)
-                        ->withProperties([
-                    'datetime' => now()->format('Y-m-d h:i:s A'),
-                    ])
-                ->log($user->name . ' has logged out.');
-
+ 
+    Auth::guard('web')->logout();
+    
+    activity()
+        ->causedBy($request->user())
+        ->performedOn($request->user())
+        ->log('User logged out');
                 return $this->success('User Logged Out Successfully');
-            }
-            return $this->error('Invalid token used');
-        }
+
+        // if ($request->user()) {
+        //     $token = $request->user()->currentAccessToken();
+        //     return $token;
+        //     // if ($token) {
+        //     //     $token->delete();
+        //     //     activity()
+        //     //         ->causedBy($request->user())
+        //     //         ->performedOn($request->user())
+        //     //         ->log('User logged out');
+        //     //     return $this->success('User Logged Out Successfully');
+        //     // }
+        //     // return $this->error('Invalid token used');
+        // }
     }
 }
