@@ -17,11 +17,10 @@ class UserResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        $user = User::where('username', $request->username)->first();
         
         return [
             'name' => $this->name,
-            'role' => $user->getRoleNames()->first(),
+            'role' => $this->getRoleNames()->first(),
             'school' => [
                 'id' => $this->school_id,
                 'school_name' => $this->school->school_name ?? 'No school assigned',

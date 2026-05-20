@@ -20,11 +20,11 @@ Route::post('logout', [AuthController::class, 'logout'])->middleware('auth:sanct
 Route::get('activity-logs', [ActivityLogController::class, 'index'])->middleware('auth:sanctum');
 
 
-// Route::group([
-//     'middleware' => 'auth:sanctum',
-//     'prefix' => 'users'
-//     ], function ($r) {
-//     $r->apiResource('/', UserController::class)->except('destroy');
-//     $r->post('/{user}/change-status', [UserController::class, 'changeStatus'])->name('users.changeStatus');
-//     $r->post('/{user}/change-password', [UserController::class, 'changePassword'])->name('users.changePassword');
-// });
+Route::group([
+    'middleware' => 'auth:sanctum',
+    'prefix' => 'users'
+    ], function ($r) {
+    $r->apiResource('/', UserController::class)->except('destroy');
+    $r->post('/{user}/change-status', [UserController::class, 'changeStatus'])->name('users.changeStatus');
+    $r->post('/{user}/change-password', [UserController::class, 'changePassword'])->name('users.changePassword');
+});
