@@ -8,12 +8,35 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use Spatie\Activitylog\Models\Activity;
 
-use function Spatie\Activitylog\activity;
-
 class AuthController extends Controller
 {
     /**
      * Login
+     * 
+     * List of usernames (password is same as username):
+     * 
+     * 
+     * School Accounts:
+     * atlubolaES,calumpangES,monicayoIS,inesIS,
+     * camachilesHS,mabalacatHS,sapangSHS,phisciHS,
+     * 
+     * 
+     * 
+     * Division Admin: super_intendent,
+     * 
+     * 
+     * 
+     * System Admins: it_officer,developers
+     * 
+     * 
+     * 
+     * Use case usernames:
+     * 
+     * usecaseOne - no school ID, but is school account
+     * 
+     * usecaseTwo - no role
+     * 
+     * usecaseThree - user is not set as active
      */
     public function login(Request $request){
         $credentials = $request->validate([
