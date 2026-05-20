@@ -4,9 +4,12 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Spatie\Permission\Traits\HasRoles;
+use App\Models\User;
 
 class UserResource extends JsonResource
 {
+    use HasRoles;
     /**
      * Transform the resource into an array.
      *
@@ -14,8 +17,11 @@ class UserResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $user = User::where('username', $request->username)->first();
+        
         return [
             'name' => $this->name,
+            'role' => $user->getRoleNames()->first(),
             'school' => [
                 'id' => $this->school_id,
                 'school_name' => $this->school->school_name ?? 'No school assigned',
