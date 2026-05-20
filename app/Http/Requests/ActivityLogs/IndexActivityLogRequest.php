@@ -25,8 +25,8 @@ class IndexActivityLogRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'filter.action' => ['in:Logged In,Logged Out,Submitted Data,Returned Data,Approved Data'],
-            'filter.school' => ['exists:schools,school_name', Rule::in(School::pluck('school_name')->toArray())],
+            'action' => ['in:Logged In,Logged Out,Submitted Data,Returned Data,Approved Data'],
+            'school' => ['exists:schools,school_name', Rule::in(School::pluck('school_name')->toArray())],
             'search' => 'string',
             'per_page' => 'integer',
             'page' => 'integer'

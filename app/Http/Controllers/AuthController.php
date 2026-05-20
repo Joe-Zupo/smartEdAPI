@@ -81,7 +81,7 @@ class AuthController extends Controller
 
         return $this->success('User Logged in successfully', [
             'User' => new UserResource($user),
-            'Token' => $token,
+            'token' => $token,
         ]);
     }
 
