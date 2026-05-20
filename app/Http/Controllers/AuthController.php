@@ -73,10 +73,13 @@ class AuthController extends Controller
 
     $token = $user->createToken('api-token')->plainTextToken;
     
-    activity()
-        ->causedBy($user)
-        ->performedOn($user)
-        ->log('User logged in');
+    activity('Logged In')
+            ->causedBy($user)
+            ->performedOn($user)
+            ->withProperties([
+                'datetime' => now()->format('Y-m-d h:i:s A'),
+            ])
+            ->log($user->name . ' has successfully logged in.');
 
 
         return $this->success('User Logged in successfully', [
@@ -93,10 +96,15 @@ class AuthController extends Controller
             $token = $request->user()->currentAccessToken();
             if ($token) {
                 $token->delete();
-                activity()
-                    ->causedBy($request->user())
-                    ->performedOn($request->user())
-                    ->log('User logged out');
+                $user = $request->user();
+                activity('Logged Out')
+                        ->causedBy($user)
+                        ->performedOn($user)
+                        ->withProperties([
+                    'datetime' => now()->format('Y-m-d h:i:s A'),
+                    ])
+                ->log($user->name . ' has logged out.');
+
                 return $this->success('User Logged Out Successfully');
             }
             return $this->error('Invalid token used');

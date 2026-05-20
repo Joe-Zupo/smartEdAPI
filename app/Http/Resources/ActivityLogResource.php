@@ -14,12 +14,14 @@ class ActivityLogResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        
         return [
             'id' => $this->id,
             'log_name' => $this->log_name,
             'user' => [
                 'name' => $this->causer->name ?? 'Unknown',
-                'school' => $this->causer->school->school_name,
+                'role' => $this->causer->getRoleNames()->first(),
+                'school' => $this->causer->school->school_name ?? 'Unassigned',
             ],
             'description' => $this->description,
             'datetime' => $this->properties['datetime'] ?? null,

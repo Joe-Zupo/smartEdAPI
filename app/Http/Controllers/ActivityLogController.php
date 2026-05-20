@@ -12,7 +12,100 @@ use App\Models\School;
 class ActivityLogController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Activity Logs Index Endpoint
+     *
+     * Retrieves paginated activity logs with optional
+     * filtering and searching capabilities.
+     *
+     * ---------------------------------------------------
+     * Query Parameters
+     * ---------------------------------------------------
+     *
+     * action : string (optional)
+     * ---------------------------------------------------
+     * Filters activity logs by action/log name.
+     *
+     * Example:
+     * ?action=Logged In
+     *
+     * Performs a exact match
+     *
+     * Supported values include:
+     * - Logged In
+     * - Logged Out
+     * - Submitted Data
+     * - Returned Data
+     * - Approved Data
+     *
+     *
+     * school : string (optional)
+     * ---------------------------------------------------
+     * Filters activity logs where the causer's
+     * related school name matches the provided value.
+     *
+     * Example:
+     * ?school=CCIS
+     *
+     * Searches through:
+     * Activity -> Causer -> School
+     *
+     * Performs a partial match using LIKE.
+     *
+     *
+     * search : string (optional)
+     * ---------------------------------------------------
+     * Global search query.
+     *
+     * Searches:
+     * - activity descriptions
+     * - causer/user names
+     *
+     * Example:
+     * ?search=joseph
+     *
+     *
+     * per_page : integer (optional)
+     * ---------------------------------------------------
+     * Determines the number of records returned
+     * per paginated response.
+     *
+     * Default:
+     * 5
+     *
+     * Example:
+     * ?per_page=10
+     *
+     *
+     * page : integer (optional)
+     * ---------------------------------------------------
+     * Specifies the pagination page number.
+     *
+     * Example:
+     * ?page=2
+     *
+     *
+     * ---------------------------------------------------
+     * Example Request
+     * ---------------------------------------------------
+     *
+     * GET /api/activity-logs?
+     *     action=Logged In&
+     *     school=CCIS&
+     *     search=joseph&
+     *     per_page=10&
+     *     page=1
+     *
+     *
+     * ---------------------------------------------------
+     * Response
+     * ---------------------------------------------------
+     *
+     * Returns a paginated JSON response containing:
+     * - activity logs
+     * - causer information
+     * - school information
+     * - pagination metadata
+     *
      */
     public function index(IndexActivityLogRequest $request)
     {
@@ -33,41 +126,33 @@ class ActivityLogController extends Controller
         
         //search for where causer did a certain action in: Logged In,Logged Out,Submitted Data,Returned Data,Approved Data
         if($request->has('action'))
-            $query->where('action', '%' . $request->query('log_name') . "%");
+            $query->where('log_name', '%' . $request->query('action') . "%");
 
         //search for where causer has the same school
         if($request->has('school')){
-            $query->where('name', 'like', '%' . $request->query('school') . '%');
+            $query->whereHas('causer.school', function ($q) use ($request) {
+                $q->where(
+                    'school_name',
+                    'like',
+                    '%' . $request->query('school') . '%'
+                );
+            });
         }
 
         //enable searching stored in results
         if($search){
             //search for activity descriptions
-            $results =
+            $activityIds =
             $query->where('description', 'like', '%' . $search .'%') 
             
             //search for users
-            ->orwhereHas('name', 'like', '%'. $search . '%');
-
-            $activityIds = collect(); //Empty basket or collection
-
-            foreach ($results as $result) { //sifts through results
-
-                $model = $result->searchable; //gets the model of the result
-
-                if ($model instanceof Activity) {
-                    $activityIds->push($model->id); //appends ids to the collection
-                }
-
-                if ($model instanceof User) {
-                    $activityIds = $activityIds->merge( //collected all IDs from search and gets the activity model
-                        Activity::where('causer_id', $model->id)->pluck('id')
-                    );
-                }
-            }
-
-            $query->whereIn('id', $activityIds->unique()); 
-            //sorts the query to match the collection of IDs we gathered from result
+            ->orwhereHas('causer', function ($userQuery) use ($search){
+                $userQuery->where(
+                    'name',
+                    'like',
+                    '%' . $search . '%'
+                );
+            });
 
         }
 

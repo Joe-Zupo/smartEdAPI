@@ -17,7 +17,7 @@ Route::get('/user', function (Request $request) {
 Route::post('login', [AuthController::class, 'login']);
 Route::post('logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 
-Route::get('activity-logs', [ActivityLogController::class, 'index']);
+Route::get('activity-logs', [ActivityLogController::class, 'index'])->middleware('auth:sanctum');
 
 
 // Route::group([
