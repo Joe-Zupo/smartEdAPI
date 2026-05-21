@@ -8,6 +8,7 @@ use App\Http\Requests\ActivityLogs\IndexActivityLogRequest;
 use App\Http\Resources\ActivityLogResource;
 use App\Models\User;
 use App\Models\School;
+use App\Policies\ActivityLogPolicy;
 
 class ActivityLogController extends Controller
 {
@@ -20,8 +21,11 @@ class ActivityLogController extends Controller
      */
     public function index(IndexActivityLogRequest $request)
     {
+        $this->authorize('viewAny', User::class);
         $search = $request->input('search');
         $perPage = $request->get('per_page', 5);
+        $sortBy = $request->input('sortBy', 'id');
+        $sortOrder = $request->input('sortOrder', 'desc'); 
 
         $request->validated();
 
@@ -60,6 +64,7 @@ class ActivityLogController extends Controller
             });
         }
 
+        $query->orderBy($sortBy, $sortOrder);
         $activityLogs = $query->paginate($perPage)->appends($request->query());
 
         if ($activityLogs->isEmpty()) {
@@ -72,17 +77,17 @@ class ActivityLogController extends Controller
         ]);
     }
 
-    public function recent(IndexActivityLogRequest $request)
-    {
-        $activityLogs = Activity::latest()->take(2)->get();
+    // public function recent(IndexActivityLogRequest $request)
+    // {
+    //     $activityLogs = Activity::latest()->take(2)->get();
 
-        if ($activityLogs->isEmpty()) {
-            return response()->json(['message' => 'No activity logs found']);
-        }
+    //     if ($activityLogs->isEmpty()) {
+    //         return response()->json(['message' => 'No activity logs found']);
+    //     }
 
-        return $this->success('Activity logs retrieved successfully', [
-            'data' => ActivityLogResource::collection($activityLogs),
-        ]);
-    }
+    //     return $this->success('Activity logs retrieved successfully', [
+    //         'data' => ActivityLogResource::collection($activityLogs),
+    //     ]);
+    // }
 
 }

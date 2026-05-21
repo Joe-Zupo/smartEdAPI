@@ -24,6 +24,7 @@ class ChangeUserPasswordRequest extends FormRequest
     {
         return [
             'password' => ['required', 'string', 'min:8', 'confirmed']
+
         ];
     }
 }
