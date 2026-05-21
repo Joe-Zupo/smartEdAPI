@@ -48,7 +48,7 @@ class AuthController extends Controller
 
         // Check if user exists first
         if (!$user) {
-            return $this->error('Invalid credentials');
+            return $this->error('Invalid credentials.');
         }
 
         // Custom checks
@@ -68,7 +68,7 @@ class AuthController extends Controller
 
         // Check password
         if (!Auth::attempt($credentials)) {
-            return $this->error('Invalid credentials. Please contact the administrator.');
+            return $this->error('Invalid credentials.');
         }
 
     $token = $user->createToken('api-token')->plainTextToken;
@@ -92,22 +92,27 @@ class AuthController extends Controller
      * Logout
      */
     public function logout(Request $request){
-        if ($request->user()) {
-            $token = $request->user()->currentAccessToken();
-            if ($token) {
-                $token->delete();
-                $user = $request->user();
-                activity('Logged Out')
-                        ->causedBy($user)
-                        ->performedOn($user)
-                        ->withProperties([
-                    'datetime' => now()->format('Y-m-d h:i:s A'),
-                    ])
-                ->log($user->name . ' has logged out.');
-
+ 
+    Auth::guard('web')->logout();
+    
+    activity()
+        ->causedBy($request->user())
+        ->performedOn($request->user())
+        ->log('User logged out');
                 return $this->success('User Logged Out Successfully');
-            }
-            return $this->error('Invalid token used');
-        }
+
+        // if ($request->user()) {
+        //     $token = $request->user()->currentAccessToken();
+        //     return $token;
+        //     // if ($token) {
+        //     //     $token->delete();
+        //     //     activity()
+        //     //         ->causedBy($request->user())
+        //     //         ->performedOn($request->user())
+        //     //         ->log('User logged out');
+        //     //     return $this->success('User Logged Out Successfully');
+        //     // }
+        //     // return $this->error('Invalid token used');
+        // }
     }
 }
