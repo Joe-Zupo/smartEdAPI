@@ -169,4 +169,17 @@ class ActivityLogController extends Controller
         ]);
     }
 
+    public function recent(IndexActivityLogRequest $request)
+    {
+        $activityLogs = Activity::latest()->take(2)->get();
+
+        if ($activityLogs->isEmpty()) {
+            return response()->json(['message' => 'No activity logs found']);
+        }
+
+        return $this->success('Activity logs retrieved successfully', [
+            'data' => ActivityLogResource::collection($activityLogs),
+        ]);
+    }
+
 }
