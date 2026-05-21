@@ -38,13 +38,14 @@ class AuthController extends Controller
      * 
      * usecaseThree - user is not set as active
      */
-    public function login(Request $request){
+    public function login(Request $request)
+    {
         $credentials = $request->validate([
-        'username' => 'required|string',
-        'password' => 'required|string',
-    ]);
+            'username' => 'required|string',
+            'password' => 'required|string',
+        ]);
 
-    $user = User::where('username', $request->username)->first();
+        $user = User::where('username', $request->username)->first();
 
         // Check if user exists first
         if (!$user) {
@@ -56,11 +57,11 @@ class AuthController extends Controller
             return $this->error('User is inactive!');
         }
 
-        if(!$user->roles()->exists()){
+        if (!$user->roles()->exists()) {
             return $this->error(
                 'No role assigned to this account. Please contact the administrator.'
             );
-        }else if ($user->hasRole('School Account') && !$user->school_id) {
+        } else if ($user->hasRole('School Account') && !$user->school_id) {
             return $this->error(
                 'No school assigned to this account. Please contact the administrator.'
             );
@@ -71,9 +72,9 @@ class AuthController extends Controller
             return $this->error('Invalid credentials.');
         }
 
-    $token = $user->createToken('api-token')->plainTextToken;
-    
-    activity('Logged In')
+        $token = $user->createToken('api-token')->plainTextToken;
+
+        activity('Logged In')
             ->causedBy($user)
             ->performedOn($user)
             ->withProperties([
@@ -91,15 +92,19 @@ class AuthController extends Controller
     /**
      * Logout
      */
-    public function logout(Request $request){
- 
-    Auth::guard('web')->logout();
-    
-    activity()
-        ->causedBy($request->user())
-        ->performedOn($request->user())
-        ->log('User logged out');
-                return $this->success('User Logged Out Successfully');
+    public function logout(Request $request)
+    {
+
+        Auth::guard('web')->logout();
+
+        activity('Logged Out')
+            ->causedBy($request->user())
+            ->performedOn($request->user())
+            ->withProperties([
+                'datetime' => now()->format('Y-m-d h:i:s A'),
+            ])
+            ->log('User logged out');
+        return $this->success('User Logged Out Successfully');
 
         // if ($request->user()) {
         //     $token = $request->user()->currentAccessToken();
