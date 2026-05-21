@@ -144,6 +144,7 @@ class ActivityLogController extends Controller
         if ($search) {
             //search for activity descriptions
             $activityIds =
+<<<<<<< Updated upstream
                 $query->where('description', 'like', '%' . $search . '%')
 
                     //search for users
@@ -154,6 +155,15 @@ class ActivityLogController extends Controller
                             '%' . $search . '%'
                         );
                     });
+=======
+            $query->where('description', 'like', '%' . $search .'%') 
+            
+            //search for users
+            ->orwhereHas('causer', function ($userQuery) use ($search){
+                $userQuery->where('name','like','%' . $search . '%'
+                );
+            });
+>>>>>>> Stashed changes
 
         }
 

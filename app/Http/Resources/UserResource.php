@@ -20,9 +20,10 @@ class UserResource extends JsonResource
         
         return [
             'name' => $this->name,
+            'user_id' => $this->id,
             'role' => $this->getRoleNames()->first(),
             'school' => [
-                'id' => $this->school_id,
+                'school_id' => $this->school_id,
                 'school_name' => $this->school->school_name ?? 'No school assigned',
                 'school_code' => $this->school->school_code ?? 'No code assigned'
             ],
