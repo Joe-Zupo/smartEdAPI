@@ -96,27 +96,30 @@ class AuthController extends Controller
     {
         // Auth::guard('web')->logout();
 
-        // activity('Logged Out')
-        //     ->causedBy($request->user())
-        //     ->performedOn($request->user())
-        //     ->withProperties([
-        //         'datetime' => now()->format('Y-m-d h:i:s A'),
-        //     ])
-        //     ->log('User logged out');
-        // return $this->success('User Logged Out Successfully');
+        activity('Logged Out')
+            ->causedBy($request->user())
+            ->performedOn($request->user())
+            ->withProperties([
+                'datetime' => now()->format('Y-m-d h:i:s A'),
+            ])
+            ->log('User logged out');
 
-        if ($request->user()) {
-            $token = $request->user()->currentAccessToken();
-            return $token;
-            // if ($token) {
-            //     $token->delete();
-            //     activity()
-            //         ->causedBy($request->user())
-            //         ->performedOn($request->user())
-            //         ->log('User logged out');
-            //     return $this->success('User Logged Out Successfully');
-            // }
-            // return $this->error('Invalid token used');
-        }
+        $request->user()->tokens()->delete();
+
+        return $this->success('User Logged Out Successfully');
+
+        // if ($request->user()) {
+        //     $token = $request->user()->currentAccessToken();
+        //     return $token;
+        //     if ($token) {
+        //         $token->delete();
+        //         activity()
+        //             ->causedBy($request->user())
+        //             ->performedOn($request->user())
+        //             ->log('User logged out');
+        //         return $this->success('User Logged Out Successfully');
+        //     }
+        //     return $this->error('Invalid token used');
+        // }
     }
 }

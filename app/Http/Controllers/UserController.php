@@ -164,7 +164,7 @@ class UserController extends Controller
 
         DB::transaction(function () use($user, $validatedRequest){
             $user['password'] = Hash::make($validatedRequest['password']);
-            $user->save(); //Ask kuya Echon
+            $user->save();
             //DB::commit (if needed use try catch instead)
         });
 
@@ -180,7 +180,7 @@ class UserController extends Controller
 
         DB::transaction(function () use ($user){
             $user->is_active = !$user->is_active;
-            $user->save(); //Ask kuya Echon
+            $user->save();
         });
 
         return $this->success('User Status Changed Successfully', [
