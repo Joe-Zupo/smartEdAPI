@@ -116,20 +116,21 @@ class ActivityLogController extends Controller
 
         $query = Activity::with(['causer.school'])
             ->select([
-            'id', 
-            'log_name', 
-            'description',
-            'properties', 
-            'causer_type', 
-            'causer_id',
-            'created_at']);
-        
+                'id',
+                'log_name',
+                'description',
+                'properties',
+                'causer_type',
+                'causer_id',
+                'created_at'
+            ]);
+
         //search for where causer did a certain action in: Logged In,Logged Out,Submitted Data,Returned Data,Approved Data
-        if($request->has('action'))
+        if ($request->has('action'))
             $query->where('log_name', '%' . $request->query('action') . "%");
 
         //search for where causer has the same school
-        if($request->has('school')){
+        if ($request->has('school')) {
             $query->whereHas('causer.school', function ($q) use ($request) {
                 $q->where(
                     'school_name',
@@ -140,19 +141,19 @@ class ActivityLogController extends Controller
         }
 
         //enable searching stored in results
-        if($search){
+        if ($search) {
             //search for activity descriptions
             $activityIds =
-            $query->where('description', 'like', '%' . $search .'%') 
-            
-            //search for users
-            ->orwhereHas('causer', function ($userQuery) use ($search){
-                $userQuery->where(
-                    'name',
-                    'like',
-                    '%' . $search . '%'
-                );
-            });
+                $query->where('description', 'like', '%' . $search . '%')
+
+                    //search for users
+                    ->orwhereHas('causer', function ($userQuery) use ($search) {
+                        $userQuery->where(
+                            'name',
+                            'like',
+                            '%' . $search . '%'
+                        );
+                    });
 
         }
 
@@ -162,7 +163,7 @@ class ActivityLogController extends Controller
             return response()->json(['message' => 'No activity logs found']);
         }
 
-        return $this->success('Activity logs retrieved successfully',[
+        return $this->success('Activity logs retrieved successfully', [
             'data' => ActivityLogResource::collection($activityLogs),
             'pagination' => $this->paginateReturn($activityLogs)
         ]);
