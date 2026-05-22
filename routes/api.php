@@ -34,10 +34,10 @@ Route::group([
 });
 
 //Academic Year Controller Endpoints
+Route::apiResource('academic-years',  AcademicYearController::class)->except('destroy')->middleware('auth:sanctum');
 Route::group([
     'middleware' => 'auth:sanctum',
     'prefix' => 'academic-years'
     ], function ($r){
-        $r->apiResource('/',  AcademicYearController::class)->except('destroy');
-        $r->post('academic-years/{academic_year}/change-status', [AcademicYearController::class, 'changeStatus']);
+        $r->post('{academic_year}/change-status', [AcademicYearController::class, 'changeStatus']);
     });

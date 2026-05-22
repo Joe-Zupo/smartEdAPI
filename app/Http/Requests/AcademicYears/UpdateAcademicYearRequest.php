@@ -23,8 +23,8 @@ class UpdateAcademicYearRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'start_date' => 'sometimes|date|before:ending_date|unique:academic_years,start_date',
-            'end_date' => 'sometimes|date|after:starting_date|unique:academic_years,end_date',
+            'start_date' => 'sometimes|date|before:end_date|unique:academic_years,start_date',
+            'end_date' => 'sometimes|date|after:start_date|unique:academic_years,end_date',
             'academic_year' => 'sometimes|string|unique:academic_years,academic_year',
         ];
     }

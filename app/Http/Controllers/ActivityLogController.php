@@ -54,6 +54,7 @@ class ActivityLogController extends Controller
 
         //enable searching stored in results
         if ($search) {
+
             //search for activity descriptions
             $activityIds =
             $query->where('description', 'like', '%' . $search .'%') 

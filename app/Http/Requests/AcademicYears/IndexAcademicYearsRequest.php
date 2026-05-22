@@ -5,7 +5,7 @@ namespace App\Http\Requests\AcademicYears;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreAcademicYearRequest extends FormRequest
+class IndexAcademicYearsRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -23,9 +23,10 @@ class StoreAcademicYearRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'start_date' => 'required|date|before:end_date|unique:academic_years,start_date',
-            'end_date' => 'required|date|after:start_date|unique:academic_years,end_date',
-            'academic_year' => 'required|string|unique:academic_years,academic_year',
+            'status' => 'string|in:active,default,upcoming,archived',
+            'academic_year' => 'string|exists:academic_years,academic_year|nullable',
+            'per_page' => 'integer',
+            'page' => 'integer'
         ];
     }
 }
