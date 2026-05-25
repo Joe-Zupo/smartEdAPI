@@ -52,44 +52,61 @@ class AcademicYearController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(StoreAcademicYearRequest $request)
-    {
-        $validatedRequest = $request->validated();
+{
+    $validated = $request->validated();
 
-        DB::beginTransaction();
+    DB::beginTransaction();
 
-        $startDate = Carbon::parse($validatedRequest['start_date']);
-        $endDate = Carbon::parse($validatedRequest['end_date']);
+    try {
+
+        $startDate = Carbon::parse($validated['start_date']);
+        $endDate = Carbon::parse($validated['end_date']);
         $today = now();
 
         $status = 'active';
 
-        try{
+        // Determine status
+        if ($today->between($startDate, $endDate)) {
 
-            if($today->between($startDate,$endDate)){
-                $status = 'default';
-            }else if($startDate->gt($today)){
-                $status = 'upcoming';
-            }
+            // Only one default allowed
+            if (AcademicYear::where('status', 'default')->exists()) {
 
-            if($status === 'default' && AcademicYear::where('status', 'default')->exists()){
-                $defaultYear = AcademicYear::where('status', 'default')->get();
-                return $this->error('Could not create year, for there should only be one academic year with default status',
-                ['default_year' => new AcademicYearResource($defaultYear)]
+                DB::rollBack();
+
+                return $this->error(
+                    'There is already a default academic year.'
                 );
             }
 
-            $mergedRequest = array_merge($validatedRequest, ['status' => $status]);
-            $academicYear = AcademicYear::create($mergedRequest);
+            $status = 'default';
 
-            DB::commit();
-            return $this->success('Academic Year Created Successfully!', [
-                'academic_year' => new AcademicYearResource($academicYear)
-            ]);
-        }catch(\Exception $e){
-            DB::rollback();
-            return $this->error('Academic Year could not be created');
+        } elseif ($startDate->gt($today)) {
+            $status = 'upcoming';
         }
+
+        $academicYear = AcademicYear::create([
+            ...$validated,
+            'status' => $status
+        ]);
+
+        DB::commit();
+
+        return $this->success(
+            'Academic Year Created Successfully!',
+            [
+                'academic_year' => new AcademicYearResource($academicYear)
+            ]
+        );
+
+    } catch (\Exception $e) {
+
+        DB::rollBack();
+
+        return $this->error(
+            'Academic Year could not be created'
+        );
     }
+}
 
     /**
      * Display the specified resource.
@@ -108,60 +125,147 @@ class AcademicYearController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateAcademicYearRequest $request, AcademicYear $academicYear)
+        public function update(UpdateAcademicYearRequest $request, AcademicYear $academicYear)
     {
-        $validatedRequest = $request->validated();
+        $validated = $request->validated();
+
         DB::beginTransaction();
 
-        try{
-            $academicYear->update($validatedRequest);
-
+        try {
+            unset($validated['status']);
+            $academicYear->update($validated);
             DB::commit();
-            return $this->success('Academic Year Updated Successfully',
-            ['academic_year' => new AcademicYearResource($academicYear)]);
-        }catch(\Exception $e){
+
+            return $this->success(
+                'Academic Year Updated Successfully',
+                [
+                    'academic_year' => new AcademicYearResource($academicYear)
+                ]
+            );
+
+        } catch (\Exception $e) {
 
             DB::rollBack();
-            return $this->error('Failed to Update Academic Year');
+
+            return $this->error(
+                'Failed to Update Academic Year'
+            );
         }
     }
 
-    public function changeStatus(AcademicYear $academicYear, Request $request){
+        public function changeStatus(Request $request, AcademicYear $academicYear)
+    {
+        $validated = $request->validate([
+            'status' => 'required|string|in:active,default,upcoming,archived'
+        ]);
 
-        $validatedRequest = $request->validate(['status' => 'required|string|in:active,default.upcoming,archived']);
         DB::beginTransaction();
-        
-        try{
-            switch($academicYear->status){
-            case 'default': 
-                $startDate = Carbon::parse($academicYear['start_date']);
-                $endDate = Carbon::parse($academicYear['end_date']);
-                $today = now();
-                if($today->between($startDate,$endDate)){ //Checks if eligible for change
+
+        try {
+
+            $newStatus = $validated['status'];
+
+            // Prevent manual changing of current default
+            if ($academicYear->status === 'default') {
+
+                DB::rollBack();
+
+                return $this->error(
+                    'Default academic year cannot be manually changed.'
+                );
+            }
+
+            // ONLY upcoming can become default
+            if ($newStatus === 'default') {
+
+                if ($academicYear->status !== 'upcoming') {
+
                     DB::rollBack();
-                    return $this->error('Cannot change current status');
-                    break;
-                }else{
-                    $academicYear['status'] = $validatedRequest['status'];
-                    break;
+
+                    return $this->error(
+                        'Only upcoming academic years can become default.'
+                    );
                 }
-            
-            case 'active':
-            case 'upcoming':
-            case 'archived':
-            default:
-                $academicYear['status'] = $validatedRequest['status'];
-                break;
+
+                $currentDefault = AcademicYear::where('status', 'default')->first();
+
+                if (!$currentDefault) {
+
+                    DB::rollBack();
+
+                    return $this->error(
+                        'No current default academic year found.'
+                    );
+                }
+
+                $today = now();
+
+                $defaultEndDate = Carbon::parse($currentDefault->end_date);
+                $upcomingStartDate = Carbon::parse($academicYear->start_date);
+
+                // Current default must already be finished
+                if ($today->lt($defaultEndDate)) {
+
+                    DB::rollBack();
+                    return $this->error(
+                        'Current default academic year is not yet finished.'
+                    );
+                }
+
+                // Upcoming year must match current year
+                if ($today->year !== $upcomingStartDate->year) {
+
+                    DB::rollBack();
+
+                    return $this->error(
+                        'Upcoming academic year cannot yet become default.'
+                    );
+                }
+
+                // Demote old default
+                $currentDefault->update([
+                    'status' => 'active'
+                ]);
+
+                // Promote upcoming
+                $academicYear->update([
+                    'status' => 'default'
+                ]);
+
+            } else {
+
+                // Prevent manually setting default
+                if ($academicYear->status === 'default') {
+
+                    DB::rollBack();
+
+                    return $this->error(
+                        'Default academic year cannot be modified.'
+                    );
+                }
+
+                $academicYear->update([
+                    'status' => $newStatus
+                ]);
             }
 
             DB::commit();
-            return $this->success('Successfully changed status', [
-                        'academic_year' => new AcademicYearResource($academicYear)]);
-        }catch(\Exception $e){
+
+            return $this->success(
+                'Successfully changed status',
+                [
+                    'academic_year' => new AcademicYearResource($academicYear->fresh())
+                ]
+            );
+
+        } catch (\Exception $e) {
+
             DB::rollBack();
-            return $this->error('Cannot change current status');
+
+            return $this->error(
+                'Cannot change current status'
+            );
         }
-            
     }
 
     public function destroy(AcademicYear $academicYear)
