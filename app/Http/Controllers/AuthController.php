@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use Spatie\Activitylog\Models\Activity;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\RateLimiter;
 
 class AuthController extends Controller
 {
@@ -43,6 +45,18 @@ class AuthController extends Controller
         $env = strtolower($request->header('Environment', 'backend'));
         $useCookies = $env === 'frontend' || $request->hasHeader('X-XSRF-TOKEN');
 
+        $key = Str::lower($request->email).'|'.$request->ip();
+        $decay = min(60 * pow(2, RateLimiter::attempts($key)), 3600);
+
+        if (RateLimiter::tooManyAttempts($key, 5)) {
+            $seconds = RateLimiter::availableIn($key);
+
+            return response()->json([
+                'message' => 'Too many login attempts. Try again later.',
+                'retry_after_seconds' => $seconds,
+            ], 429);
+        }
+
         $credentials = $request->validate([
             'username' => 'required|string',
             'password' => 'required|string',
@@ -71,7 +85,9 @@ class AuthController extends Controller
         }
 
         // Check password
-        if (!Auth::attempt($credentials)) {
+        if (!Auth::attempt($credentials, $request->boolean('remember'))) {
+            RateLimiter::hit($key, $decay);
+
             return $this->error('Invalid credentials.');
         }
 
@@ -87,6 +103,8 @@ class AuthController extends Controller
                 'datetime' => now()->format('Y-m-d h:i:s A'),
             ])
             ->log($user->name . ' has successfully logged in.');
+
+            RateLimiter::clear($key);
             
             return $this->success('User Logged in successfully', [
                 'User' => new UserResource($user),
@@ -98,7 +116,7 @@ class AuthController extends Controller
                     $request->session()->regenerate();
                 }
 
-        //RateLimiter::clear($key); For Future Use
+        RateLimiter::clear($key);
 
         $user = User::where('username', $request->username)->first();
 
@@ -137,7 +155,7 @@ class AuthController extends Controller
                     ->withProperties([
                         'datetime' => now()->format('Y-m-d h:i:s A'),
                     ])
-                    ->log($request->user->name . ' logged out');
+                    ->log($request->user()->name . ' logged out');
             return $this->success('Logout successful');
         }
 
@@ -149,6 +167,9 @@ class AuthController extends Controller
         activity("Logged Out")
                     ->causedBy($request->user())
                     ->performedOn($request->user())
+                    ->withProperties([
+                        'datetime' => now()->format('Y-m-d h:i:s A'),
+                    ])
                     ->log($user->name . ' logged out');
 
         return $this->success('Logout successful', 200);

@@ -15,18 +15,18 @@ Route::get('/user', function (Request $request) {
     return new UserResource($request->user());
 })->middleware('auth:sanctum');
 
-Route::post('login', [AuthController::class, 'login']);
+Route::post('login', [AuthController::class, 'login'])->middleware('throttle:login');
 Route::post('logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 
 //Activity Logs
-Route::get('activity-logs', [ActivityLogController::class, 'index'])->middleware('auth:sanctum');
+Route::get('activity-logs', [ActivityLogController::class, 'index'])->middleware(['auth:sanctum', 'throttle:api']);
 // Route::get('activity-logs/recent', [ActivityLogController::class, 'recent'])->middleware('auth:sanctum');
 
 
 //User Controller Endpoints
-Route::apiResource('users', UserController::class)->except('destroy')->middleware('auth:sanctum');
+Route::apiResource('users', UserController::class)->except('destroy')->middleware(['auth:sanctum', 'throttle:api']);
 Route::group([
-    'middleware' => 'auth:sanctum',
+    'middleware' => ['auth:sanctum', 'throttle:api'],
     'prefix' => 'users'
     ], function ($r) {
     $r->post('/{user}/change-status', [UserController::class, 'changeStatus']);
@@ -34,9 +34,9 @@ Route::group([
 });
 
 //Academic Year Controller Endpoints
-Route::apiResource('academic-years',  AcademicYearController::class)->except('destroy')->middleware('auth:sanctum');
+Route::apiResource('academic-years',  AcademicYearController::class)->except('destroy')->middleware(['auth:sanctum', 'throttle:api']);
 Route::group([
-    'middleware' => 'auth:sanctum',
+    'middleware' => ['auth:sanctum', 'throttle:api'],
     'prefix' => 'academic-years'
     ], function ($r){
         $r->post('{academic_year}/change-status', [AcademicYearController::class, 'changeStatus']);

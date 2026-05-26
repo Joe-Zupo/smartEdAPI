@@ -13,6 +13,9 @@ use Dedoc\Scramble\Support\Generator\Types\StringType;
 use Dedoc\Scramble\Scramble;
 use Dedoc\Scramble\Support\Generator\OpenApi;
 use Dedoc\Scramble\Support\Generator\SecurityScheme;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Cache\RateLimiting\Limit;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -71,6 +74,43 @@ class AppServiceProvider extends ServiceProvider
                     ->required(false)
                     ->example('frontend / backend'),
             ]);
+        });
+
+
+        RateLimiter::for('api', function (Request $request) {
+            $user = $request->user();
+            if ($user) {
+                return Limit::perMinute(120)
+                    ->by($user->id)
+                    ->response(function($request, $headers) {
+                        return response()->json([
+                            'message' => 'Too many requests. Please try again later.',
+                            'retry_after_seconds' => $headers['Retry-After'] ?? 60,
+                        ], 429, $headers);
+                    });
+            } else {
+                return Limit::perMinute(60)
+                    ->by($request->ip())
+                    ->response(function($request, $headers) {
+                        return response()->json([
+                            'message' => 'Too many requests. Please try again later.',
+                            'retry_after_seconds' => $headers['Retry-After'] ?? 60,
+                        ], 429, $headers);
+                    });
+            }
+        });
+
+        RateLimiter::for('login', function (Request $request) {
+            $email = (string) $request->email;
+
+            return Limit::perMinute(5)
+                ->by($email.$request->ip())
+                ->response(function($request, $headers) {
+                    return response()->json([
+                        'message' => 'Too many login attempts. Please try again later.',
+                        'retry_after_seconds' => $headers['Retry-After'] ?? 60,
+                    ], 429, $headers);
+            });
         });
     }
 }
