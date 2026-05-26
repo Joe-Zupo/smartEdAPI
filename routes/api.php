@@ -6,6 +6,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AcademicYearController;
 use App\Http\Controllers\ActivityLogController;
+use App\Http\Controllers\DivisionLeadershipController;
 use App\Http\Resources\UserResource;
 
 /**
@@ -41,3 +42,7 @@ Route::group([
     ], function ($r){
         $r->post('{academic_year}/change-status', [AcademicYearController::class, 'changeStatus']);
     });
+
+
+//Div Lead Controller
+Route::apiResource('division-leaderships', DivisionLeadershipController::class)->middleware(['auth:sanctum', 'throttle:api']);

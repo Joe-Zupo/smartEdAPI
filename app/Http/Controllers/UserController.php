@@ -50,7 +50,6 @@ class UserController extends Controller
 
         if ($searchRequest){
             //search for activity descriptions
-            $userIDs =
             $query->where('name', 'like', '%' . $searchRequest .'%')
             ->orWhere('username', 'like', '%' . $searchRequest . '%')
             ->orWhereHas('school', function ($s) use ($searchRequest){

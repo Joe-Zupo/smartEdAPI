@@ -1,13 +1,11 @@
 <?php
 
-namespace App\Http\Requests\ActivityLogs;
+namespace App\Http\Requests\DivisionLeadership;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
-use App\Models\School;
 
-class IndexActivityLogRequest extends FormRequest
+class IndexDivisionLeadershipRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -25,9 +23,10 @@ class IndexActivityLogRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'action' => ['in:Logged In,Logged Out,Submitted Data,Returned Data,Approved Data', 'nullable'],
-            'school' => ['exists:schools,school_name', Rule::in(School::pluck('school_name')->toArray()), 'nullable'],
             'search' => 'string|nullable',
+            'oic' => 'boolean|default:false',
+            //'all' => 'boolean|default:false',
+            'position' => 'string|in:Schools Division Superintendent,Assistant Schools Division Superintendent|nullable',
             'per_page' => 'integer',
             'page' => 'integer'
         ];
