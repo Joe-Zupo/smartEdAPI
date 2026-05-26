@@ -49,7 +49,7 @@ class AcademicYearController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Store an Academic Year
      */
     public function store(StoreAcademicYearRequest $request)
 {
@@ -109,7 +109,7 @@ class AcademicYearController extends Controller
 }
 
     /**
-     * Display the specified resource.
+     * Show an Academic Year
      */
     public function show(AcademicYear $academicYear)
     {
@@ -123,7 +123,7 @@ class AcademicYearController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
+     * Update an Academic Year
      */
         public function update(UpdateAcademicYearRequest $request, AcademicYear $academicYear)
     {
@@ -153,6 +153,13 @@ class AcademicYearController extends Controller
         }
     }
 
+    /**
+     * Change status of an Academic Year
+     * 
+     * Active to Archived, Upcoming to Active/Archived and vice versa to the respective cases is achievable
+     * 
+     * Default can only be changed if there is an attempt to change Upcoming -> Default while the time now is within the Upcoming Academic's year start-date 
+     */
         public function changeStatus(Request $request, AcademicYear $academicYear)
     {
         $validated = $request->validate([
