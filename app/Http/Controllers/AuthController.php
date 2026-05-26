@@ -40,6 +40,9 @@ class AuthController extends Controller
      */
     public function login(Request $request)
     {
+        $env = strtolower($request->header('Environment', 'backend'));
+        $useCookies = $env === 'frontend' || $request->hasHeader('X-XSRF-TOKEN');
+
         $credentials = $request->validate([
             'username' => 'required|string',
             'password' => 'required|string',
@@ -72,21 +75,42 @@ class AuthController extends Controller
             return $this->error('Invalid credentials.');
         }
 
+        $user = auth()->user();
+
+        if(!$useCookies){
         $token = $user->createToken('api-token')->plainTextToken;
 
-        activity('Logged In')
+            activity('Logged In')
             ->causedBy($user)
             ->performedOn($user)
             ->withProperties([
                 'datetime' => now()->format('Y-m-d h:i:s A'),
             ])
             ->log($user->name . ' has successfully logged in.');
+            
+            return $this->success('User Logged in successfully', [
+                'User' => new UserResource($user),
+                'token' => $token,
+            ]);
+        }
 
+        if ($request->hasSession()) {
+                    $request->session()->regenerate();
+                }
 
-        return $this->success('User Logged in successfully', [
-            'User' => new UserResource($user),
-            'token' => $token,
-        ]);
+        //RateLimiter::clear($key); For Future Use
+
+        $user = User::where('username', $request->username)->first();
+
+         activity('Logged In')
+            ->causedBy($user)
+            ->performedOn($user)
+            ->withProperties([
+                'datetime' => now()->format('Y-m-d h:i:s A'),
+            ])
+            ->log($user->name . ' has successfully logged in.');
+        
+        return $this->success('Logged in successfully', ['user' => new UserResource($user)]);
     }
 
     /**
