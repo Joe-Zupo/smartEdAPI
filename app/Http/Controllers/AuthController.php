@@ -121,6 +121,8 @@ class AuthController extends Controller
         $env = strtolower($request->header('Environment', 'backend'));
         $useCookies = $env === 'frontend' || $request->hasHeader('X-XSRF-TOKEN');
         
+        $user = User::where('username', $request->username)->first();
+
         if ($useCookies) {
             Auth::guard('web')->logout();
 
@@ -129,6 +131,13 @@ class AuthController extends Controller
                 $request->session()->regenerateToken();
             }
 
+            activity("Logged Out")
+                    ->causedBy($request->user())
+                    ->performedOn($request->user())
+                    ->withProperties([
+                        'datetime' => now()->format('Y-m-d h:i:s A'),
+                    ])
+                    ->log($request->user->name . ' logged out');
             return $this->success('Logout successful');
         }
 
@@ -137,6 +146,10 @@ class AuthController extends Controller
         if ($user->tokens()->count() > 0) {
             $user->tokens()->delete();
         }
+        activity("Logged Out")
+                    ->causedBy($request->user())
+                    ->performedOn($request->user())
+                    ->log($user->name . ' logged out');
 
         return $this->success('Logout successful', 200);
 
