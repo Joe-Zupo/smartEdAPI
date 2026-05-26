@@ -118,19 +118,27 @@ class AuthController extends Controller
      */
     public function logout(Request $request)
     {
-        // Auth::guard('web')->logout();
+        $env = strtolower($request->header('Environment', 'backend'));
+        $useCookies = $env === 'frontend' || $request->hasHeader('X-XSRF-TOKEN');
+        
+        if ($useCookies) {
+            Auth::guard('web')->logout();
 
-        activity('Logged Out')
-            ->causedBy($request->user())
-            ->performedOn($request->user())
-            ->withProperties([
-                'datetime' => now()->format('Y-m-d h:i:s A'),
-            ])
-            ->log('User logged out');
+            if ($request->hasSession()) {
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+            }
 
-        $request->user()->tokens()->delete();
+            return $this->success('Logout successful');
+        }
 
-        return $this->success('User Logged Out Successfully');
+        $user = $request->user();
+
+        if ($user->tokens()->count() > 0) {
+            $user->tokens()->delete();
+        }
+
+        return $this->success('Logout successful', 200);
 
         // if ($request->user()) {
         //     $token = $request->user()->currentAccessToken();
