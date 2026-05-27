@@ -12,22 +12,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('schools', function (Blueprint $table) {
-            //School Information
             $table->id();
             $table->string('school_name');
-            $table->string('school_code');
+            $table->string('school_code')->unique();
             $table->year('year_established');
-            $table->foreignID('school_type_id')->constrained('school_types')->cascadeOnDelete();
-            
-            //location
-            $table->string('address');
+            $table->foreignId('school_type_id')->constrained('school_types')->cascadeOnDelete();
             $table->string('district');
-            $table->decimal('longitude', 8, 2);
-            $table->decimal('latitude', 8, 2);
-
-            //other
-            $table->string('image')->nullable();
-
+            $table->text('address')->nullable();
+            $table->decimal('latitude', 10, 8)->nullable();
+            $table->decimal('longitude', 11, 8)->nullable();
+            $table->string('image')->nullable(); 
             $table->timestamps();
         });
     }

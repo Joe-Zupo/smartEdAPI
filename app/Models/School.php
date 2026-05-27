@@ -36,4 +36,8 @@ class School extends Model
     {
         return $this->hasOne(User::class, 'school_id');
     }
+
+    public function barangay(){
+        return $this->belongsTo(Barangay::class);
+    }
 }
