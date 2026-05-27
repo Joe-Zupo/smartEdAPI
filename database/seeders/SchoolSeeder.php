@@ -5,9 +5,11 @@ namespace Database\Seeders;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use App\SeederFileTrait;
 
 class SchoolSeeder extends Seeder
 {
+    use SeederFileTrait;
     /**
      * Run the database seeds.
      */
@@ -28,7 +30,7 @@ class SchoolSeeder extends Seeder
                 'latitude'          => 15.2088,                     // sampledata
                 'longitude'         => 120.5912,                    // sampledata
                 'address'           => 'Purok 2, Atlu Bola, Mabalacat, Pampanga, Central Luzon',
-                //'image'       => $this->copySeederFile('schools', 'atlu_bola.png', 'school_images'),
+                'image'       => $this->copySeederFile('schools', 'atlu_bola.png', 'school_images'),
             ],
             [
                 'school_name'       => 'Calumpang Elementary School',
@@ -39,7 +41,7 @@ class SchoolSeeder extends Seeder
                 'latitude'          => 15.2145,                     // sampledata
                 'longitude'         => 120.5865,                    // sampledata
                 'address'           => 'Sitio Riverside, Calumpang, Mabalacat, Pampanga, Central Luzon',
-                //'image'       => $this->copySeederFile('schools', 'calumpang.png', 'school_images'),
+                'image'       => $this->copySeederFile('schools', 'calumpang.png', 'school_images'),
 
             ],
 
@@ -55,7 +57,7 @@ class SchoolSeeder extends Seeder
                 'latitude'          => 15.2312,                     // sampledata
                 'longitude'         => 120.6145,                    // sampledata
                 'address'           => 'Barangay Calumpang, Sitio Monicayo, Mabalacat, 2010 Pampanga',
-                //'image'       => $this->copySeederFile('schools', 'monicayo.png', 'school_images'),
+                'image'       => $this->copySeederFile('schools', 'monicayo.png', 'school_images'),
             ],
             [
                 'school_name'       => 'Sta. Ines Integrated School',
@@ -66,7 +68,7 @@ class SchoolSeeder extends Seeder
                 'latitude'          => 15.2607,
                 'longitude'         => 120.6105,
                 'address'           => 'Purok 3, Barangay Sta. Ines, Mabalacat City, Pampanga, Central Luzon',
-                //'image'       => $this->copySeederFile('schools', 'sta_ines.png', 'school_images'),
+                'image'       => $this->copySeederFile('schools', 'sta_ines.png', 'school_images'),
             ],
 
             // =======================
@@ -81,7 +83,7 @@ class SchoolSeeder extends Seeder
                 'latitude'          => 15.2267,                     // sampledata
                 'longitude'         => 120.6012,                    // sampledata
                 'address'           => 'Camachiles St., Camachiles, Mabalacat, Pampanga, Central Luzon',
-                //'image'       => $this->copySeederFile('schools', 'camachiles.png', 'school_images'),
+                'image'       => $this->copySeederFile('schools', 'camachiles.png', 'school_images'),
             ],
             [
                 'school_name'       => 'Mabalacat Community High School',
@@ -92,7 +94,7 @@ class SchoolSeeder extends Seeder
                 'latitude'          => 15.2089,                     // sampledata
                 'longitude'         => 120.6234,                    // sampledata
                 'address'           => 'Community Drive, Santo Nino, Mabalacat, Pampanga, Central Luzon',
-                //'image'       => $this->copySeederFile('schools', 'mabalacat_community.png', 'school_images'),
+                'image'       => $this->copySeederFile('schools', 'mabalacat_community.png', 'school_images'),
             ],
 
             // =======================

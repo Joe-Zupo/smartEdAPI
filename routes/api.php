@@ -7,6 +7,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\AcademicYearController;
 use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\DivisionLeadershipController;
+use App\Http\Controllers\SchoolController;
 use App\Http\Resources\UserResource;
 
 /**
@@ -46,3 +47,11 @@ Route::group([
 
 //Div Lead Controller
 Route::apiResource('division-leaderships', DivisionLeadershipController::class)->middleware(['auth:sanctum', 'throttle:api']);
+
+// schools routes 
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('schools', [SchoolController::class, 'store'])->name('schools.store');
+    Route::put('schools/{school}', [SchoolController::class, 'update'])->name('schools.update');
+    Route::apiResource('schools', SchoolController::class)->except(['store', 'update', 'destroy']);
+    Route::delete('schools/{school}', [SchoolController::class, 'destroy'])->name('schools.destroy');
+});

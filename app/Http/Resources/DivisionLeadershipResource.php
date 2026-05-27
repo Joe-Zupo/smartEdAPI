@@ -16,11 +16,13 @@ class DivisionLeadershipResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'name' => $this->name,
             'is_oic' => (bool) $this->is_oic,
             'search' => $this->search,
             'position' => $this->position,
             'term_start' => $this->term_start,
             'term_end' => $this->term_end,
+            'term_end_display' => $this->term_end ?? 'Present',
             'is_current' => is_null($this->getRawOriginal('term_end')),
         ];
     }

@@ -16,6 +16,7 @@ class DivisionLeadershipController extends Controller
      * Index Division Leadership
      * 
      * Display a listing of the resource.
+     * 
      */
     public function index(IndexDivisionLeadershipRequest $request)
     {
@@ -43,20 +44,20 @@ class DivisionLeadershipController extends Controller
             $query->where('name', 'like', '%' . $searchRequest .'%');
         }
 
-        //Paginate [in dev]
-        if($sortBy && $sortOrder){
-            $query->orderByRaw('CASE WHEN term_end IS NULL THEN 0 ELSE 1 END')
-            ->orderBy('term_end', 'desc')
-            ->orderBy('term_start', 'desc');
-        }else{
+        //Paginate
+        if ($request->filled('sortBy') && $request->filled('sortOrder')) {
             $query->orderBy($sortBy, $sortOrder);
+        } else {
+            $query->orderByRaw('CASE WHEN term_end IS NULL THEN 0 ELSE 1 END')
+                ->orderBy('term_end', 'desc')
+                ->orderBy('term_start', 'desc');
         }
 
         $paginatedDivLeads = $query
             ->paginate($perPage);
         
         if(!$paginatedDivLeads->count()){
-            return $this->success('No more users available');
+            return $this->success('No more division leadership records available');
         }
 
         $transformedDivLeads = $paginatedDivLeads->map(function($divLead){
@@ -65,8 +66,8 @@ class DivisionLeadershipController extends Controller
 
         $paginaton = $this->paginateReturn($paginatedDivLeads);
 
-        return $this->success('Users fetched successfully',[
-           'users' => $transformedDivLeads,
+        return $this->success('Division Leadership fetched successfully',[
+           'division_leadership' => $transformedDivLeads,
            'pagination' => $paginaton 
         ]);
     }

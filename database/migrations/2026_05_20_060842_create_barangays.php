@@ -14,6 +14,10 @@ return new class extends Migration
         Schema::create('barangays', function (Blueprint $table) {
             $table->id();
             $table->string('name')->unique();
+            $table->foreignId('barangay_id')
+                    ->nullable()
+                    ->constrained()
+                    ->nullOnDelete();
             $table->timestamps();
         });
     }
