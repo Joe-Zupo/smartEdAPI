@@ -12,13 +12,11 @@
     <script>
         const originalFetch = window.fetch;
 
-        // Intercept TryIt requests and make sure Sanctum's CSRF token is sent.
-        // The session cookie is HttpOnly, so the browser must include it automatically.
+        // intercept TryIt requests and add the XSRF-TOKEN header,
+        // which is necessary for Sanctum cookie-based authentication to work correctly
         window.fetch = (url, options) => {
             const CSRF_TOKEN_COOKIE_KEY = "XSRF-TOKEN";
             const CSRF_TOKEN_HEADER_KEY = "X-XSRF-TOKEN";
-            const PLATFORM_HEADER_KEY = "Environment";
-            const PLATFORM_HEADER_VALUE = "frontend";
             const getCookieValue = (key) => {
                 const cookie = document.cookie.split(';').find((cookie) => cookie.trim().startsWith(key));
                 return cookie?.split("=")[1];
@@ -37,44 +35,17 @@
                     headers[headerKey] = headerValue;
                 }
             };
-            const hasFetchHeader = (headers, headerKey) => {
-                if (!headers) {
-                    return false;
-                }
-
-                const normalizedHeaderKey = headerKey.toLowerCase();
-
-                if (headers instanceof Headers) {
-                    return headers.has(headerKey) || headers.has(normalizedHeaderKey);
-                }
-
-                if (Array.isArray(headers)) {
-                    return headers.some(([key]) => String(key).toLowerCase() === normalizedHeaderKey);
-                }
-
-                return Object.keys(headers).some((key) => key.toLowerCase() === normalizedHeaderKey);
-            };
-
             const csrfToken = getCookieValue(CSRF_TOKEN_COOKIE_KEY);
-            const { headers = new Headers() } = options || {};
-
-            if (!hasFetchHeader(headers, PLATFORM_HEADER_KEY)) {
-                updateFetchHeaders(headers, PLATFORM_HEADER_KEY, PLATFORM_HEADER_VALUE);
-            }
-
             if (csrfToken) {
+                const { headers = new Headers() } = options || {};
                 updateFetchHeaders(headers, CSRF_TOKEN_HEADER_KEY, decodeURIComponent(csrfToken));
                 return originalFetch(url, {
                     ...options,
-                    credentials: options?.credentials ?? 'include',
                     headers,
                 });
             }
 
-            return originalFetch(url, {
-                ...options,
-                credentials: options?.credentials ?? 'include',
-            });
+            return originalFetch(url, options);
         };
     </script>
 
@@ -102,21 +73,6 @@
         [data-theme="dark"] .token.punctuation {
             color: #dbdbdb !important;
         }
-        #csrf-refresh-btn {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 9999;
-            padding: 8px 16px;
-            background: #4f46e5;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 13px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-        }
-        #csrf-refresh-btn:hover { background: #4338ca; }
     </style>
 </head>
 <body style="height: 100vh; overflow-y: hidden">
@@ -154,86 +110,5 @@
         updateTheme(mediaQuery);
     </script>
 @endif
-<button id="csrf-refresh-btn" onclick="refreshAuth()">🔄 Refresh Auth Cookies</button>
-
-<script>
-async function refreshAuth() {
-    await fetch('/sanctum/csrf-cookie', { credentials: 'include' });
-
-    function getCookie(name) {
-        const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-        return match ? decodeURIComponent(match[2]) : null;
-    }
-
-    function getAssociatedInput(label) {
-        return label.control
-            ?? label.querySelector('input')
-            ?? label.nextElementSibling?.querySelector('input');
-    }
-
-    const xsrf = getCookie('XSRF-TOKEN');
-
-    document.querySelectorAll('label').forEach(label => {
-        const text = label.textContent.trim();
-        const input = getAssociatedInput(label);
-        if (!input) return;
-
-        if (text === 'X-XSRF-TOKEN') {
-            input.value = xsrf ?? '';
-            input.dispatchEvent(new Event('input', { bubbles: true }));
-            input.dispatchEvent(new Event('change', { bubbles: true }));
-        }
-    });
-
-    const btn = document.getElementById('csrf-refresh-btn');
-    btn.textContent = '✅ Cookies Injected';
-    setTimeout(() => btn.textContent = '🔄 Refresh Auth Cookies', 2000);
-}
-
-(async function () {
-    // Prime the CSRF cookie once, then keep retrying until Elements renders.
-    await fetch('/sanctum/csrf-cookie', {
-        credentials: 'include'
-    });
-
-    function getCookie(name) {
-        const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-        return match ? decodeURIComponent(match[2]) : null;
-    }
-
-    function getAssociatedInput(label) {
-        return label.control
-            ?? label.querySelector('input')
-            ?? label.nextElementSibling?.querySelector('input');
-    }
-
-    function injectAuth() {
-        const xsrf = getCookie('XSRF-TOKEN');
-        if (!xsrf) return;
-
-        const labels = document.querySelectorAll('label');
-
-        labels.forEach(label => {
-            const text = label.textContent.trim();
-            const input = getAssociatedInput(label);
-
-            if (!input) return;
-
-            if (text === 'X-XSRF-TOKEN') {
-                input.value = xsrf;
-                input.dispatchEvent(new Event('input', { bubbles: true }));
-                input.dispatchEvent(new Event('change', { bubbles: true }));
-            }
-        });
-    }
-
-    let attempts = 0;
-    const interval = setInterval(() => {
-        injectAuth();
-        attempts++;
-        if (attempts > 30) clearInterval(interval);
-    }, 500);
-})();
-</script>
 </body>
 </html>

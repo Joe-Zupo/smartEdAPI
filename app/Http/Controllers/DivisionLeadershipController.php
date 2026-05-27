@@ -87,7 +87,7 @@ class DivisionLeadershipController extends Controller
 
             DB::commit();
             return $this->success('Division Leader: ' . $divLead->name . ' Created Successfully',[
-                'Division Leader' => new DivisionLeadership($divLead)
+                'Division Leader' => new DivisionLeadershipResource($divLead)
             ]);
         }catch(\Exception $e){
             DB::rollBack();
