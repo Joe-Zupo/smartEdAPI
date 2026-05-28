@@ -40,10 +40,6 @@ class DivisionLeadershipController extends Controller
             $query->where('is_oic', $request->boolean('oic'));
         }
 
-        if ($request->has('academic_year_id')){
-            $query->where('academic_year_id', $request->boolean('academic_year_id'));
-        }
-
         if($searchRequest){
             $query->where('name', 'like', '%' . $searchRequest .'%');
         }
