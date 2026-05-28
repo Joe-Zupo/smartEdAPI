@@ -182,7 +182,40 @@ class SchoolController extends Controller
         }
     }
 
-   
+    /**
+     * Upload Image for School
+     */
+    public function uploadImage(Request $request, School $school){
+        $user = Auth::user();
+        DB::beginTransaction();
+            if ($request->hasFile('image')) {
+
+                if ($user->hasRole('School_Account') && $user->school_id !== $school->id) {
+                    DB::rollBack();
+                    return $this->error('Unauthorized access to this school');
+                } else {
+                    // Optional old image deletion
+                     if ($school->image && Storage::disk('public')->exists($school->image)) {
+                         Storage::disk('public')->delete($school->image);
+                    }
+
+                    if (!$request->hasFile('image')) {
+                        return $this->error('No valid image provided');
+                    }
+
+                    $validated['image'] = $request->file('image')->store('school_images', 'public');
+                    $school->image = $validated['image'];
+                    $school->save();
+                    DB::commit();
+                    return $this->success('Successfully updated school image',[
+                        'data' => new SchoolResource($school->refresh()->load([
+                            'schoolType',
+                            'barangay'
+                        ]))
+                    ]);
+                }
+            }
+    }
 
     /**
      * Delete School

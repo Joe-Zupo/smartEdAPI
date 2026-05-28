@@ -49,9 +49,10 @@ Route::group([
 Route::apiResource('division-leaderships', DivisionLeadershipController::class)->middleware(['auth:sanctum', 'throttle:api']);
 
 // schools routes 
-Route::middleware('auth:sanctum')->group(function () {
-    Route::post('schools', [SchoolController::class, 'store'])->name('schools.store');
-    Route::put('schools/{school}', [SchoolController::class, 'update'])->name('schools.update');
-    Route::apiResource('schools', SchoolController::class)->except(['store', 'update', 'destroy']);
-    Route::delete('schools/{school}', [SchoolController::class, 'destroy'])->name('schools.destroy');
+Route::middleware('auth:sanctum')->group(function ($r) {
+    $r->post('schools', [SchoolController::class, 'store'])->name('schools.store');
+    $r->put('schools/{school}', [SchoolController::class, 'update'])->name('schools.update');
+    $r->apiResource('schools', SchoolController::class)->except(['store', 'update', 'destroy']);
+    $r->delete('schools/{school}', [SchoolController::class, 'destroy']);
+    $r->post('schools/{school}/upload-image', [SchoolController::class, 'uploadImage']);
 });
