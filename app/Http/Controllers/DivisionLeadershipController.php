@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\DB;
 class DivisionLeadershipController extends Controller
 {
     /**
-     * Index Division Leadership
+     * Index Records of Division Leadership 
      * 
      * Display a listing of the resource.
      * 
@@ -67,13 +67,13 @@ class DivisionLeadershipController extends Controller
         $paginaton = $this->paginateReturn($paginatedDivLeads);
 
         return $this->success('Division Leadership fetched successfully',[
-           'division_leadership' => $transformedDivLeads,
+           'division_leadership' => DivisionLeadershipResource::collection($transformedDivLeads),
            'pagination' => $paginaton 
         ]);
     }
 
     /**
-     * Create a Division Leadership
+     * Create a Division Leadership Record
      * 
      * Store a newly created resource in storage.
      */
@@ -97,7 +97,7 @@ class DivisionLeadershipController extends Controller
     }
 
     /**
-     * Show Division Leadership
+     * Show Division Leadership Record
      * 
      * Display the specified resource.
      */
@@ -113,7 +113,7 @@ class DivisionLeadershipController extends Controller
     }
 
     /**
-     * Update Division Leadership
+     * Update Division Leadership Record
      * 
      * Update the specified resource in storage.
      */
@@ -138,7 +138,7 @@ class DivisionLeadershipController extends Controller
     }
 
     /**
-     * Delete Division Leadership
+     * Delete Division Leadership Record
      * 
      * Remove the specified resource from storage.
      */
@@ -157,3 +157,5 @@ class DivisionLeadershipController extends Controller
         }
     }
 }
+
+

@@ -7,6 +7,8 @@ use App\Http\Requests\Schools\StoreSchoolRequest;
 use App\Http\Requests\Schools\UpdateSchoolRequest;
 use App\Http\Resources\SchoolResource;
 use App\Models\School;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -17,6 +19,7 @@ class SchoolController extends Controller
      */
     public function index(IndexSchoolRequest $request)
     {
+
         $validated = $request->validated();
 
         $perPage = $validated['per_page'] ?? 5;
@@ -38,8 +41,10 @@ class SchoolController extends Controller
             $query->where('school_code', 'like', '%' . $request->school_code . '%');
         }
 
-        if ($request->filled('school_type_id')) {
-            $query->where('school_type_id', $request->school_type_id);
+        if ($request->filled('school_type')) {
+            $query->whereHas('schoolType', function($q) use ($request){
+                $q->where('name',$request->school_type);
+            });
         }
 
         if ($request->filled('barangay_id')) {
@@ -152,18 +157,6 @@ class SchoolController extends Controller
 
         try {
 
-            if ($request->hasFile('image')) {
-
-                // Optional old image deletion
-                // if ($school->image && Storage::disk('public')->exists($school->image)) {
-                //     Storage::disk('public')->delete($school->image);
-                // }
-
-                $validated['image'] = $request
-                    ->file('image')
-                    ->store('school_images', 'public');
-            }
-
             $school->update($validated);
 
             DB::commit();
@@ -179,7 +172,6 @@ class SchoolController extends Controller
                     )
                 ]
             );
-
         } catch (\Exception $e) {
 
             DB::rollBack();
@@ -188,6 +180,41 @@ class SchoolController extends Controller
                 'Failed to update school'
             );
         }
+    }
+
+    /**
+     * Upload Image for School
+     */
+    public function uploadImage(Request $request, School $school){
+        $user = Auth::user();
+        DB::beginTransaction();
+            if ($request->hasFile('image')) {
+
+                if ($user->hasRole('School Account') && $user->school_id !== $school->id) {
+                    DB::rollBack();
+                    return $this->error('Unauthorized access to this school', 403);
+                } else {
+                    // Optional old image deletion
+                     if ($school->image && Storage::disk('public')->exists($school->image)) {
+                         Storage::disk('public')->delete($school->image);
+                    }
+
+                    if (!$request->hasFile('image')) {
+                        return $this->error('No valid image provided');
+                    }
+
+                    $validated['image'] = $request->file('image')->store('school_images', 'public');
+                    $school->image = $validated['image'];
+                    $school->save();
+                    DB::commit();
+                    return $this->success('Successfully updated school image',[
+                        'data' => new SchoolResource($school->refresh()->load([
+                            'schoolType',
+                            'barangay'
+                        ]))
+                    ]);
+                }
+            }
     }
 
     /**

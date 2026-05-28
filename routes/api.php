@@ -8,6 +8,7 @@ use App\Http\Controllers\AcademicYearController;
 use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\DivisionLeadershipController;
 use App\Http\Controllers\SchoolController;
+use App\Http\Controllers\KpiDataController;
 use App\Http\Resources\UserResource;
 
 /**
@@ -49,9 +50,19 @@ Route::group([
 Route::apiResource('division-leaderships', DivisionLeadershipController::class)->middleware(['auth:sanctum', 'throttle:api']);
 
 // schools routes 
+Route::middleware('auth:sanctum')->group(function ($r) {
+    $r->post('schools', [SchoolController::class, 'store'])->name('schools.store');
+    $r->put('schools/{school}', [SchoolController::class, 'update'])->name('schools.update');
+    $r->apiResource('schools', SchoolController::class)->except(['store', 'update', 'destroy']);
+    $r->delete('schools/{school}', [SchoolController::class, 'destroy']);
+    $r->post('schools/{school}/upload-image', [SchoolController::class, 'uploadImage']);
+
+// KPI data routes
 Route::middleware('auth:sanctum')->group(function () {
-    Route::post('schools', [SchoolController::class, 'store'])->name('schools.store');
-    Route::put('schools/{school}', [SchoolController::class, 'update'])->name('schools.update');
-    Route::apiResource('schools', SchoolController::class)->except(['store', 'update', 'destroy']);
-    Route::delete('schools/{school}', [SchoolController::class, 'destroy'])->name('schools.destroy');
+    // Route::post('kpi-data', [KpiDataController::class, 'store'])->name('kpi-data.store');
+    // Route::put('kpi-data', [KpiDataController::class, 'update'])->name('kpi-data.update');
+    Route::get('kpi-data', [KpiDataController::class, 'index']);
+    Route::get('kpi-data/{kpiData}', [KpiDataController::class, 'show']);
+    // Route::delete('kpi-data/{kpi_data}', [KpiDataController::class, 'destroy'])->name('kpi-data.destroy');
+});
 });

@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use App\Models\School;
 use Illuminate\Support\Facades\DB;
 use App\SeederFileTrait;
 
@@ -128,7 +129,7 @@ class SchoolSeeder extends Seeder
 
 
         foreach ($schools as $school) {
-            DB::table('schools')->insert($school);
+            School::create($school);
         }
     }
 }
