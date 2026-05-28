@@ -190,7 +190,7 @@ class SchoolController extends Controller
         DB::beginTransaction();
             if ($request->hasFile('image')) {
 
-                if ($user->hasRole('School_Account') && $user->school_id !== $school->id) {
+                if ($user->hasRole('School Account') && $user->school_id !== $school->id) {
                     DB::rollBack();
                     return $this->error('Unauthorized access to this school');
                 } else {
