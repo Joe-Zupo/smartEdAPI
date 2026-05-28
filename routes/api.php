@@ -8,6 +8,7 @@ use App\Http\Controllers\AcademicYearController;
 use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\DivisionLeadershipController;
 use App\Http\Controllers\SchoolController;
+use App\Http\Controllers\KpiDataController;
 use App\Http\Resources\UserResource;
 
 /**
@@ -55,4 +56,12 @@ Route::middleware('auth:sanctum')->group(function ($r) {
     $r->apiResource('schools', SchoolController::class)->except(['store', 'update', 'destroy']);
     $r->delete('schools/{school}', [SchoolController::class, 'destroy']);
     $r->post('schools/{school}/upload-image', [SchoolController::class, 'uploadImage']);
+
+// KPI data routes
+Route::middleware('auth:sanctum')->group(function () {
+    // Route::post('kpi-data', [KpiDataController::class, 'store'])->name('kpi-data.store');
+    // Route::put('kpi-data', [KpiDataController::class, 'update'])->name('kpi-data.update');
+    Route::apiResource('kpi-data', KpiDataController::class)->except(['store', 'update', 'destroy']);
+    // Route::delete('kpi-data/{kpi_data}', [KpiDataController::class, 'destroy'])->name('kpi-data.destroy');
+});
 });
