@@ -6,9 +6,11 @@ use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\KpiData;
 use App\Models\AcademicYear;
+use App\calculateTotal;
 
 class KpiDataSeeder extends Seeder
 {
+    use calculateTotal;
     /**
      * Run the database seeds.
      */
@@ -25,9 +27,9 @@ class KpiDataSeeder extends Seeder
             foreach ($schoolTypes as $schoolType) {
                 // Loop all 8 KPI rates
                 for ($i = 1; $i <= 8; $i++) {
-                    $male = rand(1, 100);
-                    $female = rand(1, 100);
-                    $total = ($male + $female) / 2;
+                    $male = rand(90, 100);
+                    $female = rand(90, 100);
+                    $total = $this->calculateTotal($male, $female);
 
                     KpiData::create([
                         'kpi_id' => $i,
