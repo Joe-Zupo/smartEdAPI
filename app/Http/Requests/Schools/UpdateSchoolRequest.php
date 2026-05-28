@@ -34,7 +34,7 @@ class UpdateSchoolRequest extends FormRequest
             'province'          => ['sometimes', 'string', 'max:255'],
             'district'          => ['sometimes', 'string', 'max:255'],
             'region'            => ['sometimes', 'string', 'max:255'],
-            'image'             => ['sometimes', 'nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
+            //'image'             => ['sometimes', 'nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
         ];
     }
 }

@@ -29,5 +29,7 @@ class DatabaseSeeder extends Seeder
         $this->call(UserSeeder::class);
         $this->call(AcademicYearSeeder::class);
         $this->call(DivisionLeadershipSeeder::class);
+        $this->call(KpiRateDataSeeder::class);
+        $this->call(KpiDataSeeder::class);
     }
 }

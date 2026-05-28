@@ -7,6 +7,8 @@ use App\Http\Requests\Schools\StoreSchoolRequest;
 use App\Http\Requests\Schools\UpdateSchoolRequest;
 use App\Http\Resources\SchoolResource;
 use App\Models\School;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -17,6 +19,7 @@ class SchoolController extends Controller
      */
     public function index(IndexSchoolRequest $request)
     {
+
         $validated = $request->validated();
 
         $perPage = $validated['per_page'] ?? 5;
@@ -154,18 +157,6 @@ class SchoolController extends Controller
 
         try {
 
-            if ($request->hasFile('image')) {
-
-                // Optional old image deletion
-                // if ($school->image && Storage::disk('public')->exists($school->image)) {
-                //     Storage::disk('public')->delete($school->image);
-                // }
-
-                $validated['image'] = $request
-                    ->file('image')
-                    ->store('school_images', 'public');
-            }
-
             $school->update($validated);
 
             DB::commit();
@@ -181,7 +172,6 @@ class SchoolController extends Controller
                     )
                 ]
             );
-
         } catch (\Exception $e) {
 
             DB::rollBack();
@@ -191,6 +181,8 @@ class SchoolController extends Controller
             );
         }
     }
+
+   
 
     /**
      * Delete School

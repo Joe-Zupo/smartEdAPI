@@ -52,7 +52,8 @@ class AcademicYearController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(StoreAcademicYearRequest $request)
-{
+    {
+    //$this->authorize('create', User::class);
     $validated = $request->validated();
 
     DB::beginTransaction();
@@ -113,6 +114,7 @@ class AcademicYearController extends Controller
      */
     public function show(AcademicYear $academicYear)
     {
+       // $this->authorize('view', User::class);
         try{
             return $this->success('Successfully fetched Academic Year',[
                 'academic_year' => new AcademicYearResource($academicYear)
@@ -127,6 +129,7 @@ class AcademicYearController extends Controller
      */
         public function update(UpdateAcademicYearRequest $request, AcademicYear $academicYear)
     {
+        //$this->authorize('update', User::class);
         $validated = $request->validated();
 
         DB::beginTransaction();
@@ -154,12 +157,13 @@ class AcademicYearController extends Controller
     }
 
         public function changeStatus(Request $request, AcademicYear $academicYear)
-    {
-        $validated = $request->validate([
-            'status' => 'required|string|in:active,default,upcoming,archived'
-        ]);
+        {
+            //$this->authorize('create', User::class);
+            $validated = $request->validate([
+                'status' => 'required|string|in:active,default,upcoming,archived'
+            ]);
 
-        DB::beginTransaction();
+            DB::beginTransaction();
 
         try {
 
