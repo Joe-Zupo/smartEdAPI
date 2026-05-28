@@ -61,7 +61,8 @@ Route::middleware('auth:sanctum')->group(function ($r) {
 Route::middleware('auth:sanctum')->group(function () {
     // Route::post('kpi-data', [KpiDataController::class, 'store'])->name('kpi-data.store');
     // Route::put('kpi-data', [KpiDataController::class, 'update'])->name('kpi-data.update');
-    Route::apiResource('kpi-data', KpiDataController::class)->except(['store', 'update', 'destroy']);
+    Route::get('kpi-data', [KpiDataController::class, 'index']);
+    Route::get('kpi-data/{kpiData}', [KpiDataController::class, 'show']);
     // Route::delete('kpi-data/{kpi_data}', [KpiDataController::class, 'destroy'])->name('kpi-data.destroy');
 });
 });

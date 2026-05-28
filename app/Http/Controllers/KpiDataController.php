@@ -22,7 +22,7 @@ class KpiDataController extends Controller
 
         $request->validated();
 
-         $query = KpiData::query();
+         $query = KpiData::query()->with('academicYear', 'kpiRate');
 
         if ($request->filled('school_type')) {
             $query->where('schoolType', 'like', '%'. $request->school_type . '%');
@@ -70,7 +70,10 @@ class KpiDataController extends Controller
     public function show(KpiData $kpiData)
     {
         return $this->success('KPI data fetched successfully',
-        ['kpi_data' => new KpiDataResource($kpiData)]);
+        ['kpi_data' => new KpiDataResource($kpiData->load([
+                        'academicYear',
+                        'kpiRate'
+                    ]))]);
     }
 
     /**
