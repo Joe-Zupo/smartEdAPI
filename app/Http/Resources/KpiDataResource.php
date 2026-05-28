@@ -27,7 +27,7 @@ class KpiDataResource extends JsonResource
 			'academic_year' => $this->whenLoaded('academicYear', function () {
 				return [
 					'id' => $this->academicYear?->id,
-					'name' => $this->academicYear?->name ?? null,
+					'name' => $this->academicYear?->academic_year ?? null,
 				];
 			}),
 			'male' => $this->male !== null ? (float) $this->male : null,
