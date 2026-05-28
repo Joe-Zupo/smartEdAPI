@@ -51,7 +51,7 @@ class KpiDataController extends Controller
         $paginaton = $this->paginateReturn($paginatedData);
 
         return $this->success('KPI data fetched successfully',[
-           'users' => $transformedData,
+           'users' => KpiDataResource::collection($transformedData),
            'pagination' => $paginaton 
         ]);
     }

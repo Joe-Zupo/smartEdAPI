@@ -24,9 +24,9 @@ class IndexKpiDataRequest extends FormRequest
     {
         return [
             'page' => 'nullable|integer|min:1',
-            'perPage' => 'nullable|integer|default:10|min:1|max:100',
+            'perPage' => 'nullable|integer|min:1|max:100',
             'sortBy' => 'nullable|string|in:|nullable',
-            'sortOrder' => 'nullable|string|in:asc,desc|default:desc',
+            'sortOrder' => 'nullable|string|in:asc,desc',
 
             'kpi_id' => 'nullable|integer|exists:kpi_data,kpi_id',
             'academic_year_id' => 'nullable|integer|exists:kpi_data,academic_year_id',
