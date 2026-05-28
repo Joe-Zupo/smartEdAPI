@@ -67,7 +67,7 @@ class DivisionLeadershipController extends Controller
         $paginaton = $this->paginateReturn($paginatedDivLeads);
 
         return $this->success('Division Leadership fetched successfully',[
-           'division_leadership' => $transformedDivLeads,
+           'division_leadership' => DivisionLeadershipResource::collection($transformedDivLeads),
            'pagination' => $paginaton 
         ]);
     }

@@ -17,8 +17,8 @@ class KpiDataSeeder extends Seeder
         $schoolType = 'elementary';  // enum
         // Loop all 8 KPI rates
         for ($i = 1; $i <= 8; $i++) {
-            $male = rand(1, 100);
-            $female = rand(1, 100);
+            $male = rand(1, 50);
+            $female = rand(1, 50);
             $total = $male + $female;
             $kpiData = [
                 'kpi_id' => $i,  // all 8 KPI rates
@@ -27,7 +27,7 @@ class KpiDataSeeder extends Seeder
                 'female' => $female,
                 'total' => $total,
                 'school_type' => $schoolType];
-                
+
             KpiData::create($kpiData);
         }
     }

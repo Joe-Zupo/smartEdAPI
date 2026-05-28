@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id();
 
             // Foreign keys
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->foreignId('kpi_id')->constrained('kpi_rate_data')->cascadeOnDelete();
             $table->foreignId('academic_year_id')->constrained()->cascadeOnDelete();
 
