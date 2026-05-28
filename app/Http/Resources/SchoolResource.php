@@ -25,20 +25,20 @@ class SchoolResource extends JsonResource
                     'name' => $this->schoolType?->name,
                 ];
             }),
-            'street' => $this->street,
-            'city' => $this->city,
-            'barangay' => $this->whenLoaded('barangay', function () {
-                return [
-                    'id' => $this->barangay?->id,
-                    'name' => $this->barangay?->name,
-                ];
-            }),
-            'province' => $this->province,
+            'address' => $this->address,
             'district' => $this->district,
+            'latitude' => $this->latitude !== null
+                ? ($this->latitude >= 0 ? 'N ' : 'S ') . number_format(abs($this->latitude), 6)
+                : null,
+
+            'longitude' => $this->longitude !== null
+                ? ($this->longitude >= 0 ? 'E ' : 'W ') . number_format(abs($this->longitude), 6)
+                : null,
+
             'image' => $this->image
                 ? asset('storage/' . $this->image)
                 : null,
-            'region' => $this->region,
+                
             'created_at' => $this->created_at?->toDateTimeString(),
             'updated_at' => $this->updated_at?->toDateTimeString(),
         ];

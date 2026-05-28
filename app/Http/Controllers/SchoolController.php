@@ -38,8 +38,10 @@ class SchoolController extends Controller
             $query->where('school_code', 'like', '%' . $request->school_code . '%');
         }
 
-        if ($request->filled('school_type_id')) {
-            $query->where('school_type_id', $request->school_type_id);
+        if ($request->filled('school_type')) {
+            $query->whereHas('schoolType', function($q) use ($request){
+                $q->where('name',$request->school_type);
+            });
         }
 
         if ($request->filled('barangay_id')) {
