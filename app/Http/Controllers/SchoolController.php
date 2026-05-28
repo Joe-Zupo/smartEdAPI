@@ -192,7 +192,7 @@ class SchoolController extends Controller
 
                 if ($user->hasRole('School Account') && $user->school_id !== $school->id) {
                     DB::rollBack();
-                    return $this->error('Unauthorized access to this school');
+                    return $this->error('Unauthorized access to this school', 403);
                 } else {
                     // Optional old image deletion
                      if ($school->image && Storage::disk('public')->exists($school->image)) {
