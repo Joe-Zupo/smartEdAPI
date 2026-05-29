@@ -72,7 +72,7 @@ class UserController extends Controller
         $paginaton = $this->paginateReturn($paginatedUsers);
 
         return $this->success('Users fetched successfully',[
-           'users' => $transformedUsers,
+           'users' => UserResource::collection($transformedUsers),
            'pagination' => $paginaton 
         ]);
     }
