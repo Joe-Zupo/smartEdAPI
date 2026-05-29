@@ -10,6 +10,7 @@ use App\Models\School;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
+use App\Models\SchoolType;
 use Illuminate\Support\Facades\DB;
 
 class SchoolController extends Controller
@@ -45,6 +46,10 @@ class SchoolController extends Controller
             $query->whereHas('schoolType', function($q) use ($request){
                 $q->where('name',$request->school_type);
             });
+        }
+
+        if ($request->filled('district')){
+            $query->where('district','like', '%' . $request->district . '%');
         }
 
         if ($request->filled('barangay_id')) {
@@ -90,19 +95,25 @@ class SchoolController extends Controller
      */
     public function store(StoreSchoolRequest $request)
     {
-        $validated = $request->validated();
 
         DB::beginTransaction();
 
         try {
+            $validated = $request->validated();
 
-            if ($request->hasFile('image')) {
-                $validated['image'] = $request
-                    ->file('image')
-                    ->store('school_images', 'public');
+            // if ($request->hasFile('image')) {
+            //     $validated['image'] = $request
+            //         ->file('image')
+            //         ->store('school_images', 'public');
+            // }
+            if($request->school_type){
+                $typeID = SchoolType::where('name', $request->school_type)->value('id');
+                $validated['school_type_id'] = $typeID;
+                unset($validated['school_type']);
+                $school = School::create($validated);
+            }else{
+                $school = School::create($validated);
             }
-
-            $school = School::create($validated);
 
             DB::commit();
 
@@ -157,7 +168,14 @@ class SchoolController extends Controller
 
         try {
 
-            $school->update($validated);
+            if($request->school_type){
+                $typeID = SchoolType::where('name', $request->school_type)->value('id');
+                $validated['school_type_id'] = $typeID;
+                unset($validated['school_type']);
+                $school->update($validated);
+            }else{
+                $school->update($validated);
+            }
 
             DB::commit();
 
@@ -167,11 +185,7 @@ class SchoolController extends Controller
                     'school' => new SchoolResource(
                         $school->refresh()->load([
                             'schoolType',
-                            'barangay'
-                        ])
-                    )
-                ]
-            );
+                            'barangay']))]);
         } catch (\Exception $e) {
 
             DB::rollBack();

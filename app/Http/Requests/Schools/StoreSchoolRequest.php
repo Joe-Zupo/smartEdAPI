@@ -23,17 +23,14 @@ class StoreSchoolRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'school_name'              => ['required', 'string', 'max:255'],
-            'school_code'              => ['required', 'string', 'max:50', 'unique:schools,school_code'],
-            'year_established'  => ['required', 'digits:4', 'integer'],
-            'school_type_id'    => ['required', 'exists:school_types,id'],
-            'street'            => ['required', 'string', 'max:255'],
-            'city'              => ['required', 'string', 'max:255'],
-            'barangay_id'       => ['required', 'exists:barangays,id'],
-            'province'          => ['required', 'string', 'max:255'],
-            'district'          => ['required', 'string', 'max:255'],
-            'region'            => ['required', 'string', 'max:255'],
-            'image'             => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
+            'school_name'               => 'required|string|max:255',
+            'school_code'               => 'required|string|max:50|unique:schools,school_code',
+            'year_established'          => 'required|digits:4|integer',
+            'school_type'               => 'required_without:school_type_id|exists:school_types,name|nullable',
+            'school_type_id'            => 'required_without:school_type|exists:school_types,id|nullable',
+            'address'                   => 'required|string|max:255',
+            'district'                  => 'required|string|max:255',
+            //'image'                     => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
         ];
     }
 }

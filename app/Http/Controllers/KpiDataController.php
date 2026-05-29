@@ -44,14 +44,14 @@ class KpiDataController extends Controller
             return $this->success('No more users available');
         }
 
-        $transformedData = $paginatedData->map(function($user){
-            return new KpiDataResource($user);
+        $transformedData = $paginatedData->map(function($data){
+            return new KpiDataResource($data);
         });
 
         $paginaton = $this->paginateReturn($paginatedData);
 
         return $this->success('KPI data fetched successfully',[
-           'users' => KpiDataResource::collection($transformedData),
+           'data' => KpiDataResource::collection($transformedData),
            'pagination' => $paginaton 
         ]);
     }

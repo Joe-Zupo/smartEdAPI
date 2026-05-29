@@ -51,8 +51,8 @@ Route::apiResource('division-leaderships', DivisionLeadershipController::class)-
 
 // schools routes 
 Route::middleware('auth:sanctum')->group(function ($r) {
-    $r->post('schools', [SchoolController::class, 'store'])->name('schools.store');
-    $r->put('schools/{school}', [SchoolController::class, 'update'])->name('schools.update');
+    $r->post('schools', [SchoolController::class, 'store']);
+    $r->put('schools/{school}', [SchoolController::class, 'update']);
     $r->apiResource('schools', SchoolController::class)->except(['store', 'update', 'destroy']);
     $r->delete('schools/{school}', [SchoolController::class, 'destroy']);
     $r->post('schools/{school}/upload-image', [SchoolController::class, 'uploadImage']);
