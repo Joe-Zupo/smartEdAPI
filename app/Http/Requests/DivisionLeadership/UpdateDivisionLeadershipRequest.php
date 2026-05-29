@@ -24,10 +24,11 @@ class UpdateDivisionLeadershipRequest extends FormRequest
     {
        return [
             'name' => 'sometimes|string|',
-            'position' => 'sometimes|string|',
+            'position' => 'sometimes|string|in:Schools Division Superintendent,Assistant Schools Division Superintendent',
             'is_oic' => 'sometimes|boolean',
-            'term_start' => 'sometimes|integer',
-            'term_end' => 'sometimes|integer|gte:term_start',
+            'current_term' => 'sometimes|boolean',
+            'term_start' => 'sometimes|integer|digits:4|max:' .date('Y'),
+            'term_end' => 'sometimes|integer|gte:term_start|digits:4',
         ];
     }
 }

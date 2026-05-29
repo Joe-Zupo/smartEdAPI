@@ -24,10 +24,11 @@ class StoreDivisionLeadershipRequest extends FormRequest
     {
         return [
             'name' => 'required|string|',
-            'position' => 'required|string|',
+            'position' => 'required|string|in:Schools Division Superintendent,Assistant Schools Division Superintendent',
             'is_oic' => 'required|boolean',
-            'term_start' => 'required|integer',
-            'term_end' => 'required|integer|gte:term_start',
+            'current_term' => 'required|boolean',
+            'term_start' => 'required|integer|digits:4|max:' .date('Y'),
+            'term_end' => 'required_if:current_term,false|integer|gte:term_start|digits:4|nullable',
         ];
     }
 }

@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 use App\Models\SchoolType;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
 class SchoolController extends Controller
@@ -24,13 +25,13 @@ class SchoolController extends Controller
         $validated = $request->validated();
 
         $perPage = $validated['per_page'] ?? 5;
-        $sortBy = $validated['sortBy'] ?? null;
-        $sortOrder = $validated['sortOrder'] ?? null;
+        $sortBy = $validated['sortBy'] ?? 'id';
+        $sortOrder = $validated['sortOrder'] ?? 'asc';
 
         $query = School::query()
             ->with([
                 'schoolType',
-                'barangay'
+                'schoolHead'
             ]);
 
         // Query Parameters
@@ -50,10 +51,6 @@ class SchoolController extends Controller
 
         if ($request->filled('district')){
             $query->where('district','like', '%' . $request->district . '%');
-        }
-
-        if ($request->filled('barangay_id')) {
-            $query->where('barangay_id', $request->barangay_id);
         }
 
         // Sorting
@@ -99,6 +96,25 @@ class SchoolController extends Controller
         DB::beginTransaction();
 
         try {
+            if ($request->school_head){
+                $user = User::where('name', $request->school_head);
+                $headID = $user->value('id');
+                    if(!$headID){
+                        return $this->error('User not found for school head input');
+                    }
+                $request['school_head_id'] = $headID;
+                unset($request['school_head']);
+            }
+
+            if($request->school_type){
+                $typeID = SchoolType::where('name', $request->school_type)->value('id');
+                    if(!$typeID){
+                        return $this->error('School type not found for school type input');
+                    }
+                $request['school_type_id'] = $typeID;
+                unset($request['school_type']);
+            }
+
             $validated = $request->validated();
 
             // if ($request->hasFile('image')) {
@@ -106,14 +122,9 @@ class SchoolController extends Controller
             //         ->file('image')
             //         ->store('school_images', 'public');
             // }
-            if($request->school_type){
-                $typeID = SchoolType::where('name', $request->school_type)->value('id');
-                $validated['school_type_id'] = $typeID;
-                unset($validated['school_type']);
-                $school = School::create($validated);
-            }else{
-                $school = School::create($validated);
-            }
+            $school = School::create($validated);
+
+            $user->update(['school_id' => $school->id]);
 
             DB::commit();
 
@@ -123,7 +134,7 @@ class SchoolController extends Controller
                     'school' => new SchoolResource(
                         $school->load([
                             'schoolType',
-                            'barangay'
+                            'schoolHead'
                         ])
                     )
                 ]
@@ -150,7 +161,7 @@ class SchoolController extends Controller
                 'school' => new SchoolResource(
                     $school->load([
                         'schoolType',
-                        'barangay'
+                        'schoolHead'
                     ])
                 )
             ]
@@ -185,7 +196,7 @@ class SchoolController extends Controller
                     'school' => new SchoolResource(
                         $school->refresh()->load([
                             'schoolType',
-                            'barangay']))]);
+                            'schoolHead']))]);
         } catch (\Exception $e) {
 
             DB::rollBack();
@@ -224,7 +235,7 @@ class SchoolController extends Controller
                     return $this->success('Successfully updated school image',[
                         'data' => new SchoolResource($school->refresh()->load([
                             'schoolType',
-                            'barangay'
+                            'schoolHead'
                         ]))
                     ]);
                 }

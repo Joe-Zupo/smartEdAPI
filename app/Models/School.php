@@ -32,12 +32,9 @@ class School extends Model
         return $this->hasMany(Submission::class);
     }
 
-    public function users()
+    public function schoolHead()
     {
-        return $this->hasOne(User::class, 'school_id');
-    }
-
-    public function barangay(){
-        return $this->belongsTo(Barangay::class);
+        return $this->hasOne(User::class, 'school_id')
+            ->whereHas('roles', fn($q) => $q->where('name', 'School Account'));
     }
 }
