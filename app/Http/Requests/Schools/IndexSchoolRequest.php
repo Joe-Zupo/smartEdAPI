@@ -27,6 +27,7 @@ class IndexSchoolRequest extends FormRequest
             'school_code' => 'nullable|string|max:255',
             'school_type' => 'nullable|string|exists:school_types,name',
             'barangay_id' => 'nullable|integer|exists:barangays,id',
+            'district' => 'nullable|string|in:North,South,East,West',
 
             'sortBy' => 'nullable|string|in:id,school_name,school_code,created_at',
             'sortOrder' => 'nullable|string|in:asc,desc',

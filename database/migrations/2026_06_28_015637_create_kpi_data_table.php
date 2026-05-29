@@ -23,6 +23,15 @@ return new class extends Migration
             $table->decimal('female', 5, 2)->default(0);
             $table->decimal('total', 5, 2)->default(0);
 
+            //Future Columns for later scaling
+            $table->integer('male_population')
+            ->nullable()
+            ->after('male');
+
+             $table->integer('female_population')
+            ->nullable()
+            ->after('female');
+
             // Enum for school type
             $table->enum('school_type', ['elementary', 'secondary']);
 

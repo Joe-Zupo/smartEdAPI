@@ -5,30 +5,42 @@ namespace Database\Seeders;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\KpiData;
+use App\Models\AcademicYear;
+use App\calculateTotal;
 
 class KpiDataSeeder extends Seeder
 {
+    use calculateTotal;
     /**
      * Run the database seeds.
      */
-    public function run(): void
-    {
-        $academicYearId = 1;
-        $schoolType = 'elementary';  // enum
-        // Loop all 8 KPI rates
-        for ($i = 1; $i <= 8; $i++) {
-            $male = rand(1, 50);
-            $female = rand(1, 50);
-            $total = $male + $female;
-            $kpiData = [
-                'kpi_id' => $i,  // all 8 KPI rates
-                'academic_year_id' => $academicYearId,
-                'male' => $male,
-                'female' => $female,
-                'total' => $total,
-                'school_type' => $schoolType];
+    public function run(): void{
+        // Get all academic years
+        $academicYears = AcademicYear::all();
 
-            KpiData::create($kpiData);
+        // School types enum
+        $schoolTypes = ['elementary', 'secondary'];
+
+        // Loop through each academic year
+        foreach ($academicYears as $year) {
+            // Loop through each school type
+            foreach ($schoolTypes as $schoolType) {
+                // Loop all 8 KPI rates
+                for ($i = 1; $i <= 8; $i++) {
+                    $male = rand(90, 100);
+                    $female = rand(90, 100);
+                    $total = $this->calculateTotal($male, $female);
+
+                    KpiData::create([
+                        'kpi_id' => $i,
+                        'academic_year_id' => $year->id,
+                        'male' => $male,
+                        'female' => $female,
+                        'total' => $total,
+                        'school_type' => $schoolType,
+                    ]);
+                }
+            }
         }
     }
 }
