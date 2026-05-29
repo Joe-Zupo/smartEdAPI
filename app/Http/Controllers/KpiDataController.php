@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\DB;
 class KpiDataController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * KPI Data Index
      */
     public function index(IndexKpiDataRequest $request)
     {
@@ -65,7 +65,7 @@ class KpiDataController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * KPI Data Show
      */
     public function show(KpiData $kpiData)
     {

@@ -156,6 +156,9 @@ class AcademicYearController extends Controller
         }
     }
 
+    /**
+     * Change Year Status
+     */
         public function changeStatus(Request $request, AcademicYear $academicYear)
         {
             //$this->authorize('create', User::class);

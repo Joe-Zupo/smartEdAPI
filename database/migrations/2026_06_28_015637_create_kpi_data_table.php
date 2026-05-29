@@ -25,12 +25,10 @@ return new class extends Migration
 
             //Future Columns for later scaling
             $table->integer('male_population')
-            ->nullable()
-            ->after('male');
+            ->nullable();
 
              $table->integer('female_population')
-            ->nullable()
-            ->after('female');
+            ->nullable();
 
             // Enum for school type
             $table->enum('school_type', ['elementary', 'secondary']);
