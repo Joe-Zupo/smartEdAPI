@@ -83,17 +83,17 @@ class DivisionLeadershipController extends Controller
         
         DB::beginTransaction();
 
-        try{
+        //try{
             $divLead = DivisionLeadership::create($validatedRequest);
 
             DB::commit();
             return $this->success('Division Leader: ' . $divLead->name . ' Created Successfully',[
                 'Division Leader' => new DivisionLeadershipResource($divLead)
             ]);
-        }catch(\Exception $e){
-            DB::rollBack();
-            return $this->error('Division Leader could not be created');
-        }
+        // }catch(\Exception $e){
+        //     DB::rollBack();
+        //     return $this->error('Division Leader could not be created');
+        // }
     }
 
     /**
@@ -119,11 +119,15 @@ class DivisionLeadershipController extends Controller
      */
     public function update(UpdateDivisionLeadershipRequest $request, DivisionLeadership $divisionLeadership)
     {
-        $validatedRequest = $request->validated();
         
         DB::beginTransaction();
 
         try{
+            $validatedRequest = $request->validated();
+            if($request->boolean('current_term')){
+                $divisionLeadership->term_end = null;
+                $divisionLeadership->save();
+            }
             $divisionLeadership->update($validatedRequest);
 
             DB::commit();
