@@ -44,13 +44,31 @@ class DivisionLeadershipController extends Controller
             $query->where('name', 'like', '%' . $searchRequest .'%');
         }
 
+        //dd($request->all());    
+        if ($request->has('current')) {
+
+            if ($request->boolean('current')) {
+
+                $query->whereNull('term_end');
+
+            } else {
+
+                $query->whereNotNull('term_end');
+            }
+        }
+        
+
         //Paginate
-        if ($request->filled('sortBy') && $request->filled('sortOrder')) {
-            $query->orderBy($sortBy, $sortOrder);
+        if ($request->boolean('by_date')) {
+
+            $query
+                ->orderByRaw('CASE WHEN term_end IS NULL THEN 0 ELSE 1 END')
+                ->orderByDesc('term_start')
+                ->orderByDesc('term_end');
+
         } else {
-            $query->orderByRaw('CASE WHEN term_end IS NULL THEN 0 ELSE 1 END')
-                ->orderBy('term_end', 'desc')
-                ->orderBy('term_start', 'desc');
+
+            $query->orderBy($sortBy, $sortOrder);
         }
 
         $paginatedDivLeads = $query

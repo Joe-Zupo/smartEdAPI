@@ -97,7 +97,7 @@ class SchoolController extends Controller
 
         try {
             if ($request->school_head){
-                $user = User::where('name', $request->school_head);
+                $user = User::where('name', $request->school_head)->first();
                 $headID = $user->value('id');
                     if(!$headID){
                         return $this->error('User not found for school head input');
@@ -124,7 +124,9 @@ class SchoolController extends Controller
             // }
             $school = School::create($validated);
 
-            $user->update(['school_id' => $school->id]);
+            if (isset($user)) {
+                $user->update(['school_id' => $school->id]);
+            }
 
             DB::commit();
 
@@ -239,6 +241,8 @@ class SchoolController extends Controller
                         ]))
                     ]);
                 }
+            }else{
+                return $this->error('No image provided');
             }
     }
 

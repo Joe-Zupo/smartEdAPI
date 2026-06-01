@@ -24,11 +24,23 @@ class IndexDivisionLeadershipRequest extends FormRequest
     {
         return [
             'search' => 'string|nullable',
-            'oic' => 'boolean|default:false',
-            //'all' => 'boolean|default:false',
+            'oic' => 'boolean',
+            'current' => 'boolean',
             'position' => 'string|in:Schools Division Superintendent,Assistant Schools Division Superintendent|nullable',
             'per_page' => 'integer',
             'page' => 'integer'
         ];
+    }
+        protected function prepareForValidation(): void
+    {
+        if ($this->has('current')) {
+
+            $this->merge([
+                'current' => filter_var(
+                    $this->current,
+                    FILTER_VALIDATE_BOOLEAN
+                )
+            ]);
+        }
     }
 }

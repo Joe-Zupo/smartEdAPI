@@ -22,10 +22,11 @@ class UserResource extends JsonResource
             'name' => $this->name,
             'user_id' => $this->id,
             'role' => $this->getRoleNames()->first(),
-            'school' => [
-                'school_id' => $this->school_id,
-                'school_name' => $this->school->school_name ?? 'No school assigned',
-                'school_code' => $this->school->school_code ?? 'No code assigned'
+            'assignment' => [
+                'type' => $this->school_id ? 'school' : 'division',
+                'school_name' => $this->school?->school_name,
+                'school_code' => $this->school?->school_code,
+                'position' => $this->position,
             ],
             'username' => $this->username,
             'email' => $this->email,

@@ -21,6 +21,7 @@ class SchoolResource extends JsonResource
                 return [
                     'id' => $this->schoolHead?->id,
                     'name' => $this->schoolHead?->name,
+                    'position' => $this->schoolHead?->position
                 ];
             }),
             'school_code' => $this->school_code,
