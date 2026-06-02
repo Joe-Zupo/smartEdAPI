@@ -32,8 +32,8 @@ class StoreSchoolRequest extends FormRequest
             'school_type'               => 'required_without:school_type_id|exists:school_types,name|nullable',
             'school_type_id'            => 'required_without:school_type|exists:school_types,id|nullable',
 
-            'school_head'               => 'required_without:school_head_id|string',
-            'school_head_id'            => ['required_without:school_head', 'integer|exists:users,id|nullable', function ($attribute, $value, $fail) {
+            'school_head'               => 'required_without:school_head_id|string|exists:users,name',
+            'school_head_id'            => ['required_without:school_head', 'integer|exists:users,id', function ($attribute, $value, $fail) {
                     $user = User::find($value);
 
                     if (!$user || !$user->hasRole('School Account')) {

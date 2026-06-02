@@ -83,27 +83,37 @@ class UserController extends Controller
     public function store(StoreUserRequest $request)
     {
         $validatedRequest = $request->validated();
-        
+        //dd($validatedRequest);
         DB::beginTransaction();
 
-        try{
+        // try{
             $user = User::create($validatedRequest);
-
-            if(isset($validatedRequest['school'])){
-                $user->school_id = $validatedRequest['school'] ? 
-                    School::where('school_name', $validatedRequest['school'])->value('id') : null;
-            }
-
             $user->assignRole($validatedRequest['role']);
+            if($user->hasRole('School Account')){
+
+                if(isset($validatedRequest['school'])){
+                    $user->school_id = $validatedRequest['school'] ? 
+                    School::where('school_name', $validatedRequest['school'])->value('id') : null;
+                    $message = 'School Account fully initialized, account is set as active';
+                    $user->save();
+                }else{
+                    $message = 'School Account partially initialized, account is set as inactive, please review later';
+                    $user->is_active = false;
+                    $user->save();
+                }
+            }else{
+                    $message = "Account set to active";
+            }
 
             DB::commit();
             return $this->success('User: ' . $user->name . ' Created Successfully',[
-                new UserResource($user)
+                'notice' => $message,
+                'user' => new UserResource($user)
             ]);
-        }catch(\Exception $e){
-            DB::rollBack();
-            return $this->error('User could not be created');
-        }
+        // }catch(\Exception $e){
+        //     DB::rollBack();
+        //     return $this->error('User could not be created');
+        // }
     }
 
     /**
@@ -125,16 +135,23 @@ class UserController extends Controller
     public function update(UpdateUserRequest $request, User $user)
     {
         $validatedRequest = $request->validated();
-        
         DB::beginTransaction();
 
         try{
             $user->update($validatedRequest);
+            if(isset($validatedRequest['role'])){
+                $user->syncRoles($validatedRequest['role']);
+            }
+            
             if(isset($validatedRequest['school'])){
                 $user->school_id = $validatedRequest['school'] ? 
                 School::where('school_name', $validatedRequest['school'])->value('id') : null;
                 $user->save();
+            }else if($validatedRequest['school'] === null){
+                $user->school_id = null;
+                $user->save();
             }
+            
 
             DB::commit();
             return $this->success('User Updated successfully',[

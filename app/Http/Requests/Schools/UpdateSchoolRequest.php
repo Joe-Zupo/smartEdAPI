@@ -5,6 +5,7 @@ namespace App\Http\Requests\Schools;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use App\Models\User;
 
 class UpdateSchoolRequest extends FormRequest
 {
@@ -33,6 +34,19 @@ class UpdateSchoolRequest extends FormRequest
             'district'                  => ['sometimes', 'string', 'max:255'],
             'latitude'                  => ['sometimes', 'nullable', 'numeric', 'between:-90,90'],
             'longitude'                 => ['sometimes', 'nullable', 'numeric', 'between:-180,180'],
+
+            'school_head'               => 'string|exists:users,name',
+            'school_head_id'            => ['integer|exists:users,id', function ($attribute, $value, $fail) {
+                    $user = User::find($value);
+
+                    if (!$user || !$user->hasRole('School Account')) {
+                        $fail('The selected user is not a School Account.');
+                    }
+
+                    if (isset($user->school_id)){
+                        $fail('User already has a school assigned to them!');
+                    }
+                }],
             //'image'             => ['sometimes', 'nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
         ];
     }

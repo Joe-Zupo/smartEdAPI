@@ -23,7 +23,8 @@ class UserResource extends JsonResource
             'user_id' => $this->id,
             'role' => $this->getRoleNames()->first(),
             'assignment' => [
-                'type' => $this->school_id ? 'school' : 'division',
+                'type' => $this->hasRole('School Account') ? 'School' : 'Division',
+                'school_id' => $this->school_id,
                 'school_name' => $this->school?->school_name,
                 'school_code' => $this->school?->school_code,
                 'position' => $this->position,
@@ -37,4 +38,5 @@ class UserResource extends JsonResource
             'updated_at' => $this->updated_at
         ];
     }
+
 }

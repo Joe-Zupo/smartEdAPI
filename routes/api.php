@@ -10,7 +10,7 @@ use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\DivisionLeadershipController;
 use App\Http\Controllers\SchoolController;
 use App\Http\Controllers\KpiDataController;
-
+use App\Http\Controllers\RoleController;
 use App\Http\Resources\UserResource;
 
 /*
@@ -72,6 +72,14 @@ Route::middleware('auth:sanctum')->group(function () {
                 'changePassword'
             ]);
         });
+
+        /*
+        |--------------------------------------------------------------------------
+        | Roles
+        |--------------------------------------------------------------------------
+        */
+        Route::get('roles', [RoleController::class, 'index']);
+
 
         /*
         |--------------------------------------------------------------------------

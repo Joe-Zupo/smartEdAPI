@@ -26,8 +26,9 @@ class StoreUserRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'role' => ['required', 'string', 'exists:roles,name'],
             'school' => [
-                'required_if:role,School Account',
-                'exists:schools,school_name'
+                //'required_if:role,School Account',
+                'exists:schools,school_name',
+                "nullable",
             ],
             'position' => ['required_if:role,School Account', 'in:Principal IV,Head Teacher III,Teacher I'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
@@ -46,4 +47,5 @@ class StoreUserRequest extends FormRequest
                 'Invalid position selected. Valid positions are: Principal IV, Principal III, Officer In Charge, Head Teacher III.',
         ];
     }
+
 }

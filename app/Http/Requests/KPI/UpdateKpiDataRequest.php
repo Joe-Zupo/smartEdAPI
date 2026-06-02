@@ -33,5 +33,4 @@ class UpdateKpiDataRequest extends FormRequest
             'items.*.total' => ['required', 'numeric', 'min:0', 'max:100', 'regex:/^\d+(\.\d)?$/'],
         ];
     }
-    }
 }
