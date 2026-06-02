@@ -28,13 +28,15 @@ class SchoolController extends Controller
         $sortBy = $validated['sortBy'] ?? 'id';
         $sortOrder = $validated['sortOrder'] ?? 'asc';
 
+        // $withHeads = $validated['heads'] ?? true;
+        // $all = $validated['all'] ?? false;
+
         $query = School::query()
             ->with([
                 'schoolType',
                 'schoolHead'
             ]);
-
-        // Query Parameters
+       
         if ($request->filled('school_name')) {
             $query->where('school_name', 'like', '%' . $request->school_name . '%');
         }
@@ -81,7 +83,7 @@ class SchoolController extends Controller
         return $this->success(
             'Schools fetched successfully',
             [
-                'schools' => SchoolResource::collection($schools),
+                'schools' => SchoolResource::collection($schools->load(['schoolType','schoolHead',/*'schoolUsers'*/])),
                 'pagination' => $this->paginateReturn($schools)
             ]
         );
@@ -97,12 +99,20 @@ class SchoolController extends Controller
         DB::beginTransaction();
 
         // try {
+            //Pre-req of request for validation
             if ($request->school_head){
                 $user = User::where('name', 'like', '%' . $request->school_head . '%')->first();
                 $headID = $user->value('id');
-                    if(!$headID){
+                if(!$headID){
                         DB::rollBack();
                         return $this->error('User not found for school head input');
+                    }
+                if($user['is_head']){
+                        DB::rollBack();
+                        return $this->error("User is already head of another school");
+                    }else if(!$user->hasRole('School Account')){
+                        DB::rollBack();
+                        return $this->error("User is not eligible; because they are not a School Account");
                     }
                 $request['school_head_id'] = $headID;
                 unset($request['school_head']);
@@ -127,12 +137,10 @@ class SchoolController extends Controller
             // }
 
             $school = School::create($validated);
-            if (isset($user)) {
-                $user->update(['school_id' => $school->id]);
-            }else{
-                DB::rollBack();
-                return $this->error("User not initialized");
-            }
+            $user['school_id'] = $school->id;
+            $user['position'] = $validated['position'];
+            $user['is_head'] = true;
+            $user->save();
 
             DB::commit();
 
@@ -179,6 +187,7 @@ class SchoolController extends Controller
     /**
      * Update School
      * (Need Fix): Assigning School Head
+     * Head is Assigned via Boolean, so that multiple School Accounts can exist under a school
      */
     public function update(UpdateSchoolRequest $request, School $school)
     {
@@ -193,7 +202,33 @@ class SchoolController extends Controller
                 $validated['school_type_id'] = $typeID;
                 unset($validated['school_type']);
             }
-            if($request->filled('school_head')){}
+            if($request->filled('school_head')){
+                $user = User::where('name', 'like', '%' . $request->school_head . '%')->first();
+
+                    if(!$user->hasRole('School Account')){
+                        DB::rollBack();
+                        return $this->error('This user is not assigned as a School Account, therefore is not a eligible for school head'); //Ask if other accs can be heads
+                    }
+
+                $headID = $user->value('id');
+                    if(!$headID){
+                        DB::rollBack();
+                        return $this->error('User not found for school head input');
+                    }
+
+                $prevHead = User::where('school_id', $school->id)->where('is_head',true)->first(); //resets previous head if any
+                    if($prevHead){
+                        $prevHead->is_head = false;
+                        $prevHead->position = null;
+                        $prevHead->save();
+                    }
+
+                $request['school_head_id'] = $headID; //updates school
+                $user['school_id'] = $school->id; //updates user
+                $user['position'] = $validated['position'];
+                $user['is_head'] = true;
+                $user->save();
+            }
 
             $school->update($validated);
             DB::commit();

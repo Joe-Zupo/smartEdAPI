@@ -47,7 +47,18 @@ class UpdateSchoolRequest extends FormRequest
                         $fail('User already has a school assigned to them!');
                     }
                 }],
+            'position' => 'required_with:school_head,school_head_id|string|in:Principal IV,Head Teacher III,Teacher I',
             //'image'             => ['sometimes', 'nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
         ];
     }
+    public function messages(): array
+        {
+                return [
+                'position.required_if' =>
+                    'School Accounts must have a position. Valid positions are: Principal IV,Head Teacher III,Teacher I,Principal III.',
+
+                'position.in' =>
+                    'Invalid position selected. Valid positions are: Principal IV,Head Teacher III,Teacher I,Principal III.',
+            ];
+        }
 }

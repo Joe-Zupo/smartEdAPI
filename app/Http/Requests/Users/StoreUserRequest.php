@@ -30,22 +30,22 @@ class StoreUserRequest extends FormRequest
                 'exists:schools,school_name',
                 "nullable",
             ],
-            'position' => ['required_if:role,School Account', 'in:Principal IV,Head Teacher III,Teacher I'],
+            //'position' => ['required_if:role,School Account', 'in:Principal IV,Head Teacher III,Teacher I'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'username' => ['required', 'string', 'max:255', 'unique:users,username'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'phone_number' => ['required', 'string', 'max:15'],
         ];
     }
-    public function messages(): array
-    {
-        return [
-            'position.required_if' =>
-                'School Accounts must have a position. Valid positions are: Principal IV, Principal III, Officer In Charge, Head Teacher III.',
+    // public function messages(): array
+    // {
+    //     return [
+    //         'position.required_if' =>
+    //             'School Accounts must have a position. Valid positions are: Principal IV, Principal III, Officer In Charge, Head Teacher III.',
 
-            'position.in' =>
-                'Invalid position selected. Valid positions are: Principal IV, Principal III, Officer In Charge, Head Teacher III.',
-        ];
-    }
+    //         'position.in' =>
+    //             'Invalid position selected. Valid positions are: Principal IV, Principal III, Officer In Charge, Head Teacher III.',
+    //     ];
+    // }
 
 }
