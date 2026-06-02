@@ -27,6 +27,7 @@ class UserResource extends JsonResource
                 'school_id' => $this->school_id,
                 'school_name' => $this->school?->school_name,
                 'school_code' => $this->school?->school_code,
+                'is_head' => boolval($this->is_head),
                 'position' => $this->position,
             ],
             'username' => $this->username,

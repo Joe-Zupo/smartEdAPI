@@ -157,9 +157,11 @@ class UserSeeder extends Seeder
                         ? 'Principal IV'
                         : 'Principal III';
 
+                $userData['is_head'] = true;
             } else {
 
                 $userData['position'] = null;
+                $userData['is_head'] = false;
             }
             
             $userData['password'] = Hash::make($userData['username']);

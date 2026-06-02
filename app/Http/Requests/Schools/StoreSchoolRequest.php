@@ -44,6 +44,7 @@ class StoreSchoolRequest extends FormRequest
                         $fail('User already has a school assigned to them!');
                     }
                 }],
+            'position' => 'required_with:school_head,school_head_id|string|in:Principal IV,Head Teacher III,Teacher I',
 
             'address'                   => 'required|string|max:255',
             'district'                  => 'required|string|max:255',

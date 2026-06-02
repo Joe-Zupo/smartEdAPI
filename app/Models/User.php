@@ -22,6 +22,7 @@ class User extends Authenticatable
     use HasFactory, Notifiable, HasApiTokens, HasRoles, BroadcastsEvents;
 
     protected $attributes = [
+        'is_head' => false,
         'is_active' => true,
     ];
 
