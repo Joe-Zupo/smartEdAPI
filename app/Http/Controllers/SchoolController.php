@@ -27,6 +27,7 @@ class SchoolController extends Controller
         $perPage = $validated['per_page'] ?? 5;
         $sortBy = $validated['sortBy'] ?? 'id';
         $sortOrder = $validated['sortOrder'] ?? 'asc';
+        $getAll = $request->boolean('all')?? false;
 
         // $withHeads = $validated['heads'] ?? true;
         // $all = $validated['all'] ?? false;
@@ -36,7 +37,7 @@ class SchoolController extends Controller
                 'schoolType',
                 'schoolHead'
             ]);
-       
+
         if ($request->filled('school_name')) {
             $query->where('school_name', 'like', '%' . $request->school_name . '%');
         }
@@ -76,15 +77,30 @@ class SchoolController extends Controller
             $query->orderBy('created_at', 'desc');
         }
 
-        $schools = $query
-            ->paginate($perPage)
-            ->appends($request->query());
+        if ($getAll) {
+            $schools = $query->get();
+        } else {
+            $schools = $query->paginate($perPage)->appends($request->query());
+        }
+
+        if ($schools->isEmpty()) {
+            return response()->json(['message' => 'No schools found']);
+        }
+
+        $response = [
+            'data' => [
+                'schools' => SchoolResource::collection($schools),
+            ],
+        ];
+
+        if (!$getAll) {
+            $response['pagination'] = $this->paginateReturn($schools);
+        }
 
         return $this->success(
             'Schools fetched successfully',
             [
-                'schools' => SchoolResource::collection($schools->load(['schoolType','schoolHead',/*'schoolUsers'*/])),
-                'pagination' => $this->paginateReturn($schools)
+                $response
             ]
         );
     }
