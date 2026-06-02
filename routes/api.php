@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AcademicYearController;
@@ -9,60 +10,123 @@ use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\DivisionLeadershipController;
 use App\Http\Controllers\SchoolController;
 use App\Http\Controllers\KpiDataController;
+
 use App\Http\Resources\UserResource;
 
-/**
- * Current logged in user
- */
-Route::get('/user', function (Request $request) {
-    return new UserResource($request->user());
-})->middleware('auth:sanctum');
+/*
+|--------------------------------------------------------------------------
+| Public Routes
+|--------------------------------------------------------------------------
+*/
 
-Route::post('login', [AuthController::class, 'login'])->middleware('throttle:login');
-Route::post('logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
+Route::post('login', [AuthController::class, 'login'])
+    ->middleware('throttle:login');
+/*
+|--------------------------------------------------------------------------
+| Authenticated Routes
+|--------------------------------------------------------------------------
+*/
 
-//Activity Logs
-Route::get('activity-logs', [ActivityLogController::class, 'index'])->middleware(['auth:sanctum', 'throttle:api']);
-// Route::get('activity-logs/recent', [ActivityLogController::class, 'recent'])->middleware('auth:sanctum');
-
-
-//User Controller Endpoints
-Route::apiResource('users', UserController::class)->except('destroy')->middleware(['auth:sanctum', 'throttle:api']);
-Route::group([
-    'middleware' => ['auth:sanctum', 'throttle:api'],
-    'prefix' => 'users'
-    ], function ($r) {
-    $r->post('/{user}/change-status', [UserController::class, 'changeStatus']);
-    $r->post('/{user}/change-password', [UserController::class, 'changePassword']);
-});
-
-//Academic Year Controller Endpoints
-Route::apiResource('academic-years',  AcademicYearController::class)->except('destroy')->middleware(['auth:sanctum', 'throttle:api']);
-Route::group([
-    'middleware' => ['auth:sanctum', 'throttle:api'],
-    'prefix' => 'academic-years'
-    ], function ($r){
-        $r->post('{academic_year}/change-status', [AcademicYearController::class, 'changeStatus']);
-    });
-
-
-//Div Lead Controller
-Route::apiResource('division-leaderships', DivisionLeadershipController::class)->middleware(['auth:sanctum', 'throttle:api']);
-
-// schools routes 
-Route::middleware('auth:sanctum')->group(function ($r) {
-    $r->post('schools', [SchoolController::class, 'store']);
-    $r->put('schools/{school}', [SchoolController::class, 'update']);
-    $r->apiResource('schools', SchoolController::class)->except(['store', 'update', 'destroy']);
-    $r->delete('schools/{school}', [SchoolController::class, 'destroy']);
-    $r->post('schools/{school}/upload-image', [SchoolController::class, 'uploadImage']);
-
-// KPI data routes
 Route::middleware('auth:sanctum')->group(function () {
-    // Route::post('kpi-data', [KpiDataController::class, 'store'])->name('kpi-data.store');
-    // Route::put('kpi-data', [KpiDataController::class, 'update'])->name('kpi-data.update');
-    Route::get('kpi-data', [KpiDataController::class, 'index']);
-    Route::get('kpi-data/{kpiData}', [KpiDataController::class, 'show']);
-    // Route::delete('kpi-data/{kpi_data}', [KpiDataController::class, 'destroy'])->name('kpi-data.destroy');
-});
+
+    /**
+     * Current logged in user
+     */
+    Route::get('/user', function (Request $request) {
+        return new UserResource($request->user());
+    });
+    Route::post('logout', [AuthController::class, 'logout']);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Throttled API Routes
+    |--------------------------------------------------------------------------
+    */
+
+    Route::middleware('throttle:api')->group(function () {
+
+        /*
+        |--------------------------------------------------------------------------
+        | Activity Logs
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get('activity-logs', [ActivityLogController::class, 'index']);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Users
+        |--------------------------------------------------------------------------
+        */
+
+        Route::apiResource('users', UserController::class)
+            ->except('destroy');
+
+        Route::prefix('users')->group(function () {
+            Route::post('{user}/change-status', [
+                UserController::class,
+                'changeStatus'
+            ]);
+            Route::post('{user}/change-password', [
+                UserController::class,
+                'changePassword'
+            ]);
+        });
+
+        /*
+        |--------------------------------------------------------------------------
+        | Academic Years
+        |--------------------------------------------------------------------------
+        */
+
+        Route::apiResource('academic-years', AcademicYearController::class)
+            ->except('destroy');
+
+        Route::prefix('academic-years')->group(function () {
+            Route::post(
+                '{academic_year}/change-status',
+                [AcademicYearController::class, 'changeStatus']
+            );
+        });
+
+        /*
+        |--------------------------------------------------------------------------
+        | Division Leadership
+        |--------------------------------------------------------------------------
+        */
+
+        Route::apiResource(
+            'division-leaderships',
+            DivisionLeadershipController::class
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Schools
+        |--------------------------------------------------------------------------
+        */
+
+        Route::post('schools', [SchoolController::class, 'store']);
+        Route::put('schools/{school}', [SchoolController::class, 'update']);
+        Route::delete('schools/{school}', [SchoolController::class, 'destroy']);
+        Route::post(
+            'schools/{school}/upload-image',
+            [SchoolController::class, 'uploadImage']
+        );
+
+        Route::apiResource('schools', SchoolController::class)
+            ->except(['store', 'update', 'destroy']);
+
+        /*
+        |--------------------------------------------------------------------------
+        | KPI Data
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get('kpi-data', [KpiDataController::class, 'index']);
+        Route::get(
+            'kpi-data/{kpiData}',
+            [KpiDataController::class, 'show']
+        );
+    });
 });

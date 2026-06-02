@@ -16,7 +16,7 @@ class KpiDataController extends Controller
     public function index(IndexKpiDataRequest $request)
     {
         $page = $request->input('page', 1);
-        $perPage = $request->input('perPage', 10);
+        $perPage = $request->input('per_page', 10);
         $sortBy = $request->input('sortBy', 'id');
         $sortOrder = $request->input('sortOrder', 'desc');
 

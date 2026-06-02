@@ -142,6 +142,26 @@ class UserSeeder extends Seeder
             //it_officer
             //developers
         foreach ($users as $userData) {
+            if (
+                ($userData['role'] ?? null) === 'School Account'
+                && !empty($userData['school_id'])
+            ) {
+
+                $schoolId = $userData['school_id'];
+
+                $schoolPositionCount[$schoolId] =
+                    ($schoolPositionCount[$schoolId] ?? 0) + 1;
+
+                $userData['position'] =
+                    $schoolPositionCount[$schoolId] === 1
+                        ? 'Principal IV'
+                        : 'Principal III';
+
+            } else {
+
+                $userData['position'] = null;
+            }
+            
             $userData['password'] = Hash::make($userData['username']);
 
             $roleName = $userData['role'];

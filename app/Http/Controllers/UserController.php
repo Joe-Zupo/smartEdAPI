@@ -23,7 +23,7 @@ class UserController extends Controller
     public function index(IndexUserRequest $request)
     {
         $page = $request->input('page', 1);
-        $perPage = $request->input('perPage', 10);
+        $perPage = $request->input('per_page', 10);
         $sortBy = $request->input('sortBy', 'id');
         $sortOrder = $request->input('sortOrder', 'desc');
 
@@ -45,7 +45,7 @@ class UserController extends Controller
         }
 
         if ($request->has('has_school')){
-            $query->whereNotNull('school_id')->get();
+            $query->whereNotNull('school_id');
         }
 
         if ($searchRequest){
@@ -132,7 +132,8 @@ class UserController extends Controller
             $user->update($validatedRequest);
             if(isset($validatedRequest['school'])){
                 $user->school_id = $validatedRequest['school'] ? 
-                    School::where('school_name', $validatedRequest['school'])->value('id') : null;
+                School::where('school_name', $validatedRequest['school'])->value('id') : null;
+                $user->save();
             }
 
             DB::commit();

@@ -29,10 +29,21 @@ class UpdateUserRequest extends FormRequest
                 'sometimes',
                 'exists:schools,school_name'
             ],
+            'position' => ['in:Principal IV,Head Teacher III,Teacher I,Principal III'],
             'email' => ['sometimes', 'string', 'email', 'max:255', 'unique:users,email'],
             'username' => ['sometimes', 'string', 'max:255', 'unique:users,username'],
             'password' => ['sometimes', 'string', 'min:8', 'confirmed'],
             'phone_number' => ['sometimes', 'string', 'max:15'],
         ];
     }
+        public function messages(): array
+        {
+                return [
+                'position.required_if' =>
+                    'School Accounts must have a position. Valid positions are: Principal IV,Head Teacher III,Teacher I,Principal III.',
+
+                'position.in' =>
+                    'Invalid position selected. Valid positions are: Principal IV,Head Teacher III,Teacher I,Principal III.',
+            ];
+        }
 }
