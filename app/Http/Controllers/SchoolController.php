@@ -91,7 +91,7 @@ class SchoolController extends Controller
 
     /**
      * Store School
-     * (Need Fix): Assigning School Head
+     * 
      */
     public function store(StoreSchoolRequest $request)
     {
@@ -186,8 +186,7 @@ class SchoolController extends Controller
 
     /**
      * Update School
-     * (Need Fix): Assigning School Head
-     * Head is Assigned via Boolean, so that multiple School Accounts can exist under a school
+     * 
      */
     public function update(UpdateSchoolRequest $request, School $school)
     {
