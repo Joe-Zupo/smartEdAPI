@@ -89,17 +89,19 @@ class SchoolController extends Controller
 
     /**
      * Store School
+     * (Need Fix): Assigning School Head
      */
     public function store(StoreSchoolRequest $request)
     {
 
         DB::beginTransaction();
 
-        try {
+        // try {
             if ($request->school_head){
-                $user = User::where('name', $request->school_head)->first();
+                $user = User::where('name', 'like', '%' . $request->school_head . '%')->first();
                 $headID = $user->value('id');
                     if(!$headID){
+                        DB::rollBack();
                         return $this->error('User not found for school head input');
                     }
                 $request['school_head_id'] = $headID;
@@ -109,6 +111,7 @@ class SchoolController extends Controller
             if($request->school_type){
                 $typeID = SchoolType::where('name', $request->school_type)->value('id');
                     if(!$typeID){
+                        DB::rollBack();
                         return $this->error('School type not found for school type input');
                     }
                 $request['school_type_id'] = $typeID;
@@ -122,10 +125,13 @@ class SchoolController extends Controller
             //         ->file('image')
             //         ->store('school_images', 'public');
             // }
-            $school = School::create($validated);
 
+            $school = School::create($validated);
             if (isset($user)) {
                 $user->update(['school_id' => $school->id]);
+            }else{
+                DB::rollBack();
+                return $this->error("User not initialized");
             }
 
             DB::commit();
@@ -142,14 +148,14 @@ class SchoolController extends Controller
                 ]
             );
 
-        } catch (\Exception $e) {
+        // } catch (\Exception $e) {
 
-            DB::rollBack();
+        //     DB::rollBack();
 
-            return $this->error(
-                'Failed to create school'
-            );
-        }
+        //     return $this->error(
+        //         'Failed to create school'
+        //     );
+        // }
     }
 
     /**
@@ -172,6 +178,7 @@ class SchoolController extends Controller
 
     /**
      * Update School
+     * (Need Fix): Assigning School Head
      */
     public function update(UpdateSchoolRequest $request, School $school)
     {
@@ -185,11 +192,10 @@ class SchoolController extends Controller
                 $typeID = SchoolType::where('name', $request->school_type)->value('id');
                 $validated['school_type_id'] = $typeID;
                 unset($validated['school_type']);
-                $school->update($validated);
-            }else{
-                $school->update($validated);
             }
+            if($request->filled('school_head')){}
 
+            $school->update($validated);
             DB::commit();
 
             return $this->success(
