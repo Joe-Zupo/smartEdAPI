@@ -52,7 +52,7 @@ class AnnouncementController extends Controller
      */
     public function create()
     {
-        //
+        
     }
 
     /**
@@ -60,7 +60,7 @@ class AnnouncementController extends Controller
      */
     public function store(Request $request)
     {
-        //
+
     }
 
     /**

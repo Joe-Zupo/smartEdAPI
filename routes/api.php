@@ -12,6 +12,7 @@ use App\Http\Controllers\DivisionLeadershipController;
 use App\Http\Controllers\SchoolController;
 use App\Http\Controllers\KpiDataController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\SchoolTypeController;
 use App\Http\Resources\UserResource;
 
 /*
@@ -125,6 +126,16 @@ Route::middleware('auth:sanctum')->group(function () {
 
         Route::apiResource('schools', SchoolController::class)
             ->except(['store', 'update', 'destroy']);
+
+        
+
+        /*
+        |--------------------------------------------------------------------------
+        | School Types
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get('school-types', [SchoolTypeController::class, 'index']);
 
         /*
         |--------------------------------------------------------------------------
