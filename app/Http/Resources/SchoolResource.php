@@ -22,6 +22,7 @@ class SchoolResource extends JsonResource
                     'id' => $this->schoolHead?->id,
                     'is_head' => boolval($this->schoolHead?->is_head),
                     'name' => $this->schoolHead?->name,
+                    'phone_number' => $this->schoolHead?->phone_number,
                     'position' => $this->schoolHead?->position
                 ];
             }),
