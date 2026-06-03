@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Announcement;
+use App\Models\AcademicYear;
 use Illuminate\Http\Request;
 use App\Http\Resources\AnnouncementResource;
 use App\Http\Requests\Announcements\StoreAnnouncementRequest;
@@ -48,27 +49,64 @@ class AnnouncementController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Create Announcement
+     * Fix file Upload Otherwise functional
      */
-    public function create()
+    public function store(StoreAnnouncementRequest $request)
     {
-        
+        $validated = $request->validated();
+
+        $year = AcademicYear::where('status', 'default')->first();
+
+        if ($year) {
+            $cleanName = str_replace(['S.Y. ', 'S.Y.', ' '], '', $year->name);
+            $folderName = "announcements/{$cleanName}";
+        } else {
+            $folderName = "announcements/general";
+        }
+
+        $validated['image'] = $request->file('image')->store($folderName, 'public');
+
+
+
+        $announcement = Announcement::create([
+            'title' => $validated['title'],
+            'description' => $validated['description'],
+            'type' => $validated['type'],
+            'image_url' => $validated['image'],
+        ]);
+
+        return $this->success("Announcement created successfully", ["data" => $announcement]);
+    }
+    
+    /**
+    * Public Index Announcements
+    * 
+    * Display a listing of the resource for public.
+    */
+    public function publicIndex()
+    {
+        $announcements = Announcement::where('type', 'public')
+            ->latest()
+            ->get();
+        if ($announcements->isEmpty()) {
+            return $this->success('No Announcements fetched');
+        }
+
+        return $this->success('Announcements retrieved successfully', ['data' => AnnouncementResource::collection($announcements)]);
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Public Show Announcement
+     *  
      */
-    public function store(Request $request)
+    public function publicShow(Announcement $announcement)
     {
+        if ($announcement['type'] !== ['public']){
+            return $this->error("Announcement not found", 404);
+        }
 
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Announcement $announcement)
-    {
-        //
+        return $this->success("Announcement retrieved Successfully", ['data' => new AnnouncementResource($announcement)]);
     }
 
     /**
