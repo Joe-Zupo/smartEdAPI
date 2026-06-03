@@ -25,9 +25,6 @@ class SchoolResource extends JsonResource
                     'position' => $this->schoolHead?->position
                 ];
             }),
-            // 'school_users' => UserResource::collection($this->whenLoaded('schoolUsers'))->map(function($user){
-            //     return collect($user)->only(['user_id', 'name', 'assignment', 'role'])->all();
-            // }),
             'school_code' => $this->school_code,
             'year_established' => $this->year_established,
             'school_type' => $this->whenLoaded('schoolType', function () {

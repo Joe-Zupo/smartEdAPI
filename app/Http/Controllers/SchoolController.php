@@ -29,9 +29,6 @@ class SchoolController extends Controller
         $sortOrder = $validated['sortOrder'] ?? 'asc';
         $getAll = $request->boolean('all')?? false;
 
-        // $withHeads = $validated['heads'] ?? true;
-        // $all = $validated['all'] ?? false;
-
         $query = School::query()
             ->with([
                 'schoolType',
