@@ -4,15 +4,40 @@ namespace App\Http\Controllers;
 
 use App\Models\Announcement;
 use Illuminate\Http\Request;
+use App\Http\Resources\AnnouncementResource;
+use App\Http\Requests\Announcements\StoreAnnouncementRequest;
 
 class AnnouncementController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $validated = $request->validated();
+
+        $perPage = $validated['per_page'] ?? 5;
+        $sortBy = $validated['sortBy'] ?? 'id';
+        $sortOrder = $validated['sortOrder'] ?? 'asc';
+
+        $query = Announcement::query();
+
+        //Query Params
+
+        $query->orderBy($sortBy, $sortOrder);
+        $paginatedAnnouncements = $query
+            ->paginate($perPage);
+
+        if(!$paginatedAnnouncements->count()){
+            return $this->success('No more users available');
+        }
+
+        $paginaton = $this->paginateReturn($paginatedAnnouncements);
+
+        return $this->success('Users fetched successfully',[
+           'announcements' => AnnouncementResource::collection($paginatedAnnouncements),
+           'pagination' => $paginaton 
+        ]);
     }
 
     /**

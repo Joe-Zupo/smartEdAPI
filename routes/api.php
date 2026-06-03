@@ -7,6 +7,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AcademicYearController;
 use App\Http\Controllers\ActivityLogController;
+use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\DivisionLeadershipController;
 use App\Http\Controllers\SchoolController;
 use App\Http\Controllers\KpiDataController;
@@ -136,5 +137,14 @@ Route::middleware('auth:sanctum')->group(function () {
             'kpi-data/{kpiData}',
             [KpiDataController::class, 'show']
         );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Announcements
+        |--------------------------------------------------------------------------
+        */
+
+        Route::apiResource('announcements', AnnouncementController::class)->only(['index', 'store']);
+
     });
 });
