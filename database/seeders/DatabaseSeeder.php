@@ -31,5 +31,6 @@ class DatabaseSeeder extends Seeder
         $this->call(DivisionLeadershipSeeder::class);
         $this->call(KpiRateDataSeeder::class);
         $this->call(KpiDataSeeder::class);
+        $this->call(AnnouncementSeeder::class);
     }
 }

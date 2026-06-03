@@ -10,33 +10,40 @@ use App\Http\Requests\Announcements\StoreAnnouncementRequest;
 class AnnouncementController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Index Announcements
+     * Fetches the 10 latest announcements
      */
     public function index(Request $request)
     {
-        $validated = $request->validated();
+        $user = $request->user();
+        // $public = collect();
+        // $dashboard = collect();
 
-        $perPage = $validated['per_page'] ?? 5;
-        $sortBy = $validated['sortBy'] ?? 'id';
-        $sortOrder = $validated['sortOrder'] ?? 'asc';
+        //Query Param
+        if($user->hasRole('School Account')){
+            $dashboard = Announcement::where('type', 'dashboard')
+                ->latest()
+                ->take(10)
+                ->get();
+        } else {
+            $public = Announcement::where('type', 'public')
+                ->latest()
+                ->take(10)
+                ->get();
 
-        $query = Announcement::query();
-
-        //Query Params
-
-        $query->orderBy($sortBy, $sortOrder);
-        $paginatedAnnouncements = $query
-            ->paginate($perPage);
-
-        if(!$paginatedAnnouncements->count()){
-            return $this->success('No more users available');
+            $dashboard = Announcement::where('type', 'dashboard')
+                ->latest()
+                ->take(10)
+                ->get();
         }
 
-        $paginaton = $this->paginateReturn($paginatedAnnouncements);
+        if($public->isEmpty() && $dashboard->isEmpty()){
+            return $this->success("No Announcements Retrieved");
+        }
 
         return $this->success('Users fetched successfully',[
-           'announcements' => AnnouncementResource::collection($paginatedAnnouncements),
-           'pagination' => $paginaton 
+           'public' => AnnouncementResource::collection($public),
+           'dashboard' => AnnouncementResource::collection($dashboard)
         ]);
     }
 
