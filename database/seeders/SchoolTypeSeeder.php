@@ -14,13 +14,13 @@ class SchoolTypeSeeder extends Seeder
     public function run(): void
     {
         $types = [
-        'elementary',
-        'integrated_school',
-        'junior_high_school',
-        'junior_high_school_with_shs',
-        'standalone_shs',
-        'science_high_school',
-        'als',
+        'Elementary',
+        'Integrated School',
+        'Junior High School',
+        'Junior High School with SHS',
+        'Standalone SHS',
+        'Science High School',
+        'ALS',
     ];
 
     foreach ($types as $type) {

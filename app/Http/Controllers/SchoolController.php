@@ -128,17 +128,15 @@ class SchoolController extends Controller
         }
 
         if ($request->school_type) {
-            $typeID = SchoolType::where('name', $request->school_type)->value('id');
+            $typeID = SchoolType::where('name', $request['school_type'])->value('id');
             if (!$typeID) {
                 DB::rollBack();
                 return $this->error('School type not found for school type input');
             }
-            $request['school_type_id'] = $typeID;
-            unset($request['school_type']);
+            $request->request->remove('school_type');
         }
-
         $validated = $request->validated();
-
+        $validated['school_type_id'] = $typeID;
         // if ($request->hasFile('image')) {
         //     $validated['image'] = $request
         //         ->file('image')
