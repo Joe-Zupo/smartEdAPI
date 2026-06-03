@@ -34,46 +34,46 @@ class UserController extends Controller
         $getActive = $request->boolean('is_active');
 
         //Query Parameters Checks
-        if($request->has('role')){
-            $query->whereHas('roles', function($q) use ($request){
-                 $q->where('name',$request->input('role'));
+        if ($request->has('role')) {
+            $query->whereHas('roles', function ($q) use ($request) {
+                $q->where('name', $request->input('role'));
             });
         }
 
-        if ($request->has('is_active')){
+        if ($request->has('is_active')) {
             $query->where('is_active', $request->boolean('is_active'));
         }
 
-        if ($request->has('has_school')){
+        if ($request->has('has_school')) {
             $query->whereNotNull('school_id');
         }
 
-        if ($searchRequest){
+        if ($searchRequest) {
             //search for activity descriptions
-            $query->where('name', 'like', '%' . $searchRequest .'%')
-            ->orWhere('username', 'like', '%' . $searchRequest . '%')
-            ->orWhereHas('school', function ($s) use ($searchRequest){
-                $s->where('school_name','like','%' .$searchRequest. '%');
-            });
+            $query->where('name', 'like', '%' . $searchRequest . '%')
+                ->orWhere('username', 'like', '%' . $searchRequest . '%')
+                ->orWhereHas('school', function ($s) use ($searchRequest) {
+                    $s->where('school_name', 'like', '%' . $searchRequest . '%');
+                });
         }
 
         $query->orderBy($sortBy, $sortOrder);
         $paginatedUsers = $query
             ->paginate($perPage);
 
-        if(!$paginatedUsers->count()){
+        if (!$paginatedUsers->count()) {
             return $this->success('No more users available');
         }
 
-        $transformedUsers = $paginatedUsers->map(function($user){
+        $transformedUsers = $paginatedUsers->map(function ($user) {
             return new UserResource($user);
         });
 
         $paginaton = $this->paginateReturn($paginatedUsers);
 
-        return $this->success('Users fetched successfully',[
-           'users' => UserResource::collection($transformedUsers),
-           'pagination' => $paginaton 
+        return $this->success('Users fetched successfully', [
+            'users' => UserResource::collection($transformedUsers),
+            'pagination' => $paginaton
         ]);
     }
 
@@ -87,29 +87,29 @@ class UserController extends Controller
         DB::beginTransaction();
 
         // try{
-            $user = User::create($validatedRequest);
-            $user->assignRole($validatedRequest['role']);
-            if($user->hasRole('School Account')){
+        $user = User::create($validatedRequest);
+        $user->assignRole($validatedRequest['role']);
+        if ($user->hasRole('School Account')) {
 
-                if(isset($validatedRequest['school'])){
-                    $user->school_id = $validatedRequest['school'] ? 
+            if (isset($validatedRequest['school'])) {
+                $user->school_id = $validatedRequest['school'] ?
                     School::where('school_name', $validatedRequest['school'])->value('id') : null;
-                    $message = 'School Account fully initialized, account is set as active';
-                    $user->save();
-                }else{
-                    $message = 'School Account partially initialized, account is set as inactive, please review later';
-                    $user->is_active = false;
-                    $user->save();
-                }
-            }else{
-                    $message = "Account set to active";
+                $message = 'School Account fully initialized, account is set as active';
+                $user->save();
+            } else {
+                $message = 'School Account partially initialized, account is set as inactive, please review later';
+                $user->is_active = false;
+                $user->save();
             }
+        } else {
+            $message = "Account set to active";
+        }
 
-            DB::commit();
-            return $this->success('User: ' . $user->name . ' Created Successfully',[
-                'notice' => $message,
-                'user' => new UserResource($user)
-            ]);
+        DB::commit();
+        return $this->success('User: ' . $user->name . ' Created Successfully', [
+            'notice' => $message,
+            'user' => new UserResource($user)
+        ]);
         // }catch(\Exception $e){
         //     DB::rollBack();
         //     return $this->error('User could not be created');
@@ -121,10 +121,12 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
-        try{
-            return $this->success('User fetched successfully',
-            ['user' => new UserResource($user)]);
-        }catch(\Exception $e){
+        try {
+            return $this->success(
+                'User fetched successfully',
+                ['user' => new UserResource($user)]
+            );
+        } catch (\Exception $e) {
             return $this->error('User not Found');
         }
     }
@@ -137,28 +139,28 @@ class UserController extends Controller
         $validatedRequest = $request->validated();
         DB::beginTransaction();
 
-        try{
+        try {
             $user->update($validatedRequest);
-            if(isset($validatedRequest['role'])){
+            if (isset($validatedRequest['role'])) {
                 $user->syncRoles($validatedRequest['role']);
             }
-            
-            if(isset($validatedRequest['school'])){
-                $user->school_id = $validatedRequest['school'] ? 
-                School::where('school_name', $validatedRequest['school'])->value('id') : null;
+
+            if (isset($validatedRequest['school'])) {
+                $user->school_id = $validatedRequest['school'] ?
+                    School::where('school_name', $validatedRequest['school'])->value('id') : null;
                 $user->save();
-            }else if($validatedRequest['school'] === null){
+            } else if ($validatedRequest['school'] === null) {
                 $user->school_id = null;
                 $user->save();
             }
-            
+
 
             DB::commit();
-            return $this->success('User Updated successfully',[
+            return $this->success('User Updated successfully', [
                 new UserResource($user)
             ]);
 
-        }catch(\Exception $e){
+        } catch (\Exception $e) {
             DB::rollBack();
             return $this->error('Failed to update User');
         }
@@ -166,7 +168,7 @@ class UserController extends Controller
 
     public function destroy(User $user)
     {
-        
+
     }
 
 
@@ -176,10 +178,11 @@ class UserController extends Controller
     /**
      * Change a user's password
      */
-    public function changePassword(User $user, ChangeUserPasswordRequest $request){
+    public function changePassword(User $user, ChangeUserPasswordRequest $request)
+    {
         $validatedRequest = $request->validated();
 
-        DB::transaction(function () use($user, $validatedRequest){
+        DB::transaction(function () use ($user, $validatedRequest) {
             $user['password'] = Hash::make($validatedRequest['password']);
             $user->save();
             //DB::commit (if needed use try catch instead)
@@ -193,9 +196,10 @@ class UserController extends Controller
     /**
      * Toggle a user's status
      */
-    public function changeStatus(User $user){
+    public function changeStatus(User $user)
+    {
 
-        DB::transaction(function () use ($user){
+        DB::transaction(function () use ($user) {
             $user->is_active = !$user->is_active;
             $user->save();
         });
