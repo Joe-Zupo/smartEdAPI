@@ -30,7 +30,6 @@ class UserController extends Controller
         $searchRequest = $request->input('search');
 
         $query = User::query();
-        dd($query);
 
         $getActive = $request->boolean('is_active');
 
