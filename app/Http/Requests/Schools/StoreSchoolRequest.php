@@ -45,7 +45,7 @@ class StoreSchoolRequest extends FormRequest
             //         }
             //     }],
             'position'                  => 'required_with:school_head,school_head_id|string|
-                                            in:Principal IV,Head Teacher III,Teacher I',
+                                            in:Principal I,Principal II,Principal III,Principal IV',
 
             'phone_number'             => ['required', 'string', 'max:15'],
             'head_email'               => ['required', 'string', 'email', 'max:255', 'unique:schools,head_email'],
@@ -57,4 +57,14 @@ class StoreSchoolRequest extends FormRequest
             //'image'                     => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
         ];
     }
+    public function messages(): array
+        {
+                return [
+                'position.required_if' =>
+                    'School Accounts must have a position. Valid positions are: Principal IV,Head Teacher III,Teacher I,Principal III.',
+
+                'position.in' =>
+                    'Invalid position selected. Valid positions are: Principal IV,Head Teacher III,Teacher I,Principal III.',
+            ];
+        }
 }

@@ -48,7 +48,7 @@ class UpdateSchoolRequest extends FormRequest
             //         }
             //     }],
             'position' =>   'required_with:school_head,school_head_id|string|
-                            in:Principal IV,Head Teacher III,Teacher I',
+                            in:Principal I,Principal II,Principal III,Principal IV',
             //'image'             => ['sometimes', 'nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
 
             'phone_number'                  => ['sometimes', 'string', 'max:15'],
@@ -59,9 +59,6 @@ class UpdateSchoolRequest extends FormRequest
     public function messages(): array
         {
                 return [
-                'position.required_if' =>
-                    'School Accounts must have a position. Valid positions are: Principal IV,Head Teacher III,Teacher I,Principal III.',
-
                 'position.in' =>
                     'Invalid position selected. Valid positions are: Principal IV,Head Teacher III,Teacher I,Principal III.',
             ];
