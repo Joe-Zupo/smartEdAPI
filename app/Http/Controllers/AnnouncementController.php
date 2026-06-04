@@ -50,7 +50,8 @@ class AnnouncementController extends Controller
 
     /**
      * Create Announcement
-     * Fix file Upload Otherwise functional
+     * 
+     * Image is required if type is public
      */
     public function store(StoreAnnouncementRequest $request)
     {
@@ -65,8 +66,7 @@ class AnnouncementController extends Controller
             $folderName = "announcements/general";
         }
 
-        $validated['image'] = $request->file('image')->store($folderName, 'public');
-
+        $validated['image'] = $this->upload_image($request, 'image', $folderName);
 
 
         $announcement = Announcement::create([

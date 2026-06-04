@@ -155,7 +155,7 @@ Route::middleware('auth:sanctum')->group(function () {
         |--------------------------------------------------------------------------
         */
 
-        Route::apiResource('announcements', AnnouncementController::class)->only(['index', /** 'store' */]);
+        Route::apiResource('announcements', AnnouncementController::class)->only(['index', 'store']);
 
 
         /*
