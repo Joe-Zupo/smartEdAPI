@@ -29,7 +29,7 @@ class SchoolSeeder extends Seeder
                 'school_code'       => '03120101',                  // sampledata
                 'year_established'  => 1980,                        // sampledata
                 'school_type_id'    => 1,                           // elementary
-                'district'          => 'West',                      // sampledata
+                'district'          => 'District 1',                      // sampledata
                 'latitude'          => 15.2088,                     // sampledata
                 'longitude'         => 120.5912,                    // sampledata
                 'address'           => 'Purok 2, Atlu Bola, Mabalacat, Pampanga, Central Luzon',
@@ -40,7 +40,7 @@ class SchoolSeeder extends Seeder
                 'school_code'       => '03120102',                  // sampledata
                 'year_established'  => 1985,                        // sampledata
                 'school_type_id'    => 1,
-                'district'          => 'West',                      // sampledata
+                'district'          => 'District 1',                // sampledata
                 'latitude'          => 15.2145,                     // sampledata
                 'longitude'         => 120.5865,                    // sampledata
                 'address'           => 'Sitio Riverside, Calumpang, Mabalacat, Pampanga, Central Luzon',
@@ -56,7 +56,7 @@ class SchoolSeeder extends Seeder
                 'school_code'       => '502212',                  // sampledata
                 'year_established'  => 2006,                        // sampledata
                 'school_type_id'    => 2,  // integrated
-                'district'          => 'North',                     // sampledata
+                'district'          => 'District 1',                     // sampledata
                 'latitude'          => 15.2312,                     // sampledata
                 'longitude'         => 120.6145,                    // sampledata
                 'address'           => 'Barangay Calumpang, Sitio Monicayo, Mabalacat, 2010 Pampanga',
@@ -67,7 +67,7 @@ class SchoolSeeder extends Seeder
                 'school_code'       => '501981',
                 'year_established'  => 1965,
                 'school_type_id'    => 2,
-                'district'          => 'North',
+                'district'          => 'District 1',
                 'latitude'          => 15.2607,
                 'longitude'         => 120.6105,
                 'address'           => 'Purok 3, Barangay Sta. Ines, Mabalacat City, Pampanga, Central Luzon',
@@ -82,7 +82,7 @@ class SchoolSeeder extends Seeder
                 'school_code'       => '03120301',                  // sampledata
                 'year_established'  => 1998,                        // sampledata
                 'school_type_id'    => 3,         // junior high
-                'district'          => 'North',                     // sampledata
+                'district'          => 'District 1',                     // sampledata
                 'latitude'          => 15.2267,                     // sampledata
                 'longitude'         => 120.6012,                    // sampledata
                 'address'           => 'Camachiles St., Camachiles, Mabalacat, Pampanga, Central Luzon',
@@ -93,7 +93,7 @@ class SchoolSeeder extends Seeder
                 'school_code'       => '03120302',                  // sampledata
                 'year_established'  => 2003,                        // sampledata
                 'school_type_id'    => 3,
-                'district'          => 'East',                      // sampledata
+                'district'          => 'District 1',                      // sampledata
                 'latitude'          => 15.2089,                     // sampledata
                 'longitude'         => 120.6234,                    // sampledata
                 'address'           => 'Community Drive, Santo Nino, Mabalacat, Pampanga, Central Luzon',
@@ -108,7 +108,7 @@ class SchoolSeeder extends Seeder
                 'school_code'       => '03120501',                  // sampledata
                 'year_established'  => 2016,                        // sampledata
                 'school_type_id'    => 5,   // standalone senior high
-                'district'          => 'North',                     // sampledata
+                'district'          => 'District 1',                     // sampledata
                 'latitude'          => 15.2401,                     // sampledata
                 'longitude'         => 120.6089,                    // sampledata
                 'address'           => 'Resettlement Area, Sapang Biabas, Mabalacat, Pampanga, Central Luzon',
@@ -122,7 +122,7 @@ class SchoolSeeder extends Seeder
                 'school_code'       => '03120601',                  // sampledata
                 'year_established'  => 2010,                        // sampledata
                 'school_type_id'    => 6,
-                'district'          => 'East',                      // sampledata
+                'district'          => 'District 1',                      // sampledata
                 'latitude'          => 15.2156,                     // sampledata
                 'longitude'         => 120.6345,                    // sampledata
                 'address'           => 'Lahar Zone, San Fernando, Mabalacat, Pampanga, Central Luzon',
