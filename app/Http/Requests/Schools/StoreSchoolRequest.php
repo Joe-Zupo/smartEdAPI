@@ -28,22 +28,12 @@ class StoreSchoolRequest extends FormRequest
             'school_code'               => 'required|string|max:50|unique:schools,school_code',
             'year_established'          => 'required|digits:4|integer',
 
-            //interchangable inputs:
             'school_type'               => 'required_without:school_type_id|exists:school_types,name|nullable',
             'school_type_id'            => 'required_without:school_type|exists:school_types,id|nullable',
 
             'school_head'               => 'required|string|unique:schools,school_head|max:255',
-            // 'school_head_id'            => ['required_without:school_head', 'integer|exists:users,id', function ($attribute, $value, $fail) {
-            //         $user = User::find($value);
 
-            //         if (!$user || !$user->hasRole('School Account')) {
-            //             $fail('The selected user is not a School Account.');
-            //         }
-
-            //         if (isset($user->school_id)){
-            //             $fail('User already has a school assigned to them!');
-            //         }
-            //     }],
+            //Principal I,Principal II,Principal III,Principal IV
             'position'                  => 'required_with:school_head,school_head_id|string|
                                             in:Principal I,Principal II,Principal III,Principal IV',
 

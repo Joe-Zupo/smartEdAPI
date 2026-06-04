@@ -36,17 +36,8 @@ class UpdateSchoolRequest extends FormRequest
             'longitude'                 => ['sometimes', 'nullable', 'numeric', 'between:-180,180'],
 
             'school_head'               => 'string|unique:schools,school_head|max:255',
-            // 'school_head_id'            => ['integer|exists:users,id', function ($attribute, $value, $fail) {
-            //         $user = User::find($value);
-
-            //         if (!$user || !$user->hasRole('School Account')) {
-            //             $fail('The selected user is not a School Account.');
-            //         }
-
-            //         if (isset($user->school_id)){
-            //             $fail('User already has a school assigned to them!');
-            //         }
-            //     }],
+            
+            //Principal I,Principal II,Principal III,Principal IV
             'position' =>   'required_with:school_head,school_head_id|string|
                             in:Principal I,Principal II,Principal III,Principal IV',
             //'image'             => ['sometimes', 'nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
