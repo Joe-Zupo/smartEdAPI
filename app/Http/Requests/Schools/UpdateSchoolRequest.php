@@ -25,7 +25,7 @@ class UpdateSchoolRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'school_name'               => ['sometimes', 'string', 'max:255'],
+            'school_name'               => ['sometimes', 'string', 'max:255', 'unique:schools,school_name'],
             'school_code'               => ['sometimes', 'string', 'max:50', Rule::unique('schools','school_ code')->ignore($this->route('school'))],
             'year_established'          => ['sometimes', 'digits:4', 'integer'],
             'school_type'               => ['sometimes', 'exists:school_types,name'],
@@ -35,19 +35,20 @@ class UpdateSchoolRequest extends FormRequest
             'latitude'                  => ['sometimes', 'nullable', 'numeric', 'between:-90,90'],
             'longitude'                 => ['sometimes', 'nullable', 'numeric', 'between:-180,180'],
 
-            'school_head'               => 'string|exists:users,name',
-            'school_head_id'            => ['integer|exists:users,id', function ($attribute, $value, $fail) {
-                    $user = User::find($value);
+            'school_head'               => 'string|unique:schools,school_head|max:255',
+            // 'school_head_id'            => ['integer|exists:users,id', function ($attribute, $value, $fail) {
+            //         $user = User::find($value);
 
-                    if (!$user || !$user->hasRole('School Account')) {
-                        $fail('The selected user is not a School Account.');
-                    }
+            //         if (!$user || !$user->hasRole('School Account')) {
+            //             $fail('The selected user is not a School Account.');
+            //         }
 
-                    if (isset($user->school_id)){
-                        $fail('User already has a school assigned to them!');
-                    }
-                }],
-            'position' => 'required_with:school_head,school_head_id|string|in:Principal IV,Head Teacher III,Teacher I',
+            //         if (isset($user->school_id)){
+            //             $fail('User already has a school assigned to them!');
+            //         }
+            //     }],
+            'position' =>   'required_with:school_head,school_head_id|string|
+                            in:Principal IV,Head Teacher III,Teacher I',
             //'image'             => ['sometimes', 'nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
 
             'phone_number'                  => ['sometimes', 'string', 'max:15'],

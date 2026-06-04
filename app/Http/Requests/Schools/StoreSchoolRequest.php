@@ -24,7 +24,7 @@ class StoreSchoolRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'school_name'               => 'required|string|max:255',
+            'school_name'               => 'required|string|max:255|unique:schools,school_name',
             'school_code'               => 'required|string|max:50|unique:schools,school_code',
             'year_established'          => 'required|digits:4|integer',
 
@@ -32,27 +32,28 @@ class StoreSchoolRequest extends FormRequest
             'school_type'               => 'required_without:school_type_id|exists:school_types,name|nullable',
             'school_type_id'            => 'required_without:school_type|exists:school_types,id|nullable',
 
-            'school_head'               => 'required_without:school_head_id|string|exists:users,name',
-            'school_head_id'            => ['required_without:school_head', 'integer|exists:users,id', function ($attribute, $value, $fail) {
-                    $user = User::find($value);
+            'school_head'               => 'required|string|unique:schools,school_head|max:255',
+            // 'school_head_id'            => ['required_without:school_head', 'integer|exists:users,id', function ($attribute, $value, $fail) {
+            //         $user = User::find($value);
 
-                    if (!$user || !$user->hasRole('School Account')) {
-                        $fail('The selected user is not a School Account.');
-                    }
+            //         if (!$user || !$user->hasRole('School Account')) {
+            //             $fail('The selected user is not a School Account.');
+            //         }
 
-                    if (isset($user->school_id)){
-                        $fail('User already has a school assigned to them!');
-                    }
-                }],
+            //         if (isset($user->school_id)){
+            //             $fail('User already has a school assigned to them!');
+            //         }
+            //     }],
+            'position'                  => 'required_with:school_head,school_head_id|string|
+                                            in:Principal IV,Head Teacher III,Teacher I',
 
             'phone_number'             => ['required', 'string', 'max:15'],
-            'head_email'                    => ['required', 'string', 'email', 'max:255', 'unique:schools,head_email'],
-            
-            
-            'position' => 'required_with:school_head,school_head_id|string|in:Principal IV,Head Teacher III,Teacher I',
+            'head_email'               => ['required', 'string', 'email', 'max:255', 'unique:schools,head_email'],
 
             'address'                   => 'required|string|max:255',
             'district'                  => 'required|string|max:255',
+            'latitude'                  => ['required', 'nullable', 'numeric', 'between:-90,90'],
+            'longitude'                 => ['required', 'nullable', 'numeric', 'between:-180,180'],
             //'image'                     => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
         ];
     }

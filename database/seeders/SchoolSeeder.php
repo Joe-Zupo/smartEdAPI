@@ -7,6 +7,7 @@ use Illuminate\Database\Seeder;
 use App\Models\School;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Arr;
 use App\SeederFileTrait;
 
 class SchoolSeeder extends Seeder
@@ -128,17 +129,11 @@ class SchoolSeeder extends Seeder
             ],
         ];
 
+        $principalLevels = ["Principal I","Principal II","Principal III","Principal IV"];
 
         foreach ($schools as $school) {
-            $createdSchool = School::create($school);
-            $user = User::query()->where('school_id', $createdSchool->id)->first();
-            
-            if ($user) {
-                $createdSchool->update([
-                    'head_email'   => $user->email,
-                    'phone_number' => $user->phone_number,
-                ]);
-            }
+            $school['position'] = Arr::random($principalLevels);
+            School::create($school);
         }
     }
 }

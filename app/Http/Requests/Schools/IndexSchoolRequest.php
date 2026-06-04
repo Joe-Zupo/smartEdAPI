@@ -29,7 +29,6 @@ class IndexSchoolRequest extends FormRequest
             'district' => 'nullable|string|in:North,South,East,West',
 
             'all' => 'nullable|in:true,false',
-            'heads' => 'nullable|in:true,false',
 
             'sortBy' => 'nullable|string|in:id,school_name,school_code,created_at',
             'sortOrder' => 'nullable|string|in:asc,desc',

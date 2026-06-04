@@ -142,27 +142,6 @@ class UserSeeder extends Seeder
             //it_officer
             //developers
         foreach ($users as $userData) {
-            if (
-                ($userData['role'] ?? null) === 'School Account'
-                && !empty($userData['school_id'])
-            ) {
-
-                $schoolId = $userData['school_id'];
-
-                $schoolPositionCount[$schoolId] =
-                    ($schoolPositionCount[$schoolId] ?? 0) + 1;
-
-                $userData['position'] =
-                    $schoolPositionCount[$schoolId] === 1
-                        ? 'Principal IV'
-                        : 'Principal III';
-
-                $userData['is_head'] = true;
-            } else {
-
-                $userData['position'] = null;
-                $userData['is_head'] = false;
-            }
             
             $userData['password'] = Hash::make($userData['username']);
 
@@ -172,10 +151,13 @@ class UserSeeder extends Seeder
             $user = User::create($userData);
 
             $user->assignRole($roleName);
+
+            //School Seeder Filler
             $school = School::query()->where('id', $user->school_id)->first();
             
-            if ($school) {
+            if ($school && $user->hasRole('School Account')) {
                 $school->update([
+                    'school_head'  => $user->name,
                     'head_email'   => $user->email,
                     'phone_number' => $user->phone_number,
                 ]);

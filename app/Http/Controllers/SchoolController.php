@@ -32,7 +32,6 @@ class SchoolController extends Controller
         $query = School::query()
             ->with([
                 'schoolType',
-                'schoolHead'
             ]);
 
         if ($request->filled('school_name')) {
@@ -106,27 +105,6 @@ class SchoolController extends Controller
     {
 
         DB::beginTransaction();
-
-        // try {
-        //Pre-req of request for validation
-        if ($request->school_head) {
-            $user = User::where('name', 'like', '%' . $request->school_head . '%')->first();
-            $headID = $user->value('id');
-            if (!$headID) {
-                DB::rollBack();
-                return $this->error('User not found for school head input');
-            }
-            if ($user['is_head']) {
-                DB::rollBack();
-                return $this->error("User is already head of another school");
-            } else if (!$user->hasRole('School Account')) {
-                DB::rollBack();
-                return $this->error("User is not eligible; because they are not a School Account");
-            }
-            $request['school_head_id'] = $headID;
-            unset($request['school_head']);
-        }
-
         if ($request->school_type) {
             $typeID = SchoolType::where('name', $request['school_type'])->value('id');
             if (!$typeID) {
@@ -139,14 +117,9 @@ class SchoolController extends Controller
             $validated = $request->validated();
             $typeID = $validated['school_type_id'];
         }
+
         $validated['school_type_id'] = $typeID;
-        
         $school = School::create($validated);
-        
-        $user['school_id'] = $school->id;
-        $user['position'] = $validated['position'];
-        $user['is_head'] = true;
-        $user->save();
 
         DB::commit();
 
@@ -155,21 +128,11 @@ class SchoolController extends Controller
             [
                 'school' => new SchoolResource(
                     $school->load([
-                        'schoolType',
-                        'schoolHead'
+                        'schoolType'
                     ])
                 )
             ]
         );
-
-        // } catch (\Exception $e) {
-
-        //     DB::rollBack();
-
-        //     return $this->error(
-        //         'Failed to create school'
-        //     );
-        // }
     }
 
     /**
@@ -196,43 +159,13 @@ class SchoolController extends Controller
      */
     public function update(UpdateSchoolRequest $request, School $school)
     {
-
-        DB::beginTransaction();
-
-        // try {
+            DB::beginTransaction();
             $validated = $request->validated();
 
             if ($request->school_type) {
                 $typeID = SchoolType::where('name', $request->school_type)->value('id');
                 $validated['school_type_id'] = $typeID;
                 unset($validated['school_type']);
-            }
-            if ($request->filled('school_head')) {
-                $user = User::where('name', 'like', '%' . $request->school_head . '%')->first();
-
-                if (!$user->hasRole('School Account')) {
-                    DB::rollBack();
-                    return $this->error('This user is not assigned as a School Account, therefore is not a eligible for school head'); //Ask if other accs can be heads
-                }
-
-                $headID = $user->value('id');
-                if (!$headID) {
-                    DB::rollBack();
-                    return $this->error('User not found for school head input');
-                }
-
-                $prevHead = User::where('school_id', $school->id)->where('is_head', true)->first(); //resets previous head if any
-                if ($prevHead) {
-                    $prevHead->is_head = false;
-                    $prevHead->position = null;
-                    $prevHead->save();
-                }
-
-                $validated['school_head_id'] = $headID; //updates school
-                $user['school_id'] = $school->id; //updates user
-                $user['position'] = $validated['position'];
-                $user['is_head'] = true;
-                $user->save();
             }
 
             $school->update($validated);
@@ -244,19 +177,10 @@ class SchoolController extends Controller
                     'school' => new SchoolResource(
                         $school->refresh()->load([
                             'schoolType',
-                            'schoolHead'
                         ])
                     )
                 ]
             );
-        // } catch (\Exception $e) {
-
-        //     DB::rollBack();
-
-        //     return $this->error(
-        //         'Failed to update school'
-        //     );
-        // }
     }
 
     /**

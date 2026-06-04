@@ -17,14 +17,16 @@ class SchoolResource extends JsonResource
         return [
             'id' => $this->id,
             'school_name' => $this->school_name,
-            'school_head' => $this->whenLoaded('schoolHead', function (){
-                return [
-                    'id' => $this->schoolHead?->id,
-                    'is_head' => boolval($this->schoolHead?->is_head),
-                    'name' => $this->schoolHead?->name,
-                    'position' => $this->schoolHead?->position
-                ];
-            }),
+            // 'school_head' => $this->whenLoaded('schoolHead', function (){
+            //     return [
+            //         'id' => $this->schoolHead?->id,
+            //         'is_head' => boolval($this->schoolHead?->is_head),
+            //         'name' => $this->schoolHead?->name,
+            //         'position' => $this->schoolHead?->position
+            //     ];
+            // }),
+            'school_head' => $this->school_head,
+            'position' => $this->position,
             'phone_number' => $this->phone_number,
             'head_email' => $this->head_email,
             'school_code' => $this->school_code,

@@ -22,14 +22,14 @@ class User extends Authenticatable
     use HasFactory, Notifiable, HasApiTokens, HasRoles, BroadcastsEvents;
 
     protected $attributes = [
-        'is_head' => false,
+        // 'is_head' => false,
         'is_active' => true,
     ];
 
     protected $fillable = [
         'name',
         'username',
-        'position',
+        // 'position',
         'email',
         'password',
         'phone_number'
