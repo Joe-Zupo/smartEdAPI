@@ -9,6 +9,7 @@ use App\Http\Resources\SchoolResource;
 use App\Models\School;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Models\SchoolType;
 use App\Models\User;
@@ -119,6 +120,14 @@ class SchoolController extends Controller
         }
 
         $validated['school_type_id'] = $typeID;
+
+        $street = $validated['street'];
+        $barangay = $validated['barangay'];
+        $city = $validated['city'];
+        $province = $validated['province'];
+
+        $validated['address'] = "{$street}, {$barangay}, {$city}, {$province}";
+
         $school = School::create($validated);
 
         DB::commit();
@@ -166,6 +175,31 @@ class SchoolController extends Controller
                 $validated['school_type_id'] = $typeID;
                 unset($validated['school_type']);
             }
+            
+            //address appending
+             $addressArray = Str::of($school->address)->explode(', ');
+            if(isset($validated['street'])){
+                $street = $validated['street'];
+            }else{
+                $street = $addressArray[0];
+            }
+            if(isset($validated['barangay'])){
+                $barangay = $validated['barangay'];
+            }else{
+                $barangay =  $addressArray[1];
+            }
+            if(isset($validated['city'])){
+                $city = $validated['city'];
+            }else{
+                $city = $addressArray[2];
+            }
+            if(isset($validated['province'])){
+                $province = $validated['province'];
+            }else{
+                $province = $addressArray[3];
+            }
+            $validated['address'] = "{$street}, {$barangay}, {$city}, {$province}";
+
 
             $school->update($validated);
             DB::commit();

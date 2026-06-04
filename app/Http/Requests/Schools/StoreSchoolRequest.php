@@ -40,8 +40,15 @@ class StoreSchoolRequest extends FormRequest
             'phone_number'             => ['required', 'string', 'max:15'],
             'head_email'               => ['required', 'string', 'email', 'max:255', 'unique:schools,head_email'],
 
-            'address'                   => 'required|string|max:255',
-            'district'                  => 'required|string|max:255',
+            //'address'                   => 'required|string|max:255',
+
+                'street'                    => 'required|string|max:255',
+                'barangay'                  => 'required|string|max:255|exists:barangays,name', // In the context that this is for mabalacat, currently mabalacat brngys are only avail
+                'city'                      => 'required|string|max:255',
+                'province'                  => 'required|string|max:255',
+                'region'                    => 'required|string|max:255',
+                'district'                  => 'required|string|max:255', //Await District Requirements (rn can be Compass directions)
+
             'latitude'                  => ['required', 'nullable', 'numeric', 'between:-90,90'],
             'longitude'                 => ['required', 'nullable', 'numeric', 'between:-180,180'],
             //'image'                     => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],

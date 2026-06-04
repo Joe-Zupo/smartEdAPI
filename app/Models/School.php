@@ -18,6 +18,7 @@ class School extends Model
         'school_head',
         'position',
         'phone_number',
+        'region',
         'head_email',
         'image',
     ];

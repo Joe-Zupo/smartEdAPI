@@ -30,13 +30,18 @@ class UpdateSchoolRequest extends FormRequest
             'year_established'          => ['sometimes', 'digits:4', 'integer'],
             'school_type'               => ['sometimes', 'exists:school_types,name'],
             'school_type_id'            => ['sometimes', 'exists:school_types,id'],
-            'address'                   => ['sometimes', 'string','max:255'],
-            'district'                  => ['sometimes', 'string', 'max:255'],
+            //'address'                   => ['sometimes', 'string','max:255'],
+                'street'                    => 'sometimes|string|max:255',
+                'barangay'                  => 'sometimes|string|max:255|exists:barangays,name', // In the context that this is for mabalacat, currently mabalacat brngys are only avail
+                'city'                      => 'sometimes|string|max:255',
+                'province'                  => 'sometimes|string|max:255',
+                'region'                    => 'sometimes|string|max:255',
+                'district'                  => 'sometimes|string|max:255', //Await District Requirements (rn can be Compass directions)
             'latitude'                  => ['sometimes', 'nullable', 'numeric', 'between:-90,90'],
             'longitude'                 => ['sometimes', 'nullable', 'numeric', 'between:-180,180'],
 
             'school_head'               => 'string|unique:schools,school_head|max:255',
-            
+
             //Principal I,Principal II,Principal III,Principal IV
             'position' =>   'required_with:school_head,school_head_id|string|
                             in:Principal I,Principal II,Principal III,Principal IV',
