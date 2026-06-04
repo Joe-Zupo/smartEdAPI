@@ -134,16 +134,15 @@ class SchoolController extends Controller
                 return $this->error('School type not found for school type input');
             }
             $request->request->remove('school_type');
+            $validated = $request->validated();
+        }else{
+            $validated = $request->validated();
+            $typeID = $validated['school_type_id'];
         }
-        $validated = $request->validated();
         $validated['school_type_id'] = $typeID;
-        // if ($request->hasFile('image')) {
-        //     $validated['image'] = $request
-        //         ->file('image')
-        //         ->store('school_images', 'public');
-        // }
-
+        
         $school = School::create($validated);
+        
         $user['school_id'] = $school->id;
         $user['position'] = $validated['position'];
         $user['is_head'] = true;
@@ -197,11 +196,11 @@ class SchoolController extends Controller
      */
     public function update(UpdateSchoolRequest $request, School $school)
     {
-        $validated = $request->validated();
 
         DB::beginTransaction();
 
-        try {
+        // try {
+            $validated = $request->validated();
 
             if ($request->school_type) {
                 $typeID = SchoolType::where('name', $request->school_type)->value('id');
@@ -229,7 +228,7 @@ class SchoolController extends Controller
                     $prevHead->save();
                 }
 
-                $request['school_head_id'] = $headID; //updates school
+                $validated['school_head_id'] = $headID; //updates school
                 $user['school_id'] = $school->id; //updates user
                 $user['position'] = $validated['position'];
                 $user['is_head'] = true;
@@ -250,14 +249,14 @@ class SchoolController extends Controller
                     )
                 ]
             );
-        } catch (\Exception $e) {
+        // } catch (\Exception $e) {
 
-            DB::rollBack();
+        //     DB::rollBack();
 
-            return $this->error(
-                'Failed to update school'
-            );
-        }
+        //     return $this->error(
+        //         'Failed to update school'
+        //     );
+        // }
     }
 
     /**

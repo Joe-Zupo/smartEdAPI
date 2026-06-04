@@ -49,6 +49,10 @@ class UpdateSchoolRequest extends FormRequest
                 }],
             'position' => 'required_with:school_head,school_head_id|string|in:Principal IV,Head Teacher III,Teacher I',
             //'image'             => ['sometimes', 'nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
+
+            'phone_number'                  => ['sometimes', 'string', 'max:15'],
+            'head_email'                    => ['sometimes', 'string', 'email', 'max:255', 'unique:schools,head_email'],
+    
         ];
     }
     public function messages(): array

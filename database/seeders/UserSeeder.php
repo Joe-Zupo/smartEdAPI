@@ -172,6 +172,14 @@ class UserSeeder extends Seeder
             $user = User::create($userData);
 
             $user->assignRole($roleName);
+            $school = School::query()->where('id', $user->school_id)->first();
+            
+            if ($school) {
+                $school->update([
+                    'head_email'   => $user->email,
+                    'phone_number' => $user->phone_number,
+                ]);
+            }
         }
     }
 }

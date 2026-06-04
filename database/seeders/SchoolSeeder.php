@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\School;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use App\SeederFileTrait;
 
@@ -129,7 +130,15 @@ class SchoolSeeder extends Seeder
 
 
         foreach ($schools as $school) {
-            School::create($school);
+            $createdSchool = School::create($school);
+            $user = User::query()->where('school_id', $createdSchool->id)->first();
+            
+            if ($user) {
+                $createdSchool->update([
+                    'head_email'   => $user->email,
+                    'phone_number' => $user->phone_number,
+                ]);
+            }
         }
     }
 }

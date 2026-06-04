@@ -15,6 +15,8 @@ class School extends Model
         'latitude',
         'longitude',
         'address',
+        'phone_number',
+        'head_email',
         'image',
     ];
 

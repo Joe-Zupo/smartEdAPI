@@ -18,6 +18,8 @@ return new class extends Migration
             $table->year('year_established');
             $table->foreignId('school_type_id')->constrained('school_types')->cascadeOnDelete();
             $table->string('district');
+            $table->string('phone_number')->nullable();
+            $table->string('head_email')->unique()->nullable();
             $table->text('address')->nullable();
             $table->decimal('latitude', 10, 8)->nullable();
             $table->decimal('longitude', 11, 8)->nullable();
