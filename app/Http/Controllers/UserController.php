@@ -90,15 +90,10 @@ class UserController extends Controller
         $user = User::create($validatedRequest);
         $user->assignRole($validatedRequest['role']);
         if ($user->hasRole('School Account')) {
-
             if (isset($validatedRequest['school'])) {
                 $user->school_id = $validatedRequest['school'] ?
-                    School::where('school_name', $validatedRequest['school'])->value('id') : null;
+                School::where('school_name', $validatedRequest['school'])->value('id') : null;
                 $message = 'School Account fully initialized, account is set as active';
-                $user->save();
-            } else {
-                $message = 'School Account partially initialized, account is set as inactive, please review later';
-                $user->is_active = false;
                 $user->save();
             }
         } else {

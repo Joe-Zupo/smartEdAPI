@@ -28,7 +28,6 @@ class UpdateUserRequest extends FormRequest
             'school' => [
                 'sometimes',
                 'exists:schools,school_name',
-                "nullable"
             ],
             // 'position' => ['in:Principal IV,Head Teacher III,Teacher I,Principal III'],
             'email' => ['sometimes', 'string', 'email', 'max:255', 'unique:users,email'],
