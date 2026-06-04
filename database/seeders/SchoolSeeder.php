@@ -133,6 +133,7 @@ class SchoolSeeder extends Seeder
 
         foreach ($schools as $school) {
             $school['position'] = Arr::random($principalLevels);
+            $school['region'] = "Region III";
             School::create($school);
         }
     }

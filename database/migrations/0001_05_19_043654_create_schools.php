@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('phone_number')->nullable(); //nullable for seeder 
             $table->string('head_email')->unique()->nullable(); //nullable for seeder
             $table->text('address')->nullable();
+            $table->string('region');
             $table->decimal('latitude', 10, 8)->nullable();
             $table->decimal('longitude', 11, 8)->nullable();
             $table->string('image')->nullable(); 

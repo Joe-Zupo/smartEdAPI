@@ -52,6 +52,7 @@ class SchoolResource extends JsonResource
                     'province' => $province,
                 ]
             ,
+            'region' => $this->region,
             'district' => $this->district,
             'latitude' => $this->latitude !== null
                 ? ($this->latitude >= 0 ? 'N ' : 'S ') . number_format(abs($this->latitude), 6)
