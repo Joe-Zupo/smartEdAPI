@@ -146,7 +146,6 @@ class SchoolController extends Controller
                 'school' => new SchoolResource(
                     $school->load([
                         'schoolType',
-                        'schoolHead'
                     ])
                 )
             ]
