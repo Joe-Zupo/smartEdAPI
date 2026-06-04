@@ -4,6 +4,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use App\Models\User;
+use App\Models\AcademicYear;
+use App\Models\School;
 
 return new class extends Migration
 {
@@ -14,11 +16,12 @@ return new class extends Migration
     {
         Schema::create('submissions', function (Blueprint $table) {
             $table->id();
+            $table->foreignIdFor(AcademicYear::class)->constrained()->onDelete('cascade');
+            $table->foreignIdFor(School::class)->constrained()->onDelete('cascade');
             $table->foreignIdFor(User::class)->constrained()->onDelete('cascade');
-            $table->string('submission_number')->unique();
-            $table->enum('type', ['enrollment_data', 'resource_data']);
+            $table->string('submission_number')->nullable();
+            $table->enum('type', ['enrollment', 'resource', 'information']);
             $table->enum('status', ['pending', 'approved', 'returned']);
-            $table->date('date_submitted')->useCurrent();
             $table->timestamps();
         });
     }
