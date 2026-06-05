@@ -15,10 +15,10 @@ return new class extends Migration
         Schema::create('resource_data', function (Blueprint $table) {
             $table->id();
             $table->foreignIdFor(Submission::class)->constrained()->cascadeOnDelete();
-            $table->enum('resource_name', ['classrooms','teachers', 'seats', 'learning_materials']);
+            $table->enum('resource_name', ['Classrooms', 'Teachers', 'Seats', 'Learning Materials']);
             $table->mediumInteger('inventory');
             $table->mediumInteger('requirement');
-            $table->mediumInteger('need');
+            $table->mediumInteger('need')->storedAs('GREATEST(0, CAST(requirement AS SIGNED) - CAST(inventory AS SIGNED))');;
             $table->timestamps();
         });
     }

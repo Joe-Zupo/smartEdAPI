@@ -32,5 +32,6 @@ class DatabaseSeeder extends Seeder
         $this->call(KpiDataSeeder::class);
         $this->call(AnnouncementSeeder::class);
         $this->call(SubmissionSeeder::class);
+        $this->call(ResourceDataSeeder::class);
     }
 }

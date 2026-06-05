@@ -11,6 +11,7 @@ use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\DivisionLeadershipController;
 use App\Http\Controllers\SchoolController;
 use App\Http\Controllers\KpiDataController;
+use App\Http\Controllers\ResourceDataController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SchoolTypeController;
 use App\Http\Resources\UserResource;
@@ -156,6 +157,13 @@ Route::middleware('auth:sanctum')->group(function () {
         */
 
         Route::apiResource('announcements', AnnouncementController::class)->only(['index', 'store']);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Announcements
+        |--------------------------------------------------------------------------
+        */
+        Route::apiResource('resource-data', ResourceDataController::class)->only(['index']);
 
 
         /*
