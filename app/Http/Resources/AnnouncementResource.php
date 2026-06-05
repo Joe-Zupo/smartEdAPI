@@ -18,7 +18,7 @@ class AnnouncementResource extends JsonResource
         $isPublic = $request->is('api/public/*');
         $isPublicShow = $request->routeIs('announcements.publicShow');
         return [
-           'recent_posts' => $this->when(
+            'recent_posts' => $this->when(
                 $isPublicShow,
                 Announcement::where('type', 'public')
                     ->where('id', '!=', $this->id)
@@ -26,16 +26,16 @@ class AnnouncementResource extends JsonResource
                     ->get(['id', 'title'])
                     ->values()
             ),
-            'title'         => $this->title,
-            'description'   => $this->description,
-            'type'          => $this->type,
-            'image_url' => $this->image
-                ? asset('storage/' . $this->image)
+            'title' => $this->title,
+            'description' => $this->description,
+            'type' => $this->type,
+            'image_url' => $this->image_url
+                ? asset('storage/' . $this->image_url)
                 : null,
             'date' => $this->created_at->format('F d, Y'),
-            'date_time' => $this->when(! $isPublic, $this->created_at->format('F d, Y h:i A')),
-            
-            'is_new' => $this->when(! $isPublic, $this->created_at->diffInDays(now()) <= 3),
-        ]; 
+            'date_time' => $this->when(!$isPublic, $this->created_at->format('F d, Y h:i A')),
+
+            'is_new' => $this->when(!$isPublic, $this->created_at->diffInDays(now()) <= 3),
+        ];
     }
 }
