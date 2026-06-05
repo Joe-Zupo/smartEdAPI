@@ -28,7 +28,7 @@ class SchoolController extends Controller
         $perPage = $validated['per_page'] ?? 5;
         $sortBy = $validated['sortBy'] ?? 'id';
         $sortOrder = $validated['sortOrder'] ?? 'asc';
-        $getAll = $request->boolean('all') ?? false;
+        $getAll = $request['all'] ?? false;
 
         $query = School::query()
             ->with([

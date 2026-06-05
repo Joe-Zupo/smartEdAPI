@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('grade_level');
             $table->smallInteger('male_count');
             $table->smallInteger('female_count');
-            $table->smallInteger('total_count');
+            $table->smallInteger('total_count')->storedAs('male_count + female_count');
             $table->timestamps();
         });
     }
