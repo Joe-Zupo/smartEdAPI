@@ -245,7 +245,6 @@ class SchoolController extends Controller
                 return $this->success('Successfully updated school image', [
                     'data' => new SchoolResource($school->refresh()->load([
                         'schoolType',
-                        'schoolHead'
                     ]))
                 ]);
             }
