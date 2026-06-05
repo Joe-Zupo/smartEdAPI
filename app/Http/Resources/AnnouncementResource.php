@@ -29,8 +29,8 @@ class AnnouncementResource extends JsonResource
             'title'         => $this->title,
             'description'   => $this->description,
             'type'          => $this->type,
-            'image_url' => $this->image
-                ? asset('storage/' . $this->image)
+            'image_url' => $this->image_url
+                ? asset('storage/' . $this->image_url)
                 : null,
             'date' => $this->created_at->format('F d, Y'),
             'date_time' => $this->when(! $isPublic, $this->created_at->format('F d, Y h:i A')),
