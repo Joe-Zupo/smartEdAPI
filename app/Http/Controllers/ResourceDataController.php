@@ -23,6 +23,16 @@ class ResourceDataController extends Controller
         $sortOrder = $request['sortOrder'] ?? 'desc';
         $getAll = $request->boolean('all') ?? false;
 
+        $user = $request->user();
+        if ($user->hasRole('School Account')){
+            if($request->filled('school_name')){
+                return $this->error('This School Account can only access data of the school they are under.');
+            }else{
+                $schoolName = School::query()->where('id', $user->school_id)->value('school_name');
+                $request['school_name'] = $schoolName;
+            }
+        }
+
          if ($request->filled('academic_year')){
             $academicYear = AcademicYear::query()->where('academic_year', $request['academic_year'])->first();
          }else{
