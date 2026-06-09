@@ -24,15 +24,9 @@ class UpdateUserRequest extends FormRequest
     {
         return [
             'name' => ['sometimes', 'string', 'max:255'],
-            'role' => ['sometimes', 'string', 'exists:roles,name'],
-            'school' => [
-                'sometimes',
-                'exists:schools,school_name',
-            ],
             // 'position' => ['in:Principal IV,Head Teacher III,Teacher I,Principal III'],
             'email' => ['sometimes', 'string', 'email', 'max:255', 'unique:users,email'],
             'username' => ['sometimes', 'string', 'max:255', 'unique:users,username'],
-            'password' => ['sometimes', 'string', 'min:8', 'confirmed'],
             'phone_number' => ['sometimes', 'string', 'max:15'],
         ];
     }
@@ -54,8 +48,6 @@ class UpdateUserRequest extends FormRequest
 
             $comparableFields = [
                 'name',
-                'role',
-                'school',
                 'email',
                 'username',
                 'phone_number',

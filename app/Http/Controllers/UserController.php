@@ -134,31 +134,12 @@ class UserController extends Controller
         $validatedRequest = $request->validated();
         DB::beginTransaction();
 
-        try {
-            $user->update($validatedRequest);
-            if (isset($validatedRequest['role'])) {
-                $user->syncRoles($validatedRequest['role']);
-            }
+        $user->update($validatedRequest);
 
-            if (isset($validatedRequest['school'])) {
-                $user->school_id = $validatedRequest['school'] ?
-                    School::where('school_name', $validatedRequest['school'])->value('id') : null;
-                $user->save();
-            } else if ($validatedRequest['school'] === null) {
-                $user->school_id = null;
-                $user->save();
-            }
-
-
-            DB::commit();
-            return $this->success('User Updated successfully', [
+        DB::commit();
+        return $this->success('User Updated successfully', [
                 new UserResource($user)
-            ]);
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return $this->error('Failed to update User');
-        }
+        ]);
     }
 
     public function destroy(User $user)
