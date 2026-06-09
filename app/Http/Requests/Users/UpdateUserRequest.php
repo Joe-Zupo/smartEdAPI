@@ -58,7 +58,6 @@ class UpdateUserRequest extends FormRequest
                 'school',
                 'email',
                 'username',
-                'password',
                 'phone_number',
             ];
 
