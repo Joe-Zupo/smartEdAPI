@@ -28,5 +28,14 @@ class AcademicYear extends Model
         $academic_year->academic_year = "S.Y. {$start} - {$end}";
         
         });
+
+        static::saving(function ($academic_year){
+        
+        $start = $academic_year->start_date->format('Y');
+        $end = $academic_year->end_date->format('Y');
+
+        $academic_year->academic_year = "S.Y. {$start} - {$end}";
+
+        });
     }
 }
