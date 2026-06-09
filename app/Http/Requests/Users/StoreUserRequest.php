@@ -26,7 +26,6 @@ class StoreUserRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'role' => ['required', 'string', 'exists:roles,name'],
             'school' => [
-                'required_if:role,School Account',
                 'exists:schools,school_name',
             ],
             //'position' => ['required_if:role,School Account', 'in:Principal IV,Head Teacher III,Teacher I'],

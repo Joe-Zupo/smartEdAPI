@@ -152,16 +152,6 @@ class UserSeeder extends Seeder
 
             $user->assignRole($roleName);
 
-            //School Seeder Filler
-            $school = School::query()->where('id', $user->school_id)->first();
-            
-            if ($school && $user->hasRole('School Account')) {
-                $school->update([
-                    'school_head'  => $user->name,
-                    'head_email'   => $user->email,
-                    'phone_number' => $user->phone_number,
-                ]);
-            }
         }
     }
 }

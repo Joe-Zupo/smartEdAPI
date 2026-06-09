@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use App\Models\SchoolType;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Arr;
 
 class SchoolController extends Controller
 {
@@ -33,6 +34,7 @@ class SchoolController extends Controller
         $query = School::query()
             ->with([
                 'schoolType',
+                'schoolHead'
             ]);
 
         if ($request->filled('school_name')) {
@@ -119,17 +121,19 @@ class SchoolController extends Controller
             $typeID = $validated['school_type_id'];
         }
 
+        $user = User::query()->where('name', 'like', '%'. $request['school_head'] . '%');
+        Arr::forget($validated, 'school_head');
+
         $validated['school_type_id'] = $typeID;
 
         $street = $validated['street'];
         $barangay = $validated['barangay'];
         $city = $validated['city'];
         $province = $validated['province'];
-
         $validated['address'] = "{$street}, {$barangay}, {$city}, {$province}";
-
+        
         $school = School::create($validated);
-
+        $user->update(['school_id' => $school['id']]);
         DB::commit();
 
         return $this->success(
@@ -137,7 +141,8 @@ class SchoolController extends Controller
             [
                 'school' => new SchoolResource(
                     $school->load([
-                        'schoolType'
+                        'schoolType',
+                        'schoolHead'
                     ])
                 )
             ]
@@ -155,6 +160,7 @@ class SchoolController extends Controller
                 'school' => new SchoolResource(
                     $school->load([
                         'schoolType',
+                        'schoolHead'
                     ])
                 )
             ]
@@ -168,6 +174,7 @@ class SchoolController extends Controller
     public function update(UpdateSchoolRequest $request, School $school)
     {
             DB::beginTransaction();
+            
             $validated = $request->validated();
 
             if ($request->school_type) {
@@ -200,8 +207,13 @@ class SchoolController extends Controller
             }
             $validated['address'] = "{$street}, {$barangay}, {$city}, {$province}";
 
+            $oldHead = User::role('School Account')->where('school_id', $school->id);
+            $user = User::query()->where('name', 'like', '%'. $request['school_head'] . '%');
+            Arr::forget($validated, 'school_head');
 
             $school->update($validated);
+            $oldHead->update(['school_id' => null]);
+            $user->update(['school_id' => $school->id]);
             DB::commit();
 
             return $this->success(
@@ -210,6 +222,7 @@ class SchoolController extends Controller
                     'school' => new SchoolResource(
                         $school->refresh()->load([
                             'schoolType',
+                            'schoolHead'
                         ])
                     )
                 ]
@@ -245,6 +258,7 @@ class SchoolController extends Controller
                 return $this->success('Successfully updated school image', [
                     'data' => new SchoolResource($school->refresh()->load([
                         'schoolType',
+                        'schoolHead'
                     ]))
                 ]);
             }

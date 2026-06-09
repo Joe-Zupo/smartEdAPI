@@ -18,10 +18,7 @@ return new class extends Migration
             $table->year('year_established');
             $table->foreignId('school_type_id')->constrained('school_types')->cascadeOnDelete();
             $table->string('district');
-            $table->string('school_head')->unique()->nullable(); //nullable for seeder
             $table->string('position');
-            $table->string('phone_number')->nullable(); //nullable for seeder 
-            $table->string('head_email')->unique()->nullable(); //nullable for seeder
             $table->text('address')->nullable();
             $table->string('region');
             $table->decimal('latitude', 10, 8)->nullable();
