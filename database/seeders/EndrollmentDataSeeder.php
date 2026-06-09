@@ -27,7 +27,7 @@ class EndrollmentDataSeeder extends Seeder
 
                 EnrollmentData::create([
                     'submission_id' => $submission->id,
-                    'grade_level' => $grade->id,
+                    'grade_level' => $grade->name,
                     'male_count' => $male,
                     'female_count' => $female,
                 ]);
