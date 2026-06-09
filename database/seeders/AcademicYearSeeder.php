@@ -21,16 +21,16 @@ class AcademicYearSeeder extends Seeder
             ],
             [
                 'start_date' => '2024-10-01',
-                'end_date' => '2025-06-30',
+                'end_date' => '2025-05-30',
                 'status' => 'active',
             ],
             [
-                'start_date' => '2025-10-01',
-                'end_date' => '2026-06-30',
+                'start_date' => '2025-06-01',
+                'end_date' => '2026-05-30',
                 'status' => 'active',
             ],
             [
-                'start_date' => '2026-10-01',
+                'start_date' => '2026-06-01',
                 'end_date' => '2027-06-30',
                 'status' => 'default',
             ],
