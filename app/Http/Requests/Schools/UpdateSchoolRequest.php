@@ -6,9 +6,11 @@ use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use App\Models\User;
+use App\updateValidator;
 
 class UpdateSchoolRequest extends FormRequest
 {
+    use updateValidator;
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -26,7 +28,7 @@ class UpdateSchoolRequest extends FormRequest
     {
         return [
             'school_name'               => ['sometimes', 'string', 'max:255', 'unique:schools,school_name'],
-            'school_code'               => ['sometimes', 'string', 'max:50', Rule::unique('schools','school_ code')->ignore($this->route('school'))],
+            'school_code'               => ['sometimes', 'string', 'max:50', Rule::unique('schools','school_code')->ignore($this->route('school'))],
             'year_established'          => ['sometimes', 'digits:4', 'integer'],
             'school_type'               => ['sometimes', 'exists:school_types,name'],
             'school_type_id'            => ['sometimes', 'exists:school_types,id'],
@@ -58,5 +60,32 @@ class UpdateSchoolRequest extends FormRequest
                 'position.in' =>
                     'Invalid position selected. Valid positions are: Principal IV,Head Teacher III,Teacher I,Principal III.',
             ];
+        }
+
+    public function prepareForValidation(): void
+        {
+            $school = $this->route('school');
+
+            $data = $this->validateUpdate(
+                $this->all(),
+                $school,
+                [
+                    'school_name',
+                    'school_code',
+                    'year_established',
+                    'school_type',
+                    'school_type_id',
+                    'region',
+                    'district',
+                    'latitude',
+                    'longitude',
+                    'school_head',
+                    'position',
+                    'phone_number',
+                    'head_email',
+                ]
+            );
+
+            $this->replace($data);
         }
 }
