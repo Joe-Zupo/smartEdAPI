@@ -46,4 +46,32 @@ class UpdateUserRequest extends FormRequest
         //             'Invalid position selected. Valid positions are: Principal IV,Head Teacher III,Teacher I,Principal III.',
         //     ];
         // }
+        public function prepareForValidation(): void
+        {
+            $user = $this->route('user');
+
+            $data = $this->all();
+
+            $comparableFields = [
+                'name',
+                'role',
+                'school',
+                'email',
+                'username',
+                'password',
+                'phone_number',
+            ];
+
+            foreach ($comparableFields as $field) {
+
+                if (
+                    array_key_exists($field, $data) &&
+                    $user->{$field} == $data[$field]
+                ) {
+                    unset($data[$field]);
+                }
+            }
+
+            $this->replace($data);
+        }
 }
