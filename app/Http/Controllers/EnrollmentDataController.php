@@ -12,7 +12,7 @@ class EnrollmentDataController extends Controller
      */
     public function index()
     {
-        //
+        
     }
 
     /**
