@@ -25,7 +25,6 @@ class UpdateAcademicYearRequest extends FormRequest
         return [
             'start_date' => 'sometimes|date|before:end_date|unique:academic_years,start_date',
             'end_date' => 'sometimes|date|after:start_date|unique:academic_years,end_date',
-            'academic_year' => 'sometimes|string|unique:academic_years,academic_year',
         ];
     }
 }

@@ -13,4 +13,17 @@ class DivisionLeadership extends Model
         'term_start',
         'term_end',
     ];
+
+    public static function booted(){
+        parent::booted();
+        static::creating(function ($dl){
+
+            if ($dl->is_oic){
+                $newName = "OIC, {$dl->position}";
+                $dl->position = $newName;
+            }
+            
+        });
+
+    }
 }

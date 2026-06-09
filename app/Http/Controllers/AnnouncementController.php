@@ -73,7 +73,7 @@ class AnnouncementController extends Controller
             'title' => $validated['title'],
             'description' => $validated['description'],
             'type' => $validated['type'],
-            'image_url' => $validated['image'],
+            'image' => $validated['image'],
         ]);
 
         return $this->success("Announcement created successfully", ["data" => $announcement]);
