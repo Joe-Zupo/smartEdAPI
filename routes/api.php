@@ -9,12 +9,15 @@ use App\Http\Controllers\AcademicYearController;
 use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\DivisionLeadershipController;
+use App\Http\Controllers\EnrollmentDataController;
 use App\Http\Controllers\SchoolController;
 use App\Http\Controllers\KpiDataController;
 use App\Http\Controllers\ResourceDataController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SchoolTypeController;
+use App\Http\Controllers\SubmissionsController;
 use App\Http\Resources\UserResource;
+use App\Models\EnrollmentData;
 
 /*
 |--------------------------------------------------------------------------
@@ -160,10 +163,25 @@ Route::middleware('auth:sanctum')->group(function () {
 
         /*
         |--------------------------------------------------------------------------
-        | Announcements
+        | Resource Data
         |--------------------------------------------------------------------------
         */
         Route::apiResource('resource-data', ResourceDataController::class)->only(['index']);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Resource Data
+        |--------------------------------------------------------------------------
+        */
+        Route::apiResource('submissions', SubmissionsController::class)->only(['index']);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Resource Data
+        |--------------------------------------------------------------------------
+        */
+        Route::apiResource('enrollment-data', EnrollmentDataController::class)->only(['index']);
 
 
         /*
