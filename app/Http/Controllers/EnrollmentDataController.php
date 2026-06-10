@@ -14,7 +14,7 @@ class EnrollmentDataController extends Controller
 {
 
     /**
-     * Display a listing of the resource.
+     * Index Enrollment Data
      */
     public function index(IndexEnrollmentDataRequest $request)
     {
@@ -91,7 +91,7 @@ class EnrollmentDataController extends Controller
                         'id' => $academic_year->id,
                         'name' => $academic_year->academic_year,
                     ],
-                    'global_totals' => [
+                    'enrollments_totals' => [
                         'total_male' => (int) ($totals->total_male ?? 0),
                         'total_female' => (int) ($totals->total_female ?? 0),
                         'total_students' => (int) ($totals->total_students ?? 0),
