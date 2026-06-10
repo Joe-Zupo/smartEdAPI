@@ -97,6 +97,8 @@ class EnrollmentDataController extends Controller
             ]);
         } else {
             $school = School::query()->where('school_name', $request['school_name'])->first();
+
+            $displayedItems = $this->displayRelevant($school, EnrollmentDataResource::collection($items));
             return $this->success('Enrollment data retrieved successfully', [
 
                 'message' => 'Enrollment data retrieved successfully',
@@ -110,7 +112,7 @@ class EnrollmentDataController extends Controller
                         'name' => $school->school_name,
                         'school_type' => $school->schoolType->name
                     ],
-                    'items' => EnrollmentDataResource::collection($items),
+                    'items' => $displayedItems,
                     'school_totals' => [
                         'total_male' => (int) ($totals->total_male ?? 0),
                         'total_female' => (int) ($totals->total_female ?? 0),
@@ -158,14 +160,39 @@ class EnrollmentDataController extends Controller
         //
     }
 
-    private function normalizeGrades(){
-        $academic_years = AcademicYear::all();
+    private function displayRelevant(School $school, $items){
         
-        $query = EnrollmentData::with(['gradeLevel','submission'])
-            ->whereHas('submission', function ($q) use ($academic_years){
-                    $q->where('status', 'approved');
-            });
-        
-        
+        $type = $school->schoolType->name;
+        $allowedGrades = match ($type) {  
+                'Elementary' => [
+                    'Kinder','Grade 1','Grade 2','Grade 3','Grade 4','Grade 5','Grade 6',
+                ],
+
+                'Junior High School' => [
+                    'Grade 7','Grade 8','Grade 9','Grade 10',
+                ],
+
+                'Standalone SHS' => [
+                    'Grade 11','Grade 12',
+                ],
+
+                'Integrated School',
+                'Science High School',
+                'ALS',
+                'Junior High School with SHS' => [
+                    'Kinder','Grade 1','Grade 2','Grade 3','Grade 4','Grade 5','Grade 6','Grade 7','Grade 8','Grade 9','Grade 10','Grade 11','Grade 12',
+                ],
+
+                default => [],
+            };
+
+        return $items->filter(function ($item) use ($allowedGrades) {
+
+            return in_array(
+                $item->grade_level,
+                $allowedGrades
+            );
+
+        })->values();
     }
 }
