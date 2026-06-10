@@ -10,7 +10,7 @@ use App\Models\User;
 use App\Http\Resources\AcademicYearResource;
 use App\Http\Requests\AcademicYears\StoreAcademicYearRequest;
 use App\Http\Requests\AcademicYears\UpdateAcademicYearRequest;
-use Carbon\Carbon;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class AcademicYearController extends Controller
@@ -159,120 +159,96 @@ class AcademicYearController extends Controller
     /**
      * Change Year Status
      */
-        public function changeStatus(Request $request, AcademicYear $academicYear)
+        public function changeStatus(AcademicYear $academicYear)
         {
-            //$this->authorize('create', User::class);
-            $validated = $request->validate([
-                'status' => 'required|string|in:active,default,upcoming,archived'
-            ]);
+            //End Goals
+            //Upcoming to Default and Default to Active-> with checking if now between or on start and end date of upcoming
+            //Default to Active and Upcoming to new Default -> checks if Upcoming is eligible to be the new default
+            //Active to Archived DONE
+            //Archived to Active DONE
 
             DB::beginTransaction();
 
-        try {
+            $currentDefault = AcademicYear::where('status', 'default')->first();
+            $today = now();
 
-            $newStatus = $validated['status'];
+            $defaultEndDate = Carbon::parse($currentDefault->end_date);
 
-            // Prevent manual changing of current default
-            if ($academicYear->status === 'default') {
 
+            //NEW
+            
+            //Upcoming to Default and Default to Active
+
+            if($academicYear->status === 'upcoming'){
+                    if($today->between($academicYear->start_date, $academicYear->end_date)){
+                        $currentDefault->update(['status' => 'active']);
+                        $academicYear->update(['status' => 'default']);
+                        $action = "Changed from Upcoming to Default and Old Default to Active";
+                        DB::commit();
+                        return $this->success('Academic Year successfully changed status', [
+                            'action' => $action,
+                            'academic_year' => new AcademicYearResource($academicYear),
+                            'old_default' => new AcademicYearResource($currentDefault)
+                        ]);
+                }else{
+                    DB::rollBack();
+                    return $this->error('Changing the default does not match current time');
+                }
+            }
+
+            // Default to Active and Upcoming to Default
+
+            if($academicYear->status === 'default'){
+                //check if ended
+                if($today->lte($defaultEndDate)){
+                    DB::rollBack();
+                    return $this->error('Default year has still not concluded');
+                }else{
+                    $upcomingYear = AcademicYear::where('status', 'upcoming')
+                    ->orderBy('start_date')
+                    ->first();
+                
+                    if(!$upcomingYear){
+                        DB::rollBack();
+                        return $this->error("Could not update, no eligible upcoming years found");
+                    }else{
+                        $academicYear->update(['status' => 'active']);
+                        $upcomingYear->update(['status' => 'default']);
+                        $action = "Changed from Default to Active and Upcoming to Default";
+                        DB::commit();
+                        return $this->success('Academic Year successfully changed status', [
+                            'action' => $action,
+                            'academic_year' => new AcademicYearResource($academicYear),
+                            'new_default' => new AcademicYearResource($upcomingYear)
+                        ]);
+                    }
+                }
+            }
+
+            if($academicYear->status === 'active'){
+                $academicYear->update(['status' => 'archived']);
+                $action = "Changed from Active to Archived";
+                DB::commit();
+                return $this->success('Academic Year successfully changed status', [
+                    'action' => $action,
+                    'academic_year' => new AcademicYearResource($academicYear)
+                ]);
+            }
+
+            if($academicYear->status === 'archived'){
+                $academicYear->update(['status' => 'active']);
+                $action = "Changed from Archived to Active";
+                DB::commit();
+                return $this->success('Academic Year successfully changed status', [
+                    'action' => $action,
+                    'academic_year' => new AcademicYearResource($academicYear)
+                ]);
+            }
+
+            if(!$academicYear){
                 DB::rollBack();
-
-                return $this->error(
-                    'Default academic year cannot be manually changed.'
-                );
+                return $this->error('Could not find Academic Year Status');
             }
-
-            // ONLY upcoming can become default
-            if ($newStatus === 'default') {
-
-                if ($academicYear->status !== 'upcoming') {
-
-                    DB::rollBack();
-
-                    return $this->error(
-                        'Only upcoming academic years can become default.'
-                    );
-                }
-
-                $currentDefault = AcademicYear::where('status', 'default')->first();
-
-                if (!$currentDefault) {
-
-                    DB::rollBack();
-
-                    return $this->error(
-                        'No current default academic year found.'
-                    );
-                }
-
-                $today = now();
-
-                $defaultEndDate = Carbon::parse($currentDefault->end_date);
-                $upcomingStartDate = Carbon::parse($academicYear->start_date);
-
-                // Current default must already be finished
-                if ($today->lt($defaultEndDate)) {
-
-                    DB::rollBack();
-                    return $this->error(
-                        'Current default academic year is not yet finished.'
-                    );
-                }
-
-                // Upcoming year must match current year
-                if ($today->year !== $upcomingStartDate->year) {
-
-                    DB::rollBack();
-
-                    return $this->error(
-                        'Upcoming academic year cannot yet become default.'
-                    );
-                }
-
-                // Demote old default
-                $currentDefault->update([
-                    'status' => 'active'
-                ]);
-
-                // Promote upcoming
-                $academicYear->update([
-                    'status' => 'default'
-                ]);
-
-            } else {
-
-                // Prevent manually setting default
-                if ($academicYear->status === 'default') {
-
-                    DB::rollBack();
-
-                    return $this->error(
-                        'Default academic year cannot be modified.'
-                    );
-                }
-
-                $academicYear->update([
-                    'status' => $newStatus
-                ]);
-            }
-
-            DB::commit();
-
-            return $this->success(
-                'Successfully changed status',
-                [
-                    'academic_year' => new AcademicYearResource($academicYear->fresh())
-                ]
-            );
-
-        } catch (\Exception $e) {
-
-            DB::rollBack();
-
-            return $this->error(
-                'Cannot change current status'
-            );
-        }
     }
 
     public function destroy(AcademicYear $academicYear)

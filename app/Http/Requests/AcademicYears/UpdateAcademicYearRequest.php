@@ -38,5 +38,7 @@ class UpdateAcademicYearRequest extends FormRequest
                     $validator->errors()->add('end_date', 'You must keep the longevity of the school year within 1 year');   
                 }
         });
+
+        
     }
 }

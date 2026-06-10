@@ -4,9 +4,11 @@ namespace App\Http\Requests\Users;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use App\updateValidator;
 
 class UpdateUserRequest extends FormRequest
 {
+    use updateValidator;
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -44,24 +46,16 @@ class UpdateUserRequest extends FormRequest
         {
             $user = $this->route('user');
 
-            $data = $this->all();
-
-            $comparableFields = [
-                'name',
-                'email',
-                'username',
-                'phone_number',
-            ];
-
-            foreach ($comparableFields as $field) {
-
-                if (
-                    array_key_exists($field, $data) &&
-                    $user->{$field} == $data[$field]
-                ) {
-                    unset($data[$field]);
-                }
-            }
+            $data = $this->validateUpdate(
+                $this->all(),
+                $user,
+                [
+                    'name',
+                    'email',
+                    'username',
+                    'phone_number',
+                ]
+            );
 
             $this->replace($data);
         }

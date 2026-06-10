@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class DivisionLeadership extends Model
 {
@@ -23,6 +24,16 @@ class DivisionLeadership extends Model
                 $dl->position = $newName;
             }
             
+        });
+
+        static::saving(function ($dl){
+            if ($dl->is_oic){
+                $newName = "OIC, {$dl->position}";
+                $dl->position = $newName;
+            }else{
+                $newName = Str::remove('OIC, ', $dl->position);
+                $dl->position = $newName;
+            }
         });
 
     }

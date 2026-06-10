@@ -94,7 +94,7 @@ Route::middleware('auth:sanctum')->group(function () {
             ->except('destroy');
 
         Route::prefix('academic-years')->group(function () {
-            Route::post(
+            Route::put(
                 '{academic_year}/change-status',
                 [AcademicYearController::class, 'changeStatus']
             );
