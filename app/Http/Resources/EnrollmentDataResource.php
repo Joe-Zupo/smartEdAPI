@@ -17,13 +17,7 @@ class EnrollmentDataResource extends JsonResource
         return [
             'id' => $this->id,
             'submission_id' => $this->submission_id,
-            'grade_level_id' => $this->grade_level_id,
-            'grade_level' => $this->whenLoaded('gradeLevel', function () {
-                return [
-                    'id' => $this->gradeLevel?->id,
-                    'name' => $this->gradeLevel?->name,
-                ];
-            }),
+            'grade_level' => $this->grade_level,
             'male_count' => $this->male_count,
             'female_count' => $this->female_count,
             'total_count' => $this->total_count,

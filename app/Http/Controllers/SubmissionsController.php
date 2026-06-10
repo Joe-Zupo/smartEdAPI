@@ -2,17 +2,48 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Submissions;
+use App\Models\Submission;
 use Illuminate\Http\Request;
+use App\Http\Resources\SubmissionResource;
+use App\Models\AcademicYear;
 
 class SubmissionsController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(IndexSubmissionsRequest $request)
     {
-        //
+        $validated = $request->validated();
+
+        $perPage = $validated['per_page'] ?? 5;
+        $sortBy = $validated['sortBy'] ?? 'id';
+        $sortOrder = $validated['sortOrder'] ?? 'asc';
+        $getAll = $request['all'] ?? false;
+
+        $user = auth()->user();
+
+        if ($request->has('academic_year')){
+            $academic_year = AcademicYear::query()->where('academic_year', $validated['academic_year']);
+        }else{
+            $academic_year = AcademicYear::query()->where('status', 'default');
+        }
+
+        if(!$academic_year){
+            return $this->error('Academic Year not Found!', 404);
+        }
+
+        
+
+
+        // $submissions = Submission::all();
+
+        // return $this->success('Submissions retrieved successfully', 
+        // ['submissions' => SubmissionResource::collection($submissions->load([
+        //     'enrollmentData',
+        //     'resourceData',
+        //     'schoolInformationDraft'
+        // ]))]);
     }
 
     /**
