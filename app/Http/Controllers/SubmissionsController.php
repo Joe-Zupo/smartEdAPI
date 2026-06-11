@@ -14,26 +14,6 @@ class SubmissionsController extends Controller
      */
     public function index(IndexSubmissionsRequest $request)
     {
-        $validated = $request->validated();
-
-        $perPage = $validated['per_page'] ?? 5;
-        $sortBy = $validated['sortBy'] ?? 'id';
-        $sortOrder = $validated['sortOrder'] ?? 'asc';
-        $getAll = $request['all'] ?? false;
-
-        $user = auth()->user();
-
-        if ($request->has('academic_year')){
-            $academic_year = AcademicYear::query()->where('academic_year', $validated['academic_year']);
-        }else{
-            $academic_year = AcademicYear::query()->where('status', 'default');
-        }
-
-        if(!$academic_year){
-            return $this->error('Academic Year not Found!', 404);
-        }
-
-        
 
 
         // $submissions = Submission::all();

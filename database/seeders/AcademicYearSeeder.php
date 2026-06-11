@@ -15,6 +15,11 @@ class AcademicYearSeeder extends Seeder
     {
         $academic_years = [
             [
+                'start_date' => '2022-10-01',
+                'end_date' => '2023-06-30',
+                'status' => 'archived',
+            ],
+            [
                 'start_date' => '2023-10-01',
                 'end_date' => '2024-06-30',
                 'status' => 'archived',
