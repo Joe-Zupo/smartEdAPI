@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Announcement;
-use App\SeederFileTrait;
+use App\Helpers\SeederFileTrait;
 use Illuminate\Database\Seeder;
 
 class AnnouncementSeeder extends Seeder
