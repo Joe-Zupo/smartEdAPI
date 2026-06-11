@@ -21,8 +21,8 @@ class EnrollmentDataController extends Controller
         $request->validated();
 
         $perPage = $request['per_page'] ?? 5;
-        $sortBy = $request['sortBy'] ?? 'id';
-        $sortOrder = $request['sortOrder'] ?? 'asc';
+        // $sortBy = $request['sortBy'] ?? 'id';
+        // $sortOrder = $request['sortOrder'] ?? 'asc';
         $getAll = $request['all'] ?? false;
 
         $user = auth()->user();
