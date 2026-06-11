@@ -7,6 +7,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use App\Models\AcademicYear;
 use App\Models\School;
+use Illuminate\Validation\Validator;
 
 class IndexEnrollmentDataRequest extends FormRequest
 {

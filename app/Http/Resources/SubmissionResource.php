@@ -5,6 +5,7 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use App\Models\SchoolType;
+use App\Models\School;
 
 class SubmissionResource extends JsonResource
 {
@@ -35,15 +36,10 @@ class SubmissionResource extends JsonResource
                 function (){
 
                     if ($this->type === 'enrollment') {
-                        return $this->enrollmentData->map(function ($item) {
-                            return [
-                                'id' => $item->id,
-                                'grade_level' => $item->grade_level,
-                                'male_count' => $item->male_count,
-                                'female_count' => $item->female_count,
-                                'total_count' => $item->total_count,
+                        $items = $this->displayRelevant($this->school, $this->enrollmentData);
+                        return [
+                            'items' => EnrollmentDataResource::collection($items)
                             ];
-                        });
                     }
                     if ($this->type === 'resource') {
                         return $this->resourceData->map(function ($item) {
@@ -84,4 +80,41 @@ class SubmissionResource extends JsonResource
 
         ];
     }
+
+    private function displayRelevant(School $school, $items){
+        
+            $type = $school->schoolType->name;
+            $allowedGrades = match ($type) {  
+                    'Elementary' => [
+                        'Kinder','Grade 1','Grade 2','Grade 3','Grade 4','Grade 5','Grade 6',
+                    ],
+
+                    'Junior High School' => [
+                        'Grade 7','Grade 8','Grade 9','Grade 10',
+                    ],
+
+                    'Standalone SHS' => [
+                        'Grade 11','Grade 12',
+                    ],
+
+                    'Integrated School',
+                    'Science High School',
+                    'ALS',
+                    'Junior High School with SHS' => [
+                        'Kinder','Grade 1','Grade 2','Grade 3','Grade 4','Grade 5','Grade 6','Grade 7','Grade 8','Grade 9','Grade 10','Grade 11','Grade 12',
+                    ],
+
+                    default => [],
+                };
+
+            return $items->filter(function ($item) use ($allowedGrades) {
+
+                return in_array(
+                    $item->grade_level,
+                    $allowedGrades
+                );
+
+            })->values();
+        }
+
 }

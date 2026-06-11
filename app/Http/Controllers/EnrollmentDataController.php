@@ -21,8 +21,8 @@ class EnrollmentDataController extends Controller
         $request->validated();
 
         $perPage = $request['per_page'] ?? 5;
-        $sortBy = $request['sortBy'] ?? 'id';
-        $sortOrder = $request['sortOrder'] ?? 'asc';
+        // $sortBy = $request['sortBy'] ?? 'id';
+        // $sortOrder = $request['sortOrder'] ?? 'asc';
         $getAll = $request['all'] ?? false;
 
         $user = auth()->user();
@@ -39,9 +39,15 @@ class EnrollmentDataController extends Controller
 
         //Base Query [Gets Approved Enrollment Data and (Optional:Specific) School they're under]
         $query = EnrollmentData::with(['gradeLevel','submission'])
-            ->whereHas('submission', function ($q) use ($academic_year, $request){
+            ->whereHas('submission', function ($q) use ($academic_year, $request, $user){
                     $q->where('status', 'approved') // gets only approved enrollment data under submissions
                             ->where('academic_year_id', $academic_year->id);
+
+
+                        if($user->hasRole('School Account')){ //Regardless of whats the query; if user is a school account they will only see their school's data
+                            $school = School::query()->where('id', $user->school_id)->value('school_name');
+                            $request['school_name'] = $school;
+                        }
 
                         if ($request->filled('school_name')){
                             $school = School::query()->where('school_name', $request['school_name'])->first();

@@ -28,10 +28,14 @@ class IndexSubmissionsRequest extends FormRequest
         return [
             'all' => 'nullable|in:true,false',
 
-            'sortBy' => 'nullable|string|in:id,school_name,school_code,created_at',
-            'sortOrder' => 'nullable|string|in:asc,desc',
+            //'sortBy' => 'nullable|string|in:id,school_name,school_code,created_at',
+            //'sortOrder' => 'nullable|string|in:asc,desc',
             'per_page' => 'nullable|integer|min:1|max:100',
             'page' => 'nullable|integer|min:1',
+
+            'type' => 'in:enrollment,resource,information',
+            'status' => 'in:pending,approved,returned',
+            'search' => 'string',
         ];
     }
 }
