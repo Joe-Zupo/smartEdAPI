@@ -12,7 +12,7 @@ use Illuminate\Http\Request;
 class ResourceDataController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Index Resource Data
      */
     public function index(IndexResourceRequest $request)
     {
