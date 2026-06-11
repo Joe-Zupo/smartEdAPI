@@ -5,6 +5,7 @@ namespace App\Http\Requests\Schools;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Models\User;
+use Illuminate\Validation\Rule;
 
 class StoreSchoolRequest extends FormRequest
 {
@@ -23,6 +24,7 @@ class StoreSchoolRequest extends FormRequest
      */
     public function rules(): array
     {
+        $validUsers = User::role('School Account')->where('school_id', null)->pluck('name')->toArray();
         return [
             'school_name'               => 'required|string|max:255|unique:schools,school_name',
             'school_code'               => 'required|string|max:50|unique:schools,school_code',
@@ -31,14 +33,14 @@ class StoreSchoolRequest extends FormRequest
             'school_type'               => 'required_without:school_type_id|exists:school_types,name|nullable',
             'school_type_id'            => 'required_without:school_type|exists:school_types,id|nullable',
 
-            'school_head'               => 'required|string|unique:schools,school_head|max:255',
+            'school_head'               => ['required','string','max:255', Rule::in($validUsers)],
 
             //Principal I,Principal II,Principal III,Principal IV
             'position'                  => 'required_with:school_head,school_head_id|string|
                                             in:Principal I,Principal II,Principal III,Principal IV',
 
-            'phone_number'             => ['required', 'string', 'max:15'],
-            'head_email'               => ['required', 'string', 'email', 'max:255', 'unique:schools,head_email'],
+            //'phone_number'             => ['required', 'string', 'max:15'],
+            //'head_email'               => ['required', 'string', 'email', 'max:255', 'unique:schools,head_email'],
 
             //'address'                   => 'required|string|max:255',
 

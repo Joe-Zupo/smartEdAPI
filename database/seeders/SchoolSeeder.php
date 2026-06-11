@@ -8,7 +8,7 @@ use App\Models\School;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Arr;
-use App\SeederFileTrait;
+use App\Helpers\SeederFileTrait;
 
 class SchoolSeeder extends Seeder
 {

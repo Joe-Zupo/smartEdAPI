@@ -34,7 +34,7 @@ class Submission extends Model
 
     public function notifications()
     {
-        return $this->hasMany(Notification::class);
+        return $this->hasMany(Notifications::class);
     }
 
     public function academicYear()
@@ -47,6 +47,8 @@ class Submission extends Model
         return $this->belongsTo(School::class);
     }
 
+
+    //Details Relationships
     public function enrollmentData()
     {
         return $this->hasMany(EnrollmentData::class);
@@ -55,6 +57,11 @@ class Submission extends Model
     public function resourceData()
     {
         return $this->hasMany(ResourceData::class);
+    }
+
+    public function schoolInformationDraft()
+    {
+        return $this->hasOne(SchoolInformationDraft::class);
     }
 
     public static $creationCounter = 0;

@@ -4,9 +4,11 @@ namespace App\Http\Requests\DivisionLeadership;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-
+use App\Helpers\updateValidator;
+use Illuminate\Support\Str;
 class UpdateDivisionLeadershipRequest extends FormRequest
 {
+    use updateValidator;
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -31,4 +33,24 @@ class UpdateDivisionLeadershipRequest extends FormRequest
             'term_end' => 'sometimes|integer|gte:term_start|digits:4',
         ];
     }
+
+    public function prepareForValidation(): void
+        {
+            $model = $this->route('division_leadership');
+
+            $data = $this->validateUpdate(
+                $this->all(),
+                $model,
+                [
+                    'name',
+                    'position',
+                    'is_oic',
+                    'current_term',
+                    'term_start',
+                    'term_end',
+                ]
+            );
+
+            $this->replace($data);
+        }
 }

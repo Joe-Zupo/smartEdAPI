@@ -58,7 +58,7 @@ class SubmissionSeeder extends Seeder
             'school_id'        => School::first()->id,
             'user_id'          => User::first()->id,
             'type'             => 'information',
-            'status'           => 'pending',
+            'status'           => 'approved',
         ]);
 
         SchoolInformationDraft::create([
@@ -69,7 +69,7 @@ class SubmissionSeeder extends Seeder
             'address'       => 'Draft Address',
             'year_established' => 2000,
             'school_type_id'   => 1,
-            'district'        => 'North',
+            'district'        => 'District 1',
             'latitude'       => 10.0000,
             'longitude'      => 120.0000,
             'image' => $path,

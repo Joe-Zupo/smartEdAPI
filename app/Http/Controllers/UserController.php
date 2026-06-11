@@ -34,11 +34,6 @@ class UserController extends Controller
         $getActive = $request->boolean('is_active');
 
         //Query Parameters Checks
-        if ($request->has('role')) {
-            $query->whereHas('roles', function ($q) use ($request) {
-                $q->where('name', $request->input('role'));
-            });
-        }
 
         if ($request->has('is_active')) {
             $query->where('is_active', $request->boolean('is_active'));
@@ -46,6 +41,12 @@ class UserController extends Controller
 
         if ($request->has('has_school')) {
             $query->whereNotNull('school_id');
+        }
+
+        if ($request->has('role')) {
+            $query->whereHas('roles', function ($q) use ($request) {
+                $q->where('name', 'like', '%'. $request->input('role') . '%');
+            });
         }
 
         if ($searchRequest) {
@@ -86,7 +87,6 @@ class UserController extends Controller
         //dd($validatedRequest);
         DB::beginTransaction();
 
-        // try{
         $user = User::create($validatedRequest);
         $user->assignRole($validatedRequest['role']);
         if ($user->hasRole('School Account')) {
@@ -95,6 +95,9 @@ class UserController extends Controller
                 School::where('school_name', $validatedRequest['school'])->value('id') : null;
                 $message = 'School Account fully initialized, account is set as active';
                 $user->save();
+            }else{
+                $message = 'School Account partially initialized, account is set as inactive';
+                $user['is_active'] = false;
             }
         } else {
             $message = "Account set to active";
@@ -105,10 +108,6 @@ class UserController extends Controller
             'notice' => $message,
             'user' => new UserResource($user)
         ]);
-        // }catch(\Exception $e){
-        //     DB::rollBack();
-        //     return $this->error('User could not be created');
-        // }
     }
 
     /**
@@ -134,31 +133,12 @@ class UserController extends Controller
         $validatedRequest = $request->validated();
         DB::beginTransaction();
 
-        try {
-            $user->update($validatedRequest);
-            if (isset($validatedRequest['role'])) {
-                $user->syncRoles($validatedRequest['role']);
-            }
+        $user->update($validatedRequest);
 
-            if (isset($validatedRequest['school'])) {
-                $user->school_id = $validatedRequest['school'] ?
-                    School::where('school_name', $validatedRequest['school'])->value('id') : null;
-                $user->save();
-            } else if ($validatedRequest['school'] === null) {
-                $user->school_id = null;
-                $user->save();
-            }
-
-
-            DB::commit();
-            return $this->success('User Updated successfully', [
+        DB::commit();
+        return $this->success('User Updated successfully', [
                 new UserResource($user)
-            ]);
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return $this->error('Failed to update User');
-        }
+        ]);
     }
 
     public function destroy(User $user)

@@ -12,7 +12,7 @@ use Illuminate\Http\Request;
 class ResourceDataController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Index Resource Data
      */
     public function index(IndexResourceRequest $request)
     {
@@ -110,6 +110,7 @@ class ResourceDataController extends Controller
                         'id' => $academicYear->id,
                         'name' => $academicYear->academic_year,
                     ],
+                    'items' => ResourceDataResource::collection($resources),
                     'totals_by_resource' => $totals,
                 ],
                 'pagination' => $getAll ? null : $this->paginateReturn($resources)

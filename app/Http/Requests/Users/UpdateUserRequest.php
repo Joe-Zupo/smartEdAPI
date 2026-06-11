@@ -4,9 +4,11 @@ namespace App\Http\Requests\Users;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use App\Helpers\updateValidator;
 
 class UpdateUserRequest extends FormRequest
 {
+    use updateValidator;
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -24,15 +26,9 @@ class UpdateUserRequest extends FormRequest
     {
         return [
             'name' => ['sometimes', 'string', 'max:255'],
-            'role' => ['sometimes', 'string', 'exists:roles,name'],
-            'school' => [
-                'sometimes',
-                'exists:schools,school_name',
-            ],
             // 'position' => ['in:Principal IV,Head Teacher III,Teacher I,Principal III'],
             'email' => ['sometimes', 'string', 'email', 'max:255', 'unique:users,email'],
             'username' => ['sometimes', 'string', 'max:255', 'unique:users,username'],
-            'password' => ['sometimes', 'string', 'min:8', 'confirmed'],
             'phone_number' => ['sometimes', 'string', 'max:15'],
         ];
     }
@@ -46,4 +42,21 @@ class UpdateUserRequest extends FormRequest
         //             'Invalid position selected. Valid positions are: Principal IV,Head Teacher III,Teacher I,Principal III.',
         //     ];
         // }
+        public function prepareForValidation(): void
+        {
+            $user = $this->route('user');
+
+            $data = $this->validateUpdate(
+                $this->all(),
+                $user,
+                [
+                    'name',
+                    'email',
+                    'username',
+                    'phone_number',
+                ]
+            );
+
+            $this->replace($data);
+        }
 }

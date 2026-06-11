@@ -6,6 +6,7 @@ use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\GradeLevel;
 use App\Models\Submission;
+use App\Models\School;
 use App\Models\EnrollmentData;
 
 class EndrollmentDataSeeder extends Seeder
@@ -20,16 +21,47 @@ class EndrollmentDataSeeder extends Seeder
         $submissions = Submission::where('type', 'enrollment')->get();
 
         foreach ($submissions as $submission) {
+            //Seeder Logic
+
+            $schoolId = $submission->school_id;
+            $school = School::where('id', $schoolId)->first();
+            $type = $school->schoolType->name;
+            
+            $allowedGrades = match ($type) {  
+                'Elementary' => [
+                    'Kinder','Grade 1','Grade 2','Grade 3','Grade 4','Grade 5','Grade 6',
+                ],
+
+                'Junior High School' => [
+                    'Grade 7','Grade 8','Grade 9','Grade 10',
+                ],
+
+                'Standalone SHS' => [
+                    'Grade 11','Grade 12',
+                ],
+
+                'Integrated School',
+                'Science High School',
+                'ALS',
+                'Junior High School with SHS' => [
+                    'Kinder','Grade 1','Grade 2','Grade 3','Grade 4','Grade 5','Grade 6','Grade 7','Grade 8','Grade 9','Grade 10','Grade 11','Grade 12',
+                ],
+
+                default => [],
+            };
+
             foreach ($grades as $grade) {
 
-                $male = rand(15, 60);
-                $female = rand(15, 60);
+                $isAllowed = in_array(
+                    $grade->name,
+                    $allowedGrades
+                );
 
                 EnrollmentData::create([
                     'submission_id' => $submission->id,
-                    'grade_level' => $grade->id,
-                    'male_count' => $male,
-                    'female_count' => $female,
+                    'grade_level' => $grade->name,
+                    'male_count' => $isAllowed ? rand(15, 60) : 0,
+                    'female_count' => $isAllowed ? rand(15, 60) : 0,
                 ]);
             }
         }

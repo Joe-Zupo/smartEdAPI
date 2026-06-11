@@ -26,9 +26,15 @@ class AnnouncementResource extends JsonResource
                     ->get(['id', 'title'])
                     ->values()
             ),
+<<<<<<< HEAD
             'title' => $this->title,
             'description' => $this->description,
             'type' => $this->type,
+=======
+            'title'         => $this->title,
+            'description'   => $this->description,
+            'type'          => $this->type,
+>>>>>>> f44d3761c60dadc09adf3a180cb6bfd87fa88999
             'image_url' => $this->image_url
                 ? asset('storage/' . $this->image_url)
                 : null,

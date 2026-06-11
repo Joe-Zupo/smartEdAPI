@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('division_leaderships', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->enum('position', ['Schools Division Superintendent', 'Assistant Schools Division Superintendent']);
+            $table->string('position'/*, ['Schools Division Superintendent', 'Assistant Schools Division Superintendent']*/);
             //$table->string('image_path')->nullable();
             $table->boolean('is_oic')->default(false);
             $table->year('term_start');
