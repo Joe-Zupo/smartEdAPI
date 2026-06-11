@@ -94,9 +94,27 @@ class SubmissionsController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Submissions $submissions)
+    public function show(Submission $submission)
     {
-        //
+        $defaultYear = AcademicYear::where('status', 'default')->first();
+
+        if (!$defaultYear || $submission->academic_year_id !== $defaultYear->id) {
+            return $this->error('You can only view submissions for the current default school year.', 403);
+        }
+
+        $submission->load([
+            'enrollmentData.gradeLevel',
+            'resourceData',
+            'school',
+            'academicYear',
+            'user',
+            'comments',
+            'schoolInformationDraft',
+        ]);
+
+        return $this->success('Submission retrieved successfully', [
+            'data' => new SubmissionResource($submission)
+            ]);
     }
 
     /**

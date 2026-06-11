@@ -174,14 +174,14 @@ Route::middleware('auth:sanctum')->group(function () {
         | Resource Data
         |--------------------------------------------------------------------------
         */
-        Route::apiResource('submissions', SubmissionsController::class)->only(['index']);
+        Route::apiResource('submissions', SubmissionsController::class)->only(['index', 'show']);
 
         /*
         |--------------------------------------------------------------------------
         | Resource Data
         |--------------------------------------------------------------------------
         */
-        Route::apiResource('enrollment-data', EnrollmentDataController::class)->only(['index']);
+        Route::apiResource('enrollment-data', EnrollmentDataController::class)->only(['index',]);
 
 
         /*
