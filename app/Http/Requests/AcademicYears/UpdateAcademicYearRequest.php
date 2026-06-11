@@ -6,6 +6,7 @@ use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
 use Illuminate\Support\Carbon;
+use Illuminate\Validation\Rule;
 
 class UpdateAcademicYearRequest extends FormRequest
 {
@@ -25,7 +26,7 @@ class UpdateAcademicYearRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'start_date' => 'sometimes|date|before:end_date|unique:academic_years,start_date',
+            'start_date' => 'sometimes|date|before:end_date|unique:academic_years,start_date|'. Rule::after(2020-01-01),
             'end_date' => 'sometimes|date|after:start_date|unique:academic_years,end_date',
         ];
     }
@@ -36,6 +37,9 @@ class UpdateAcademicYearRequest extends FormRequest
             $end = Carbon::parse($this->end_date)->format('Y');
                 if ($startComparison != $end){
                     $validator->errors()->add('end_date', 'You must keep the longevity of the school year within 1 year');   
+                }
+                if ($startComparison <= 2020){
+                    $validator->errors()->add('start_date', 'You cannot input a year that is before 2020');
                 }
         });
 
