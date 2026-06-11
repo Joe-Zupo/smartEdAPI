@@ -346,9 +346,13 @@ class EnrollmentDataController extends Controller
             }
 
             // Convert to array format
-            $byLevel[$year->academic_year] = [];
+            $byLevel[] = [
+                'academic_year' => $year->academic_year,
+                'levels' => [],
+                ];
+                $index = count($byLevel) - 1;
             foreach ($levelTotals as $category => $totals) {
-                $byLevel[$year->academic_year][] = [
+                $byLevel[$index]['levels'][] = [
                     'grade_level' => $category,
                     'total_male' => $totals['total_male'],
                     'total_female' => $totals['total_female'],
