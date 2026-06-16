@@ -85,6 +85,8 @@ class EnrollmentDataController extends Controller
     // Enrollment by educational level
         $enrollmentByLevel = $this->getEnrollmentByLevel($user, $academic_year, $request);
 
+    // Enrollment by grade level
+        $enrollmentByGrade = $this->getEnrollmentByGrade($user, $academic_year, $request);
 
     // Fetch items
         $items = $getAll
@@ -107,6 +109,7 @@ class EnrollmentDataController extends Controller
                     ],
                     'five_year_trend' => $fiveYearTrend,
                     'enrollment_by_level' => $enrollmentByLevel,
+                    'enrollment_by_grade' => $enrollmentByGrade,
                 ],
                 'pagination' => $getAll ? null : $this->paginateReturn($items),
             ]);
@@ -135,6 +138,7 @@ class EnrollmentDataController extends Controller
                     ],
                     'five_year_trend' => $fiveYearTrend,
                     'enrollment_by_level' => $enrollmentByLevel,
+                    'enrollmentByGrade' => $enrollmentByGrade,
                 ],
                 'pagination' => $getAll ? null : $this->paginateReturn($items),
 
@@ -360,5 +364,91 @@ class EnrollmentDataController extends Controller
         }
 
             return $byLevel;
+    }
+
+    private function getEnrollmentByGrade($user, $currentAcademicYear, $request)
+    {
+        $school = School::query()->where('school_name', $request->input('school_name'))->first();
+        $type = $school->schoolType->name ?? null;
+
+        $allowedGrades = match ($type) {  
+                'Elementary' => [
+                    'Kinder','Grade 1','Grade 2','Grade 3','Grade 4','Grade 5','Grade 6',
+                ],
+
+                'Junior High School' => [
+                    'Grade 7','Grade 8','Grade 9','Grade 10',
+                ],
+
+                'Standalone SHS' => [
+                    'Grade 11','Grade 12',
+                ],
+
+                'Integrated School',
+                'Science High School',
+                'ALS',
+                'Junior High School with SHS' => [
+                    'Kinder','Grade 1','Grade 2','Grade 3','Grade 4','Grade 5','Grade 6','Grade 7','Grade 8','Grade 9','Grade 10','Grade 11','Grade 12',
+                ],
+
+                default => ['Kinder','Grade 1','Grade 2','Grade 3','Grade 4','Grade 5','Grade 6','Grade 7','Grade 8','Grade 9','Grade 10','Grade 11','Grade 12'],
+            };
+        $academicYears = AcademicYear::where('id', '<=', $currentAcademicYear->id)
+            ->orderBy('id', 'desc')
+            ->limit(5)
+            ->get();
+
+        $byGrade = [];
+
+        foreach ($academicYears as $year) {
+
+            $enrollments = EnrollmentData::whereHas('submission', function ($q) use ($user, $year, $request) {
+
+                $q->where('status', 'approved')
+                ->where('academic_year_id', $year->id);
+
+                if ($user && $user->hasRole('School Account')) {
+                    $q->where('school_id', $user->school_id);
+                }
+                elseif ($request->filled('school_name')) {
+                    $schoolName = $request->input('school_name');
+
+                    $q->whereHas('school', function ($q2) use ($schoolName) {
+                        $q2->where('school_name', $schoolName);
+                    });
+                }
+
+            })->get();
+
+            $gradeTotals = [];
+
+            foreach ($enrollments as $enrollment) {
+
+                $grade = $enrollment->grade_level;
+
+                if (!in_array($grade, $allowedGrades)) {
+                    continue;
+                }
+                if (!isset($gradeTotals[$grade])) {
+                    $gradeTotals[$grade] = [
+                        'grade_level' => $grade,
+                        'total_male' => 0,
+                        'total_female' => 0,
+                        'total_students' => 0,
+                    ];
+                }
+
+                $gradeTotals[$grade]['total_male'] += $enrollment->male_count;
+                $gradeTotals[$grade]['total_female'] += $enrollment->female_count;
+                $gradeTotals[$grade]['total_students'] += $enrollment->total_count;
+            }
+
+                $byGrade[] = [
+                'academic_year' => $year->academic_year,
+                'levels' => array_values($gradeTotals),
+            ];
+        }
+
+        return $byGrade;
     }
 }

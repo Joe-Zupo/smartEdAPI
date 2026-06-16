@@ -31,9 +31,9 @@ class DatabaseSeeder extends Seeder
         $this->call(KpiRateDataSeeder::class);
         $this->call(KpiDataSeeder::class);
         $this->call(AnnouncementSeeder::class);
-        //$this->call(SubmissionSeeder::class);
-        //$this->call(ResourceDataSeeder::class);
+        $this->call(SubmissionSeeder::class);
+        $this->call(ResourceDataSeeder::class);
         $this->call(GradeLevelSeeder::class);
-        //$this->call(EndrollmentDataSeeder::class);
+        $this->call(EndrollmentDataSeeder::class);
     }
 }
