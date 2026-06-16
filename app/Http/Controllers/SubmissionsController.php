@@ -236,8 +236,8 @@ class SubmissionsController extends Controller
                 $draft = SchoolInformationDraft::create([
                     'submission_id' => $submission->id,
                     'school_id' => $user->school_id,
-                    'name' => $info['name'] ?? null,
-                    'code' => $info['code'] ?? null,
+                    'school_name' => $info['school_name'] ?? null,
+                    'school_code' => $info['school_code'] ?? null,
                     'year_established' => $info['year_established'] ?? null,
                     'school_type_id' => $info['school_type_id'] ?? null,
                     'address' => $info['address'] ?? null,
