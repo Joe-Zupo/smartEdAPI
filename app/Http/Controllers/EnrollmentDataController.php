@@ -10,6 +10,7 @@ use App\Models\School;
 use App\Http\Resources\EnrollmentDataResource;
 use App\Http\Resources\SchoolResource;
 use App\Helpers\EnrollmentData\GradesDisplay;
+use Illuminate\Support\Facades\DB;
 
 class EnrollmentDataController extends Controller
 {
@@ -143,35 +144,60 @@ class EnrollmentDataController extends Controller
 
 
     /**
-     * Store a newly created resource in storage.
+     * Show Enrollment Data.
      */
-    public function store(Request $request)
+    public function show($id)
     {
-        //
+
+        $enrollmentData = EnrollmentData::find($id);
+
+        return $this->success('Enrollment data retrieved successfully', [
+            'data' => new EnrollmentDataResource($enrollmentData->load(['submission', 'gradeLevel'])),
+        ]);
+        
     }
 
     /**
-     * Display the specified resource.
+     * Update Enrollment Data.
      */
-    public function show(EnrollmentData $enrollmentData)
+    public function update(Request $request, $id)
     {
-        //
+        DB::beginTransaction();
+        // basic update and fire totals change
+        $validated = $request->validate([
+            'male_count' => ['required','numeric', 'min:0'],
+            'female_count' => ['required','numeric', 'min:0'],
+        ]);
+
+        $enrollmentData = EnrollmentData::find($id);
+
+        $validated['totals_count'] = $validated['male_count'] + $validated['female_count'];
+        
+        $enrollmentData->update($validated);
+
+        // dispatch totals changed for the related academic year
+        // $yearId = $enrollmentData->submission->academic_year_id;
+        // event(new \App\Events\EnrollmentTotalsChanged($yearId));
+
+        DB::commit();
+        return $this->success('Enrollment data updated successfully', [
+        'data' => new EnrollmentDataResource($enrollmentData->load('gradeLevel')),
+        ]);
     }
 
     /**
-     * Update the specified resource in storage.
+     * Delete Enrollment Data
      */
-    public function update(Request $request, EnrollmentData $enrollmentData)
+    public function destroy($id)
     {
-        //
-    }
+        $enrollmentData = EnrollmentData::find($id);
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(EnrollmentData $enrollmentData)
-    {
-        //
+        $yearId = $enrollmentData->submission->academic_year_id;
+        $enrollmentData->delete();
+
+        // event(new \App\Events\EnrollmentTotalsChanged($yearId));
+
+        return $this->success('Enrollment data deleted successfully');
     }
 
     /**

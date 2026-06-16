@@ -181,7 +181,7 @@ Route::middleware('auth:sanctum')->group(function () {
         | Resource Data
         |--------------------------------------------------------------------------
         */
-        Route::apiResource('enrollment-data', EnrollmentDataController::class)->only(['index',]);
+        Route::apiResource('enrollment-data', EnrollmentDataController::class)->only(['index', 'show','update', 'destroy']);
 
 
         /*
