@@ -6,7 +6,7 @@ use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\KpiData;
 use App\Models\AcademicYear;
-use App\calculateTotal;
+use App\Helpers\calculateTotal;
 
 class KpiDataSeeder extends Seeder
 {

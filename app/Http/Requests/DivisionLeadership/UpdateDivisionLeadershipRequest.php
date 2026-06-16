@@ -4,7 +4,7 @@ namespace App\Http\Requests\DivisionLeadership;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-use App\updateValidator;
+use App\Helpers\updateValidator;
 use Illuminate\Support\Str;
 class UpdateDivisionLeadershipRequest extends FormRequest
 {

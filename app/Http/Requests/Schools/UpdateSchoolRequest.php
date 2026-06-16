@@ -6,7 +6,7 @@ use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use App\Models\User;
-use App\updateValidator;
+use App\Helpers\updateValidator;
 
 class UpdateSchoolRequest extends FormRequest
 {
