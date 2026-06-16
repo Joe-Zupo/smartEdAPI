@@ -13,7 +13,7 @@ class AcademicYearPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasRole(['System Admin']);
+        return $user->hasRole(['System Admin', 'Division Admin', 'School Account']);
     }
 
     /**
@@ -21,7 +21,7 @@ class AcademicYearPolicy
      */
     public function view(User $user, AcademicYear $academicYear): bool
     {
-        return $user->hasRole(['System Admin']);
+        return $user->hasRole(['System Admin', 'Division Admin', 'School Account']);
     }
 
     /**

@@ -21,19 +21,24 @@ class AcademicYearController extends Controller
      */
     public function index(IndexAcademicYearsRequest $request)
     {
-        $this->authorize('viewAny', User::class);
         $perPage = $request->get('per_page', 5);
         $sortBy = $request->input('sortBy', 'id');
         $sortOrder = $request->input('sortOrder', 'desc');
+        $displayPractical = $request->boolean('withoutUA', false);
 
         $request->validated();
 
         $query = AcademicYear::query();
 
+        $user = $request->user();
         //Query Parameters
+        if(!$user->hasRole('System Admin') || $displayPractical){
+            $query->whereNotIn('status', ['upcoming','archived']);
+        }
 
-        if ($request->has('status'))
+        if ($request->filled('status') && $user->hasRole('System Admin')){
             $query->where('status', 'like' , '%' . $request->input('status') . "%");
+        }
         
         if ($request->has('academic_year'))
             $query->where('academic_year', 'like' , '%' . $request->input('academic_year') . "%");
