@@ -171,17 +171,19 @@ Route::middleware('auth:sanctum')->group(function () {
 
         /*
         |--------------------------------------------------------------------------
-        | Resource Data
+        | Submissions
         |--------------------------------------------------------------------------
         */
-        Route::apiResource('submissions', SubmissionsController::class)->only(['index', 'show']);
+        Route::apiResource('submissions', SubmissionsController::class)->except('destroy', 'update',);
+        //Route::post('submissions/{submission}/approve', [SubmissionsController::class, 'approve']);
+        //Route::post('submissions/{submission}/return', [SubmissionsController::class, 'return']);
 
         /*
         |--------------------------------------------------------------------------
-        | Resource Data
+        | Enrollment Data
         |--------------------------------------------------------------------------
         */
-        Route::apiResource('enrollment-data', EnrollmentDataController::class)->only(['index',]);
+        Route::apiResource('enrollment-data', EnrollmentDataController::class)->only(['index', 'show','update', 'destroy']);
 
 
         /*

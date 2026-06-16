@@ -21,8 +21,6 @@ class EnrollmentDataResource extends JsonResource
             'male_count' => $this->male_count,
             'female_count' => $this->female_count,
             'total_count' => $this->total_count,
-            'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
-            'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),
         ];
     }
 }
