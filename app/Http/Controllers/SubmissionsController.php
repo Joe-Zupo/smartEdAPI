@@ -26,8 +26,6 @@ class SubmissionsController extends Controller
 
         $user = $request->user();
         $perPage = $request['per_page'] ?? 5;
-        $sortBy = $request['sortBy'] ?? 'id';
-        $sortOrder = $request['sortOrder'] ?? 'asc';
         $getAll = $request['all'] ?? false;
 
         $searchRequest = $request->input('search');
@@ -45,7 +43,7 @@ class SubmissionsController extends Controller
             $query->where('status', $request['status']);
         }
 
-        if($user->school_id){
+        if($user->school_id){ //Restricts School Accounts from searching other schools
             $query->where('school_id', $user->school_id);
         }
 
@@ -104,17 +102,16 @@ class SubmissionsController extends Controller
             ->where('academic_year_id', $defaultYear->id)
             ->where('type', $validated['type']);
 
+        //CAN BE REVISED
+        $exists = false;
         if ($validated['type'] === 'information') {
             // Only block if there is a submission still in workflow
             $exists = $query->whereIn('status', ['pending', 'returned'])->exists();
-        } else {
-
-            // Other types: only one per year no matter the status
-            $exists = $query->exists();
         }
-
         if ($exists) {
             return $this->error("A {$validated['type']} submission is still under review or needs revision.", 409);
+        }else if ($query->exists()){
+            return $this->error("A {$validated['type']} submission already exists. You can only have one submission for this type, once per year.", 409); // Still needs to be asked, for now stick to this temporarily
         }
 
         $gradeMap = [];
@@ -249,7 +246,7 @@ class SubmissionsController extends Controller
 
                 if ($request->hasFile('details.0.image')) {
 
-                    $path = upload_image($request, 'details.0.image', 'school_images');
+                    $path = upload_image($request, 'details.0.image', 'school_images'); // remake
 
                     $draft->image = $path;
                     $draft->save();
@@ -287,10 +284,7 @@ class SubmissionsController extends Controller
             'schoolInformationDraft',
         ]);
 
-        return response()->json([
-            'message' => 'Submission created successfully',
-            'data' => new SubmissionResource($submission),
-        ], 201);
+        return $this->success('Submission created successfully', ['data' => new SubmissionResource($submission)]);
     }
 
     
@@ -324,6 +318,55 @@ class SubmissionsController extends Controller
             'data' => new SubmissionResource($submission)
             ]);
     }
+
+    /**
+     * Approve Submission
+     * 
+     * Approve the submission.
+     */
+    public function approve(Request $request, Submission $submission)
+    {
+        if ($submission->academicYear->status !== 'default') {
+            return response()->json([
+                'message' => 'You can only approve submissions for the current default school year.'
+            ], 403);
+        }
+
+        DB::transaction(function () use ($submission, $request) {
+
+            $submission->update([
+                'status' => 'approved',
+            ]);
+
+            // $submission->notifications()->create([
+            //     'title' => 'Approved Submission',
+            //     'message' => "Your submission for {$submission->submission_number} has been approved.",
+            //     'is_read' => false,
+            // ]);
+
+            $actor = $request->user();
+            if ($actor) {
+                activity('Approved Data')
+                    ->causedBy($actor)
+                    ->performedOn($submission)
+                    ->withProperties([
+                        'datetime' => now()->format('Y-m-d h:i:s A'),
+                    ])
+                    ->log($actor->name . ' has approved submission ' . $submission->submission_number . '.');
+            }
+        });
+
+
+        $submission->load([
+            'school',
+            'academicYear',
+            'user',
+        ]);
+
+        return $this->success('Submission approved successfully', ['data' => new SubmissionResource($submission)]);
+    }
+
+
 
     /**
      * Update the specified resource in storage.

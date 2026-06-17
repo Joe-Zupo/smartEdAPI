@@ -46,9 +46,9 @@ class UpdateSchoolRequest extends FormRequest
             'school_head'               => 'string|exists:users,name|max:255|'. Rule::in($validUsers),
 
             //Principal I,Principal II,Principal III,Principal IV
-            'position' =>   'required_with:school_head,school_head_id|string|
+            'position' =>   'required_with:school_head|string|
                             in:Principal I,Principal II,Principal III,Principal IV',
-            //'image'             => ['sometimes', 'nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
+            'image'    => ['sometimes', 'nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
 
             // 'phone_number'                  => ['sometimes', 'string', 'max:15'],
             // 'head_email'                    => ['sometimes', 'string', 'email', 'max:255', 'unique:schools,head_email'],
@@ -62,7 +62,7 @@ class UpdateSchoolRequest extends FormRequest
                 $string = implode(', ', $validUsers); 
                 return [
                 'position.in' =>
-                    'Invalid position selected. Valid positions are: Principal IV,Head Teacher III,Teacher I,Principal III.',
+                    'Invalid position selected. Valid positions are: Principal IV,Head Teacher III,Teacher I,Principal III',
                 
                 'school_head.in' => "Invalid Input! Valid users: ". $string
                     
@@ -86,12 +86,13 @@ class UpdateSchoolRequest extends FormRequest
                     'district',
                     'latitude',
                     'longitude',
-                    'school_head',
-                    'position',
-                    // 'phone_number',
-                    // 'head_email',
                 ]
             );
+            if ($data['school_head']){
+                if ($school->schoolHead->name === $data['school_head']){
+                    unset($data['school_head']);
+                }
+            }
 
             $this->replace($data);
         }

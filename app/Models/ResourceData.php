@@ -11,7 +11,7 @@ class ResourceData extends Model
         'resource_name',
         'inventory',
         'requirement',
-        'need',
+        //'need',
     ];  
 
     protected $casts = [
@@ -20,5 +20,15 @@ class ResourceData extends Model
 
     public function submission(){
         return $this->belongsTo(Submission::class, 'submission_id');
+    }
+
+    protected static function booted(): void{
+        static::created(function (ResourceData $resource) {
+        $resource->need = max(0, $resource->requirement - $resource->inventory);
+        });
+
+        static::updated(function (ResourceData $resource) {
+            $resource->need = max(0, $resource->requirement - $resource->inventory);
+        });
     }
 }

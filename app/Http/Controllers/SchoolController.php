@@ -131,6 +131,12 @@ class SchoolController extends Controller
         $city = $validated['city'];
         $province = $validated['province'];
         $validated['address'] = "{$street}, {$barangay}, {$city}, {$province}";
+
+        //image path appending and storage
+            if ($request->hasFile('image')){
+                // Optional old image deletion
+                $validated['image'] = $request->file('image')->store('school_images', 'public');
+            }
         
         $school = School::create($validated);
         $user->update(['school_id' => $school['id']]);
@@ -176,7 +182,7 @@ class SchoolController extends Controller
             DB::beginTransaction();
             
             $validated = $request->validated();
-
+            
             if ($request->school_type) {
                 $typeID = SchoolType::where('name', $request->school_type)->value('id');
                 $validated['school_type_id'] = $typeID;
@@ -207,13 +213,25 @@ class SchoolController extends Controller
             }
             $validated['address'] = "{$street}, {$barangay}, {$city}, {$province}";
 
-            $oldHead = User::role('School Account')->where('school_id', $school->id);
-            $user = User::query()->where('name', 'like', '%'. $request['school_head'] . '%');
-            Arr::forget($validated, 'school_head');
+            //image path appending and storage
+            if ($request->hasFile('image')){
+                // Optional old image deletion
+                 if ($school->image && Storage::disk('public')->exists($school->image)) {
+                    Storage::disk('public')->delete($school->image);
+                }
+
+                $validated['image'] = $request->file('image')->store('school_images', 'public');
+            }
+
+            if($request->filled('school_head')){
+                $oldHead = User::where('school_id', $school->id)->first();
+                $user = User::query()->where('name', $request['school_head']);
+                Arr::forget($validated, 'school_head');
+                $oldHead->school_id = null; $oldHead->save();
+                $user->update(['school_id' => $school->id]);
+            }
 
             $school->update($validated);
-            $oldHead->update(['school_id' => null]);
-            $user->update(['school_id' => $school->id]);
             DB::commit();
 
             return $this->success(

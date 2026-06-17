@@ -53,7 +53,7 @@ class StoreSchoolRequest extends FormRequest
 
             'latitude'                  => ['required', 'nullable', 'numeric', 'between:-90,90'],
             'longitude'                 => ['required', 'nullable', 'numeric', 'between:-180,180'],
-            //'image'                     => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
+            'image'                     => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
         ];
     }
     public function messages(): array

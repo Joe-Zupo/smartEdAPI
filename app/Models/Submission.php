@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Observers\Observers\SubmissionObserver;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
@@ -69,6 +70,7 @@ class Submission extends Model
     protected static function booted()
     {
         parent::booted();
+        Submission::observe(SubmissionObserver::class);
         static::creating(function ($submission) {
 
             self::$creationCounter++;
