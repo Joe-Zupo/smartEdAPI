@@ -7,53 +7,120 @@ use Illuminate\Http\Request;
 use App\Http\Requests\KPI\IndexKpiDataRequest;
 use App\Http\Resources\KpiDataResource;
 use Illuminate\Support\Facades\DB;
+use App\Models\KpiRateData;
+use App\Models\AcademicYear;
+use Illuminate\Validation\Rule;
+
 
 class KpiDataController extends Controller
 {
     /**
      * KPI Data Index
      */
-    public function index(IndexKpiDataRequest $request)
+    public function index(Request $request)
     {
-        $page = $request->input('page', 1);
-        $perPage = $request->input('per_page', 10);
-        $sortBy = $request->input('sortBy', 'id');
-        $sortOrder = $request->input('sortOrder', 'desc');
+        $perPage = $request->get('per_page', 10);
+        $getAll  = $request->boolean('all');
 
-        $request->validated();
+        // ✅ VALIDATION
+        $request->validate([
+            'kpi_rate' => [
+                'string',
+                'exists:kpi_rate_data,name',
+                Rule::in(KpiRateData::pluck('name')->toArray()),
+            ],
+            'academic_year' => [
+                'exists:academic_years,academic_year',
+                Rule::in(AcademicYear::whereIn('status', ['active', 'default'])->pluck('academic_year')->toArray()),
+            ],
+            'trend_school_level' => ['string', 'exists:school_types,name'],
+            'school_type' => ['string', 'exists:school_types,name'],
+            'per_page' => ['integer'],
+            'page' => ['integer'],
+            'all' => ['in:true,false'],
+        ]);
 
-         $query = KpiData::query()->with('academicYear', 'kpiRate');
+        $query = KpiData::query();
+
+        //Query Params
+        if($request->filled('kpi_rate')){
+            $kpiRate = $query->where('name', $request->input('kpi_rate'))->first();
+            if ($kpiRate) {
+                $kpiId = $kpiRate->id;
+            }
+        }
+
+        if($request->filled('academic_year')){
+            $academicYear = AcademicYear::query()->where('academic_year', $request->input('academic_year'))->first();
+            $query->where('academic_year_id', $academicYear->id);
+            }else{
+                $academicYear = AcademicYear::query()->where('status', 'default')->first();
+                $query->where('academic_year_id', $academicYear->id);
+            }
 
         if ($request->filled('school_type')) {
             $query->where('school_type', 'like', '%'. $request->school_type . '%');
         }
 
-        if ($request->filled('academic_year_id')) {
-            $query->where('academic_year_id', 'like', '%'. $request->academic_year_id . '%');
+        //Main Query
+        $query->with(['kpiRate', 'academicYear']);
+
+
+        $items = $getAll ? $query->get() : $query->paginate($perPage)->appends($request->query());
+        if ($items->isEmpty()) {
+            return response()->json(['message' => 'No KPI data found']);
         }
 
-        if ($request->filled('kpi_id')) {
-            $query->where('kpi_id', 'like', '%'. $request->kpi_id . '%');
+        $items = $getAll ? $query->get() : $query->paginate($perPage)->appends($request->query());
+
+        if ($items->isEmpty()) {
+            return response()->json(['message' => 'No KPI data found']);
         }
 
-        $query->orderBy($sortBy, $sortOrder);
-        $paginatedData = $query
-            ->paginate($perPage);
+        //TREND PER SCHOOL LEVEL (FILTERED BY TREND SCHOOL LEVEL & KPI RATE)
+        if ($request->filled('filter.academic_year')) {
+            // Get the requested year
+            $startYear = AcademicYear::query()->where('academic_year', $request->input('academic_year'))->first();
+            } else {
+                // Get the default year
+                $startYear = AcademicYear::query()->where('status', 'default')->first();
+            }
 
-        if(!$paginatedData->count()){
-            return $this->success('No more users available');
+        if (!$startYear) {
+            return $this->error('Academic year not found.', 404);
         }
 
-        $transformedData = $paginatedData->map(function($data){
-            return new KpiDataResource($data);
-        });
+        // Get this year + 4 previous years (by ID)
+        $academicYearIds = AcademicYear::query()->where('id', '<=', $startYear->id)
+            ->orderBy('id', 'desc')
+            ->limit(5)
+            ->pluck('id');
 
-        $paginaton = $this->paginateReturn($paginatedData);
+        $kpiId = null;
+        $totalsItems5Years = KpiData::with(['academicYear', 'kpiRate'])
+            ->when($kpiId, function ($q) use ($kpiId) {
+                $q->where('kpi_id', $kpiId);
+            })
+            ->whereIn('academic_year_id', $academicYearIds)
+            ->when($request->filled('filter.trend_school_level'), function ($q) use ($request) {
+                $q->where('school_type', $request->input('filter.trend_school_level'));
+            })
+            ->get();
 
-        return $this->success('KPI data fetched successfully',[
-           'data' => KpiDataResource::collection($transformedData),
-           'pagination' => $paginaton 
-        ]);
+         $groupedTrends = $totalsItems5Years
+            ->groupBy(['school_type', 'academic_year_id'])
+            ->map(fn($yearGroups) => $yearGroups->map(fn($items) => [
+                'trend_school_level' => $items->first()->school_type,
+                'academic_year_id'   => $items->first()->academicYear->id, 
+                'academic_year'    => $items->first()->academicYear->academic_year,
+                'kpirate'          => $items->first()->kpiRate->name,
+                'male'             => (float) $items->first()->male,
+                'female'           => (float) $items->first()->female,
+                'total'            => (float) $items->first()->total,
+            ])->sortByDesc('academic_year_id')->values());
+
+        $hasSchoolLevel = $groupedTrends->hasAny(['Elementary','Integrated School','Junior High School','Junior High School with SHS','Standalone SHS','Science High School','ALS']);
+        return $hasSchoolLevel;
     }
 
     /**
