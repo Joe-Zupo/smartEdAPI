@@ -51,19 +51,19 @@ class StoreSubmissionsRequest extends FormRequest
             'details.*.requirement' => ['exclude_unless:type,resource', 'required', 'integer', 'min:0'],
 
             //School Data
-            'details.*.name' => [
+            'details.*.school_name' => [
                 'exclude_unless:type,information',
                 'sometimes',
                 'string',
                 'max:255',
             ],
 
-            'details.*.code' => [
+            'details.*.school_code' => [
                 'exclude_unless:type,information',
                 'sometimes',
                 'string',
                 'max:50',
-                Rule::unique('schools', 'code')->ignore(auth()->user()->school_id),
+                Rule::unique('schools', 'school_code')->ignore(auth()->user()->school_id),
             ],
 
             'details.*.year_established' => [
