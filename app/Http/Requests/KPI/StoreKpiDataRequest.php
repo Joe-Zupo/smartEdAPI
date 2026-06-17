@@ -38,7 +38,7 @@ class StoreKpiDataRequest extends FormRequest
                 $query->where('status', 'default'); // only default status allowed
             }),
         ],
-        'items.*.school_type' => ['required', 'string', 'in:elementary,secondary'],
+        'items.*.school_type' => ['required', 'string', 'in:Elementary,Integrated School,Junior High School,Junior High School with SHS,Standalone SHS,Science High School,ALS'],
 
         // Numeric fields: min 0, max 100, 1 decimal
         'items.*.male' => ['required', 'numeric', 'min:0', 'max:100', 'regex:/^\d+(\.\d)?$/'],

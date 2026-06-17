@@ -19,7 +19,7 @@ class KpiDataSeeder extends Seeder
         $academicYears = AcademicYear::all();
 
         // School types enum
-        $schoolTypes = ['elementary', 'secondary'];
+        $schoolTypes = ['Elementary','Integrated School','Junior High School','Junior High School with SHS','Standalone SHS','Science High School','ALS'];
 
         // Loop through each academic year
         foreach ($academicYears as $year) {
