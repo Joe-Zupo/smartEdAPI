@@ -25,7 +25,7 @@ class KpiDataController extends Controller
          $query = KpiData::query()->with('academicYear', 'kpiRate');
 
         if ($request->filled('school_type')) {
-            $query->where('schoolType', 'like', '%'. $request->school_type . '%');
+            $query->where('school_type', 'like', '%'. $request->school_type . '%');
         }
 
         if ($request->filled('academic_year_id')) {
