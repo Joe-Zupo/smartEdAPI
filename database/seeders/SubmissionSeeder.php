@@ -37,6 +37,9 @@ class SubmissionSeeder extends Seeder
             $userId = $schoolUser ? $schoolUser->id : User::first()->id;
 
             foreach ($years as $year) {
+                if($year->status === 'default'){
+                    continue;
+                }
                 foreach ($types as $type) {
                     foreach ($statuses as $status) {
                         Submission::create([
@@ -50,51 +53,51 @@ class SubmissionSeeder extends Seeder
                 }
             }
         }
-        $image = UploadedFile::fake()->image('school.jpg');
-        $path = $image->store('school_images', 'public');
+        // $image = UploadedFile::fake()->image('school.jpg');
+        // $path = $image->store('school_images', 'public');
 
-        $submission = Submission::create([
-            'academic_year_id' => AcademicYear::where('status', 'default')->first()->id,
-            'school_id'        => School::first()->id,
-            'user_id'          => User::first()->id,
-            'type'             => 'information',
-            'status'           => 'approved',
-        ]);
+        // $submission = Submission::create([
+        //     'academic_year_id' => AcademicYear::where('status', 'default')->first()->id,
+        //     'school_id'        => School::first()->id,
+        //     'user_id'          => User::first()->id,
+        //     'type'             => 'information',
+        //     'status'           => 'approved',
+        // ]);
 
-        SchoolInformationDraft::create([
-            'submission_id' => $submission->id,
-            'school_id'     => $submission->school_id,
-            'name'   => 'Draft School Name',
-            'code'   => '00000000',
-            'address'       => 'Draft Address',
-            'year_established' => 2000,
-            'school_type_id'   => 1,
-            'district'        => 'District 1',
-            'latitude'       => 10.0000,
-            'longitude'      => 120.0000,
-            'image' => $path,
-        ]);
+        // SchoolInformationDraft::create([
+        //     'submission_id' => $submission->id,
+        //     'school_id'     => $submission->school_id,
+        //     'name'   => 'Draft School Name',
+        //     'code'   => '00000000',
+        //     'address'       => 'Draft Address',
+        //     'year_established' => 2000,
+        //     'school_type_id'   => 1,
+        //     'district'        => 'District 1',
+        //     'latitude'       => 10.0000,
+        //     'longitude'      => 120.0000,
+        //     'image' => $path,
+        // ]);
 
-        $submission2 = Submission::create([
-            'academic_year_id' => AcademicYear::where('status', 'default')->first()->id,
-            'school_id'        => School::skip(3)->first()->id,
-            'user_id'          => 2,
-            'type'             => 'information',
-            'status'           => 'returned',
-        ]);
+        // $submission2 = Submission::create([
+        //     'academic_year_id' => AcademicYear::where('status', 'default')->first()->id,
+        //     'school_id'        => School::skip(3)->first()->id,
+        //     'user_id'          => 2,
+        //     'type'             => 'information',
+        //     'status'           => 'returned',
+        // ]);
 
-        SchoolInformationDraft::create([
-            'submission_id' => $submission2->id,
-            'school_id'     => $submission2->school_id,
-            'name'   => '2nd Draft School Name',
-            'code'   => '00000001',
-            'address'       => 'Draft Address',
-            'year_established' => 2001,
-            'school_type_id'   => 2,
-            'district'        => 'West',
-            'latitude'       => 20.0000,
-            'longitude'      => 130.0000,
-            'image' => $path,
-        ]);
+        // SchoolInformationDraft::create([
+        //     'submission_id' => $submission2->id,
+        //     'school_id'     => $submission2->school_id,
+        //     'name'   => '2nd Draft School Name',
+        //     'code'   => '00000001',
+        //     'address'       => 'Draft Address',
+        //     'year_established' => 2001,
+        //     'school_type_id'   => 2,
+        //     'district'        => 'West',
+        //     'latitude'       => 20.0000,
+        //     'longitude'      => 130.0000,
+        //     'image' => $path,
+        // ]);
     }
 }

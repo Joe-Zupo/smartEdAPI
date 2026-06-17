@@ -6,6 +6,7 @@ use App\Http\Requests\ResourceData\IndexResourceRequest;
 use App\Http\Resources\ResourceDataResource;
 use App\Models\AcademicYear;
 use App\Models\ResourceData;
+use App\Models\Submission;
 use App\Models\School;
 use Illuminate\Http\Request;
 
@@ -50,7 +51,7 @@ class ResourceDataController extends Controller
             ->where('academic_year_id', $academicYear->id);
 
             if($request->has('school_name')){
-                $school = School::where('school_name', $request['school_name'])->first();
+                $school = School::query()->where('school_name', $request['school_name'])->first();
                 $q->where('school_id', $school->id);
             }
         });
@@ -150,25 +151,36 @@ class ResourceDataController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(ResourceData $resourceData)
+    public function show($id)
     {
-        //
-    }
+        $resourceData = ResourceData::find($id);
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(ResourceData $resourceData)
-    {
-        //
+        return $this->success('Resource Data fetched successfully', ['data' => $resourceData]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, ResourceData $resourceData)
+    public function update(Request $request, $id)
     {
-        //
+        $resourceData = ResourceData::find($id);
+        $submission = Submission::find($resourceData->submission_id);
+        $academicYear = AcademicYear::where('id', $submission->academic_year_id)->first();
+
+        if(!$academicYear->status === 'default'){
+            return $this->error('You cannot update resource data that is not under the default year');
+        }
+
+        // only allow numeric fields to be modified
+        $validated = $request->validate([
+            'inventory' => ['nullable', 'integer', 'min:0'],
+            'requirement' => ['nullable', 'integer', 'min:0'],
+            //'need' => ['nullable', 'integer', 'min:0'],
+        ]);
+
+        $resourceData->update(array_filter($validated, fn($v) => !is_null($v)));
+
+        return $this->success('Resource Data updated successfully', ['data' => $resourceData]);
     }
 
     /**

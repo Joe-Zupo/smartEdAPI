@@ -19,4 +19,10 @@ class EnrollmentData extends Model
     public function gradeLevel(){
         return $this->belongsTo(GradeLevel::class);
     }
+
+    protected static function booted(): void{
+        static::updated(function (EnrollmentData $enrollment) {
+            $enrollment->total_count = $enrollment->male_count + $enrollment->female_count;
+        });
+    }
 }
