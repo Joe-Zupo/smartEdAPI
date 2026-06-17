@@ -27,7 +27,9 @@ class ResourceDataController extends Controller
         $user = $request->user();
         if ($user->hasRole('School Account')){
             if($request->filled('school_name')){
-                return $this->error('This School Account can only access data of the school they are under.');
+                $schoolName = School::query()->where('id', $user->school_id)->value('school_name');
+                if ($schoolName !== $request->school_name)
+                    return $this->error('This School Account can only access data of the school they are under.');
             }else{
                 $schoolName = School::query()->where('id', $user->school_id)->value('school_name');
                 $request['school_name'] = $schoolName;
