@@ -31,7 +31,7 @@ return new class extends Migration
             ->nullable();
 
             // Enum for school type
-            $table->enum('school_type', ['elementary', 'secondary']);
+            $table->enum('school_type', ['Elementary','Integrated School','Junior High School','Junior High School with SHS','Standalone SHS','Science High School','ALS']);
 
             $table->timestamps();
         });
