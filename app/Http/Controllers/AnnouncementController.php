@@ -17,8 +17,8 @@ class AnnouncementController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
-        // $public = collect();
-        // $dashboard = collect();
+         $public = collect();
+         $dashboard = collect();
 
         //Query Param
         if($user->hasRole('School Account')){
@@ -42,10 +42,16 @@ class AnnouncementController extends Controller
             return $this->success("No Announcements Retrieved");
         }
 
-        return $this->success('Users fetched successfully',[
-           'public' => AnnouncementResource::collection($public),
+        if($user->hasRole('School Account')){
+            return $this->success('Users fetched successfully',[
            'dashboard' => AnnouncementResource::collection($dashboard)
         ]);
+        }else{
+             return $this->success('Users fetched successfully',[
+            'public' => AnnouncementResource::collection($public),
+            'dashboard' => AnnouncementResource::collection($dashboard)
+        ]);
+        }
     }
 
     /**
