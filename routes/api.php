@@ -175,7 +175,7 @@ Route::middleware('auth:sanctum')->group(function () {
         */
         Route::apiResource('submissions', SubmissionsController::class)->except('destroy', 'update',);
         Route::post('submissions/{submission}/approve', [SubmissionsController::class, 'approve']);
-        //Route::post('submissions/{submission}/return', [SubmissionsController::class, 'return']);
+        Route::post('submissions/{submission}/return', [SubmissionsController::class, 'return']);
 
         /*
         |--------------------------------------------------------------------------

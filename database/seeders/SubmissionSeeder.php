@@ -37,9 +37,9 @@ class SubmissionSeeder extends Seeder
             $userId = $schoolUser ? $schoolUser->id : User::first()->id;
 
             foreach ($years as $year) {
-                // if($year->status === 'default'){
-                //     continue;
-                // }
+                if($year->status === 'default'){
+                    continue;
+                }
                 foreach ($types as $type) {
                     foreach ($statuses as $status) {
                         Submission::create([

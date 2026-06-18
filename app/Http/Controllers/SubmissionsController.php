@@ -366,6 +366,58 @@ class SubmissionsController extends Controller
         return $this->success('Submission approved successfully', ['data' => new SubmissionResource($submission)]);
     }
 
+     public function return(Request $request, Submission $submission)
+    {
+        if ($submission->academicYear->status !== 'default') {
+            return $this->error('You can only return submissions for the current default school year.');
+        }
+
+        $validated = $request->validate([
+            'comment' => ['required', 'string', 'max:1000'],
+        ]);
+
+        DB::transaction(function () use ($submission, $request, $validated) {
+
+            $submission->update([
+                'status' => 'returned',
+            ]);
+
+            // $submission->comments()->create([
+            //     'submission_id' => $submission->id,
+            //     'user_id' => $request->user()->id,
+            //     'comment' => $validated['comment'],
+            // ]);
+
+            // $comment = rtrim($validated['comment'], '.');
+
+            // $submission->notifications()->create([
+            //     'title' => 'Submission Returned',
+            //     'message' => "Your submission for {$submission->submission_number} has been returned. Reason: {$comment}. Please review and resubmit.",
+            //     'is_read' => false,
+            // ]);
+
+            $actor = $request->user();
+            if ($actor) {
+                activity('Returned Data')
+                    ->causedBy($actor)
+                    ->performedOn($submission)
+                    ->withProperties([
+                        'datetime' => now()->format('Y-m-d h:i:s A'),
+                    ])
+                    ->log($actor->name . ' has returned submission ' . $submission->submission_number . '.');
+            }
+        });
+
+        $submission->load([
+            'school',
+            'academicYear',
+            'user',
+            'comments.user',
+        ]);
+
+        return $this->success('Submission returned successfully', ['data' => new SubmissionResource($submission)]);
+    }
+
 
 
     /**

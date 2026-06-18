@@ -2,9 +2,11 @@
 
 namespace App\Http\Requests\Submissions;
 
+use App\Models\GradeLevel;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use App\Models\SchoolType;
 
 class StoreSubmissionsRequest extends FormRequest
 {
@@ -28,18 +30,19 @@ class StoreSubmissionsRequest extends FormRequest
 
             'details' => ['required', 'array', 'min:1'],
 
-            //Enrollment Data
+            //
             'details.*.grade_level' => [
                 'exclude_unless:type,enrollment',
                 'required',
                 'exists:grade_levels,name',
-                'distinct'
+                'distinct',
+                Rule::in(GradeLevel::pluck('name')->toArray())
             ],
 
             'details.*.male_count' => ['exclude_unless:type,enrollment', 'required', 'integer', 'min:0'],
             'details.*.female_count' => ['exclude_unless:type,enrollment', 'required', 'integer', 'min:0'],
 
-            //Resource Data
+            //
             'details.*.resource_name' => [
                 'exclude_unless:type,resource',
                 'required',
@@ -50,7 +53,7 @@ class StoreSubmissionsRequest extends FormRequest
             'details.*.inventory' => ['exclude_unless:type,resource', 'required', 'integer', 'min:0'],
             'details.*.requirement' => ['exclude_unless:type,resource', 'required', 'integer', 'min:0'],
 
-            //School Data
+            //
             'details.*.school_name' => [
                 'exclude_unless:type,information',
                 'sometimes',
@@ -77,6 +80,7 @@ class StoreSubmissionsRequest extends FormRequest
                 'exclude_unless:type,information',
                 'sometimes',
                 'exists:school_types,name',
+                Rule::in(SchoolType::pluck('name')->toArray())
             ],
 
             'details.*.address' => [
