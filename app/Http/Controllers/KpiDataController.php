@@ -12,6 +12,7 @@ use App\Models\AcademicYear;
 use Illuminate\Validation\Rule;
 use App\Helpers\calculateTotal;
 use App\Models\SchoolType;
+use App\Http\Requests\KPI\UpdateKpiDataRequest;
 
 class KpiDataController extends Controller
 {
@@ -216,10 +217,33 @@ class KpiDataController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, KpiData $kpiData)
-    {
-        //
-    }
+    public function update(UpdateKpiDataRequest $request)
+{
+    $validated = $request->validated();
+
+    $updated = DB::transaction(function () use ($validated) {
+
+        $results = [];
+        foreach ($validated['items'] as $item) {
+            $model = KpiData::findOrFail($item['id']);
+            $total = $this->calculateTotal($item['male'], $item['female'], $model->academic_year_id, true);
+
+            $model->update([
+                'male'   => $item['male'],
+                'female' => $item['female'],
+                'total'  => $total
+            ]);
+
+            $results[] = $model->fresh()->load([
+                'kpiRate',
+                'academicYear',
+            ]);
+        }
+        return $results;
+    });
+
+    return $this->success('KPI data updated successfully', ['data' => KpiDataResource::collection(collect($updated))]);
+}
 
     /**
      * Remove the specified resource from storage.

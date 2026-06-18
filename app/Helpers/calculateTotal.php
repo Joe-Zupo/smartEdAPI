@@ -6,16 +6,15 @@ use App\Models\AcademicYear;
 
 trait calculateTotal
 {
-    private function calculateTotal(float $male, float $female, bool $accurateComp = false): float 
+    private function calculateTotal(float $male, float $female, $yearID, bool $accurateComp = false): float 
     {
 
     // Future weighted support
-    $academicYears = AcademicYear::query()->whereNotIn('status', ['upcoming'])->get();
+    $academicYear = AcademicYear::query()->where('id', $yearID)->first();
 
-    foreach($academicYears as $year){
-        $totalsQuery = EnrollmentData::whereHas('submission', function ($q) use ($year) {
+    $totalsQuery = EnrollmentData::whereHas('submission', function ($q) use ($academicYear) {
             $q->where('status', 'approved')
-                ->where('academic_year_id', $year->id);
+                ->where('academic_year_id', $academicYear->id);
             });
 
             $totals = $totalsQuery->selectRaw('
@@ -23,7 +22,6 @@ trait calculateTotal
             SUM(female_count) as total_female,
             SUM(total_count) as total_students
             ')->first();
-    }
 
     if ($accurateComp) {
 

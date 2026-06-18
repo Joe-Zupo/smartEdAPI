@@ -31,7 +31,7 @@ class KpiDataSeeder extends Seeder
                 for ($i = 1; $i <= 8; $i++) {
                     $male = rand(90, 100);
                     $female = rand(90, 100);
-                    $total = $this->calculateTotal($male, $female, true);
+                    $total = $this->calculateTotal($male, $female, $year->id, true);
 
                     KpiData::create([
                         'kpi_id' => $i,
