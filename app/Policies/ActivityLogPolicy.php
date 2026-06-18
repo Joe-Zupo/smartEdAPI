@@ -13,7 +13,7 @@ class ActivityLogPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasRole(['System Admin']);
+        return $user->hasRole(['System Admin', 'School Account', 'Division Admin']);
     }
 
     /**
