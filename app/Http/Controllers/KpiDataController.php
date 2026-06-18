@@ -13,6 +13,7 @@ use Illuminate\Validation\Rule;
 use App\Helpers\calculateTotal;
 use App\Models\SchoolType;
 use App\Http\Requests\KPI\UpdateKpiDataRequest;
+use App\Http\Requests\KPI\StoreKpiDataRequest;
 
 class KpiDataController extends Controller
 {
@@ -29,7 +30,7 @@ class KpiDataController extends Controller
         $request->validated();
 
          $query = KpiData::query()->with('academicYear', 'kpiRate');
-        // ✅ VALIDATION
+
         $request->validate([
             'kpi_rate' => [
                 'string',
@@ -82,7 +83,7 @@ class KpiDataController extends Controller
             ->paginate($perPage);
 
         if(!$paginatedData->count()){
-            return $this->success('No more users available');
+            return $this->success('No more KPI data available');
         }
 
         //Main Query
@@ -195,11 +196,84 @@ class KpiDataController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Store KPI data record
      */
-    public function store(Request $request)
+    public function store(StoreKpiDataRequest $request)
     {
-        //
+        $validated = $request->validated(); // user input
+
+        $created = DB::transaction(function () use ($validated) {
+            $records = [];
+
+            //Create all KPI Records that are filled
+            foreach ($validated['items'] as $item) {
+
+                // Convert names to IDs
+                $kpi = KpiRateData::query()->where('name', $item['kpi_rate_name'])->first();
+                $item['kpi_id'] = $kpi->id;
+
+                $academicYear = AcademicYear::query()->where('academic_year', $item['academic_year'])
+                    ->where('status', 'default')
+                    ->first();
+                $item['academic_year_id'] = $academicYear->id;
+
+                unset($item['kpi_rate_name'], $item['academic_year']);
+
+                $total = $this->calculateTotal(
+                    $item['male'],
+                    $item['female'],
+                    $academicYear->id
+                );
+
+                $record = KpiData::create([
+                    'kpi_id' => $item['kpi_id'],
+                    'academic_year_id' => $item['academic_year_id'],
+                    'school_type' => $item['school_type'],
+                    'male' => $item['male'],
+                    'female' => $item['female'],
+                    'total' => $total,
+                ]);
+
+                $records[] = $record->load(['kpiRate', 'academicYear']);
+
+                $schoolType = $item['school_type'];
+            }
+
+            // Automatically create other KPI rates for this year & school type with 0 values
+            $allKpiIds = KpiRateData::pluck('id')->toArray();
+            $existingKpiIds = KpiData::query()->where('academic_year_id', $academicYear->id)
+                ->where('school_type', $schoolType)
+                ->pluck('kpi_id')
+                ->toArray();
+
+            $missingKpiIds = array_diff($allKpiIds, $existingKpiIds);
+
+            foreach ($missingKpiIds as $kpiId) {
+                    $record = KpiData::create([
+                    'kpi_id' => $kpiId,
+                    'academic_year_id' => $academicYear->id,
+                    'school_type' => $schoolType,
+                    'male' => 0,
+                    'female' => 0,
+                    'total' => $this->calculateTotal(
+                        0,
+                        0,
+                        $academicYear->id
+                    ),
+                ]);
+                $records[] = $record->load(['kpiRate', 'academicYear']);
+            }
+
+            return collect($records);
+        });
+
+        // KpiDataChanged::dispatch('store', $created);
+        // return response()->json([
+        //     'message' => 'KPI data created successfully',
+        //     'data' => KpiDataResource::collection($created),
+        // ], 201);
+
+        return $this->success('KPI data created successfully', ['data' => KpiDataResource::collection($created)]);
     }
 
     /**

@@ -18,7 +18,7 @@ class KpiDataSeeder extends Seeder
      */
     public function run(): void{
         // Get all academic years
-        $academicYears = AcademicYear::query()->whereNotIn('status', ['upcoming'])->get();
+        $academicYears = AcademicYear::query()->whereNotIn('status', ['upcoming', 'default'])->get();
 
         // School types enum
         $schoolTypes = ['Elementary','Integrated School','Junior High School','Junior High School with SHS','Standalone SHS','Science High School','ALS'];

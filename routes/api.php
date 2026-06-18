@@ -150,6 +150,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('kpi-data', [KpiDataController::class, 'index']);
         Route::get('kpi-data/{kpiData}',[KpiDataController::class, 'show']);
         Route::put('kpi-data', [KpiDataController::class, 'update']);
+        Route::post('kpi-data', [KpiDataController::class, 'store']);
 
         /*
         |--------------------------------------------------------------------------
