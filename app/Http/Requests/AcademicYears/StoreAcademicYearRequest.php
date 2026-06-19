@@ -6,6 +6,7 @@ use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
 use Illuminate\Support\Carbon;
+use App\Models\AcademicYear;
 use Illuminate\Validation\Rule;
 
 class StoreAcademicYearRequest extends FormRequest
@@ -34,14 +35,40 @@ class StoreAcademicYearRequest extends FormRequest
      public function withValidator(Validator $validator): void
     {
         $validator->after(function ($validator){
-            $startComparison = Carbon::parse($this->start_date)->format('Y') + 1;
-            $end = Carbon::parse($this->end_date)->format('Y');
-                if ($startComparison != $end){
-                    $validator->errors()->add('end_date', 'You must keep the longevity of the school year within 1 year');   
+            $start = Carbon::parse($this->start_date);
+            $end = Carbon::parse($this->end_date);
+
+                if ($end->lte($start)) {
+                    $validator->errors()->add(
+                        'end_date',
+                        'End date must be after start date.'
+                    );
                 }
-                if ($startComparison <= 2020){
-                    $validator->errors()->add('start_date', 'You cannot input a year that is before 2020');
+            
+            $duration = $start->diffInDays($end);
+
+                if ($duration > 366) {
+                    $validator->errors()->add(
+                        'end_date',
+                        'Academic year cannot exceed 1 year.'
+                    );
                 }
+            
+            $overlap = AcademicYear::query()
+                ->where(function ($query) use ($start, $end) {
+
+                    $query->whereDate('start_date', '<=', $end)
+                        ->whereDate('end_date', '>=', $start);
+
+                })
+                ->exists();
+
+            if ($overlap){
+                $validator->errors()->add(
+                    'start_date',
+                    'This academic year overlaps with an existing academic year.'
+                );
+            }
         });
     }
 }
