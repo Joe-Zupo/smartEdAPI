@@ -39,7 +39,7 @@ class UpdateSchoolRequest extends FormRequest
                 'city'                      => 'sometimes|string|max:255',
                 'province'                  => 'sometimes|string|max:255',
                 'region'                    => 'sometimes|string|max:255',
-                'district'                  => 'sometimes|string|max:255', //Await District Requirements (rn can be Compass directions)
+                'district'                  => 'sometimes|string|max:255|in:North,South,East,West', //Await District Requirements (rn can be Compass directions)
             'latitude'                  => ['sometimes', 'nullable', 'numeric', 'between:-90,90'],
             'longitude'                 => ['sometimes', 'nullable', 'numeric', 'between:-180,180'],
 

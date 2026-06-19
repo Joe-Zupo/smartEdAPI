@@ -95,6 +95,7 @@ class StoreSubmissionsRequest extends FormRequest
                 'sometimes',
                 'string',
                 'max:255',
+                'in:North,South,East,West'
             ],
 
             'details.*.latitude' => [

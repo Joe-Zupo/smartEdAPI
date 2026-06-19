@@ -8,6 +8,8 @@ use App\Models\AcademicYear;
 use App\Models\ResourceData;
 use App\Models\Submission;
 use App\Models\School;
+use Illuminate\Validation\Rule;
+use App\Models\EnrollmentData;
 use Illuminate\Http\Request;
 
 class ResourceDataController extends Controller
@@ -183,6 +185,83 @@ class ResourceDataController extends Controller
         $resourceData->update(array_filter($validated, fn($v) => !is_null($v)));
 
         return $this->success('Resource Data updated successfully', ['data' => $resourceData]);
+    }
+
+    /**
+     * Dashboard Resource Data
+     */
+        public function dashboardResourceData(Request $request)
+    {
+        $request->validate([
+            'academic_year' => ['exists:academic_years,academic_year', Rule::in(AcademicYear::pluck('academic_year')->toArray())]
+        ]);
+
+        if($request->filled('academic_year')){
+            $academicYear = AcademicYear::query()->where('academic_year', $request->academic_year)->value('id');
+        }else{
+            $academicYear = AcademicYear::query()->where('status', 'default')->value('id');
+        }
+        $academicYears = AcademicYear::query()->where('id', '<=', $academicYear)
+            ->orderBy('id', 'desc')
+            ->limit(5)
+            ->get();
+
+        $results = [];
+
+        foreach ($academicYears as $year) {
+            $summary = EnrollmentData::query()
+                ->join('submissions','enrollment_data.submission_id','=','submissions.id')
+                ->join(
+                    'schools',
+                    'submissions.school_id',
+                    '=',
+                    'schools.id'
+                )
+                ->where('submissions.status', 'approved')
+                ->where('submissions.academic_year_id', $year->id)
+
+                ->selectRaw('
+                    COUNT(DISTINCT schools.id) as total_schools,
+                    SUM(enrollment_data.total_count) as total_students
+                ')
+                ->first();
+
+            $resources = ResourceData::query()
+            ->join('submissions','resource_data.submission_id','=','submissions.id')
+            ->where('submissions.status', 'approved')
+            ->where('submissions.academic_year_id', $year->id)
+
+            ->selectRaw('
+                resource_data.resource_name,
+                SUM(resource_data.inventory) as total_inventory,
+                SUM(resource_data.requirement) as total_requirement,
+                SUM(resource_data.need) as total_need
+            ')
+            ->groupBy('resource_data.resource_name')
+            ->orderBy('resource_data.resource_name')
+            ->get();
+
+            $results[] = [
+                'academic_year_id' => $year->id,
+                'academic_year' => $year->academic_year,
+
+                'summary' => [
+                    'total_schools' => (int) ($summary->total_schools ?? 0),
+                    'total_students' => (int) ($summary->total_students ?? 0),
+                ],
+
+                'resources' => $resources->map(function ($resource) {
+                    return [
+                        'resource_name' => $resource->resource_name,
+                        'total' => (int) $resource->total_inventory,
+                    ];
+                })->values(),
+            ];
+        }
+        return $this->success('Comparative Resource Data fetched successfully.',
+        [
+            'data' => $results
+        ]);
     }
 
     /**

@@ -187,6 +187,16 @@ Route::middleware('auth:sanctum')->group(function () {
 
         /*
         |--------------------------------------------------------------------------
+        | Dashboard Data
+        |--------------------------------------------------------------------------
+        */
+        
+        Route::get('enrollment-data-dashboard', [EnrollmentDataController::class, 'dashboardEnrollmentData']);
+        Route::get('resource-data-dashboard', [ResourceDataController::class, 'dashboardResourceData']);
+
+
+        /*
+        |--------------------------------------------------------------------------
         | Public Routes [For ]
         |--------------------------------------------------------------------------
         */
