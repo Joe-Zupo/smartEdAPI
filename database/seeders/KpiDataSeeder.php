@@ -18,7 +18,7 @@ class KpiDataSeeder extends Seeder
      */
     public function run(): void{
         // Get all academic years
-        $academicYears = AcademicYear::query()->whereNotIn('status', ['upcoming'])->get();
+        $academicYears = AcademicYear::all();
 
         // School types enum
         $schoolTypes = ['Elementary','Integrated School','Junior High School','Junior High School with SHS','Standalone SHS','Science High School','ALS'];
@@ -33,18 +33,20 @@ class KpiDataSeeder extends Seeder
                 ->where('academic_year_id', $year->id);
             });
 
-            $totals = $totalsQuery->selectRaw('
-            SUM(male_count) as total_male,
-            SUM(female_count) as total_female,
-            SUM(total_count) as total_students
-            ')->first();
 
             foreach ($schoolTypes as $schoolType) {
                 // Loop all 8 KPI rates
                 for ($i = 1; $i <= 8; $i++) {
-                    $male = rand(90, 100);
-                    $female = rand(90, 100);
-                    $total = $this->calculateTotal($male, $female, $totals->total_male, $totals->total_female);
+
+                    if($year->status === 'default' || $year->status === 'upcoming'){
+                        $male = 0;
+                        $female = 0;
+                        $total = 0;
+                    }else{
+                        $male = rand(90, 100);
+                        $female = rand(90, 100);
+                        $total = $this->calculateTotal($male, $female, $year->id, true);
+                    }
 
                     KpiData::create([
                         'kpi_id' => $i,

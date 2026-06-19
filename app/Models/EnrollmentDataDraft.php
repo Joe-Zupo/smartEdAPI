@@ -4,22 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class EnrollmentData extends Model
+class EnrollmentDataDraft extends Model
 {
     protected $fillable = [
-        'academic_year_id',
-        'school_id',
-
+        'submission_id',
         'grade_level',
         'male_count',
         'female_count',
         'total_count',
-    ];
-
-    protected $casts = [
-        'submission_id' => 'integer',
-        'school_id' => 'integer',
-        'total_count' => 'integer',
     ];
 
     public function submission(){

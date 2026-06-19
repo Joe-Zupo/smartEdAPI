@@ -3,8 +3,6 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use App\Models\AcademicYear;
-use App\Models\School;
 use App\Models\Submission;
 
 return new class extends Migration
@@ -14,10 +12,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('resource_data', function (Blueprint $table) {
+        Schema::create('resource_data_drafts', function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor(AcademicYear::class)->constrained()->onDelete('cascade');
-            $table->foreignIdFor(School::class)->constrained()->onDelete('cascade');
+
+            $table->foreignIdFor(Submission::class)->constrained()->cascadeOnDelete();
+
             $table->enum('resource_name', ['Classrooms', 'Teachers', 'Seats', 'Learning Materials']);
             $table->mediumInteger('inventory');
             $table->mediumInteger('requirement');
@@ -31,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('resource_data');
+        Schema::dropIfExists('resource_data_drafts');
     }
 };
