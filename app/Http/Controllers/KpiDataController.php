@@ -48,42 +48,6 @@ class KpiDataController extends Controller
 
         //Query Params
         if($request->filled('kpi_rate')){
-            $kpiRate = $query->where('name', $request->input('kpi_rate'))->first();
-            if ($kpiRate) {
-                $kpiId = $kpiRate->id;
-            }
-        }
-
-        if($request->filled('academic_year')){
-            $academicYear = AcademicYear::query()->where('academic_year', $request->input('academic_year'))->first();
-            $query->where('academic_year_id', $academicYear->id);
-            }else{
-                $academicYear = AcademicYear::query()->where('status', 'default')->first();
-                $query->where('academic_year_id', $academicYear->id);
-            }
-
-        $request->validate([
-            'kpi_rate' => [
-                'string',
-                'exists:kpi_rate_data,name',
-                Rule::in(KpiRateData::pluck('name')->toArray()),
-            ],
-            'academic_year' => [
-                'exists:academic_years,academic_year',
-                Rule::in(AcademicYear::whereIn('status', ['active', 'default'])->pluck('academic_year')->toArray()),
-            ],
-            'trend_school_type' => ['string', 'exists:school_types,name', Rule::in(SchoolType::pluck('name')->toArray())],
-            'school_type' => ['string', 'exists:school_types,name', Rule::in(SchoolType::pluck('name')->toArray())],
-            'per_page' => ['integer'],
-            'page' => ['integer'],
-            'all' => ['in:true,false'],
-        ]);
-        $getAll = $request->boolean('all');
-
-        $query = KpiData::query();
-
-        //Query Params
-        if($request->filled('kpi_rate')){
             $kpiRate = $query->whereHas('kpiRate', function($q) use ($query, $request){
                 $q->where('name', $request->input('kpi_rate'));
             });
@@ -106,12 +70,6 @@ class KpiDataController extends Controller
 
 
         $items = $getAll ? $query->get() : $query->paginate($perPage)->appends($request->query());
-        if ($items->isEmpty()) {
-            return response()->json(['message' => 'No KPI data found']);
-        }
-
-        $items = $getAll ? $query->get() : $query->paginate($perPage)->appends($request->query());
-
         if ($items->isEmpty()) {
             return response()->json(['message' => 'No KPI data found']);
         }
