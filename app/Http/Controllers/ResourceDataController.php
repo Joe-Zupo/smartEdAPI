@@ -60,7 +60,7 @@ class ResourceDataController extends Controller
 
             if ($request->filled('school_name')) {
                 $schoolName = $request->input('school_name');
-                $schoolID = School::query()->where('school_name', $schoolName)->first('id');
+                $schoolID = School::query()->where('school_name', $schoolName)->value('id');
                 $totalsQuery->where('school_id', $schoolID);
             }
 
@@ -75,9 +75,9 @@ class ResourceDataController extends Controller
             ->map(function ($item) {
                 return [
                     'resource_name' => $item->resource_name,
-                    'total_inventory' => (int) $item->total_inventory,
-                    'total_requirement' => (int) $item->total_requirement,
-                    'total_need' => (int) $item->total_need,
+                    'inventory' => (int) $item->total_inventory,
+                    'requirement' => (int) $item->total_requirement,
+                    'need' => (int) $item->total_need,
                 ];
             });
 
