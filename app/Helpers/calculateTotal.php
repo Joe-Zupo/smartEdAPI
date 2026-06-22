@@ -1,10 +1,11 @@
 <?php
 
 namespace App\Helpers;
+use App\Models\EnrollmentData;
 
 trait calculateTotal
 {
-    private function calculateTotal(float $male, float $female, ?int $malePopulation = null, ?int $femalePopulation = null): float 
+    private function calculateTotal(float $male, float $female, bool $accurateComp, $yearID): float 
     {
 
     // Future weighted support

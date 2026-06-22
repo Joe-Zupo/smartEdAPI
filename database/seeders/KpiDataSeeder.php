@@ -25,15 +25,6 @@ class KpiDataSeeder extends Seeder
 
         // Loop through each academic year
         foreach ($academicYears as $year) {
-            // Loop through each school type
-
-            //total males and females of current year
-            $totalsQuery = EnrollmentData::whereHas('submission', function ($q) use ($year) {
-            $q->where('status', 'approved')
-                ->where('academic_year_id', $year->id);
-            });
-
-
             foreach ($schoolTypes as $schoolType) {
                 // Loop all 8 KPI rates
                 for ($i = 1; $i <= 8; $i++) {
@@ -45,7 +36,7 @@ class KpiDataSeeder extends Seeder
                     }else{
                         $male = rand(90, 100);
                         $female = rand(90, 100);
-                        $total = $this->calculateTotal($male, $female, $year->id, true);
+                        $total = $this->calculateTotal($male, $female, true, $year->id);
                     }
 
                     KpiData::create([

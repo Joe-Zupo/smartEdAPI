@@ -47,29 +47,20 @@ class ResourceDataController extends Controller
         } 
 
         //Base Query
-        $query = ResourceData::query()->with('submission');
-        $query->whereHas('submission', function ($q) use ($academicYear, $request){
-            $q->where('status','approved')
-            ->where('academic_year_id', $academicYear->id);
-
+        $query = ResourceData::query()->where('academic_year_id', $academicYear->id);
             if($request->has('school_name')){
                 $school = School::query()->where('school_name', $request['school_name'])->first();
-                $q->where('school_id', $school->id);
+                $query->where('school_id', $school->id);
             }
-        });
 
         //Totals Query [testing]
-        $totalsQuery = ResourceData::whereHas('submission', function ($q) use ($academicYear, $request) {
-            $q->where('status', 'approved')
-                ->where('academic_year_id', $academicYear->id);
+        $totalsQuery = ResourceData::query()->where('academic_year_id', $academicYear->id);
 
             if ($request->filled('school_name')) {
                 $schoolName = $request->input('school_name');
-                $q->whereHas('school', function ($q2) use ($schoolName) {
-                    $q2->where('school_name', $schoolName);
-                });
+                $schoolID = School::query()->where('school_name', $schoolName)->first('id');
+                $totalsQuery->where('school_id', $schoolID);
             }
-        });
 
         $totals = $totalsQuery->selectRaw('
             resource_name,
@@ -166,8 +157,7 @@ class ResourceDataController extends Controller
     public function update(Request $request, $id)
     {
         $resourceData = ResourceData::find($id);
-        $submission = Submission::find($resourceData->submission_id);
-        $academicYear = AcademicYear::where('id', $submission->academic_year_id)->first();
+        $academicYear = AcademicYear::query()->where('id', $resourceData->academic_year_id)->first();
 
         if(!$academicYear->status === 'default'){
             return $this->error('You cannot update resource data that is not under the default year');

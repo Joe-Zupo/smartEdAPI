@@ -21,10 +21,6 @@ class ResourceData extends Model
         'school_id' => 'integer',
     ];
 
-    public function submission(){
-        return $this->belongsTo(Submission::class, 'submission_id');
-    }
-
     protected static function booted(): void{
         static::created(function (ResourceData $resource) {
         $resource->need = max(0, $resource->requirement - $resource->inventory);
