@@ -42,11 +42,8 @@ class EnrollmentDataController extends Controller
         }
 
         //Base Query [Gets Approved Enrollment Data and (Optional:Specific) School they're under]
-        $query = EnrollmentData::with(['gradeLevel','submission'])
-            ->whereHas('submission', function ($q) use ($academic_year, $request, $user){
-                    $q->where('status', 'approved') // gets only approved enrollment data under submissions
-                            ->where('academic_year_id', $academic_year->id);
-
+        $query = EnrollmentData::with(['gradeLevel'])
+            ->where('academic_year_id', $academic_year->id);
 
                         if($user->hasRole('School Account')){ //Regardless of whats the query; if user is a school account they will only see their school's data
                             $school = School::query()->where('id', $user->school_id)->value('school_name');
@@ -55,24 +52,16 @@ class EnrollmentDataController extends Controller
 
                         if ($request->filled('school_name')){
                             $school = School::query()->where('school_name', $request['school_name'])->first();
-                            $q->where('school_id', $school->id);
+                            $query->where('school_id', $school->id);
                         }
-            });
-        
-        //Maybe add Extra validation (Normalize Function);
 
         //Total Computation
-        $totalsQuery = EnrollmentData::whereHas('submission', function ($q) use ($academic_year, $request) {
-            $q->where('status', 'approved')
-                ->where('academic_year_id', $academic_year->id);
+        $totalsQuery = EnrollmentData::query()->where('academic_year_id', $academic_year->id);
 
             if ($request->filled('school_name')) {
-                $schoolName = $request->input('school_name');
-                $q->whereHas('school', function ($q2) use ($schoolName) {
-                    $q2->where('school_name', $schoolName);
-                });
+                $school = School::query()->where('school_name', $request['school_name'])->first();
+                $totalsQuery->where('school_id', $school->id);
             }
-        });
 
         $totals = $totalsQuery->selectRaw('
         SUM(male_count) as total_male,
@@ -157,13 +146,14 @@ class EnrollmentDataController extends Controller
         $enrollmentData = EnrollmentData::find($id);
 
         return $this->success('Enrollment data retrieved successfully', [
-            'data' => new EnrollmentDataResource($enrollmentData->load(['submission', 'gradeLevel'])),
+            'data' => new EnrollmentDataResource($enrollmentData->load([ 'gradeLevel'])),
         ]);
         
     }
 
     /**
      * Update Enrollment Data.
+     * Used only for testing
      */
     public function update(Request $request, $id)
     {
@@ -175,9 +165,6 @@ class EnrollmentDataController extends Controller
         ]);
 
         $enrollmentData = EnrollmentData::find($id);
-
-        $validated['totals_count'] = $validated['male_count'] + $validated['female_count'];
-        
         $enrollmentData->update($validated);
 
         // dispatch totals changed for the related academic year
@@ -197,7 +184,7 @@ class EnrollmentDataController extends Controller
     {
         $enrollmentData = EnrollmentData::find($id);
 
-        $yearId = $enrollmentData->submission->academic_year_id;
+        $yearId = $enrollmentData->academic_year_id;
         $enrollmentData->delete();
 
         // event(new \App\Events\EnrollmentTotalsChanged($yearId));
@@ -211,7 +198,7 @@ class EnrollmentDataController extends Controller
     private function getFiveYearTrend($user, $currentAcademicYear, $request)
     {
         // Get last 5 academic years (current + 4 previous)
-        $academicYears = AcademicYear::where('id', '<=', $currentAcademicYear->id)
+        $academicYears = AcademicYear::query()->where('id', '<=', $currentAcademicYear->id)
             ->orderBy('id', 'desc')
             ->limit(5)
             ->get();
@@ -219,19 +206,14 @@ class EnrollmentDataController extends Controller
         $trend = [];
 
         foreach ($academicYears as $year) {
-            $trendQuery = EnrollmentData::whereHas('submission', function ($q) use ($user, $year, $request) {
-                $q->where('status', 'approved')
-                    ->where('academic_year_id', $year->id);
+            $trendQuery = EnrollmentData::query()->where('academic_year_id', $year->id);
 
                 if ($user && $user->hasRole('School Account')) {
-                    $q->where('school_id', $user->school_id);
+                    $trendQuery->where('school_id', $user->school_id);
                 } elseif ($request->filled('school_name')) {
-                    $schoolName = $request->input('school_name');
-                    $q->whereHas('school', function ($q2) use ($schoolName) {
-                        $q2->where('school_name', $schoolName);
-                    });
+                    $school = School::query()->where('school_name', $request['school_name'])->first();
+                    $trendQuery->where('school_id', $school->id);
                 }
-            });
 
             $yearTotals = $trendQuery->selectRaw('
                 SUM(male_count) as total_male,
@@ -273,7 +255,7 @@ class EnrollmentDataController extends Controller
                 $schoolType = $user->school->schoolType->name;
             } elseif ($user->hasAnyRole(['System Admin']) && $request->filled('school_name')) {
                 $schoolName = $request->input('school_name');
-                $school = School::where('school_name', $schoolName)->with('schoolType')->first();
+                $school = School::query()->where('school_name', $schoolName)->with('schoolType')->first();
                 $schoolType = $school ? $school->schoolType->name : 'All';
             }
         }
@@ -306,7 +288,7 @@ class EnrollmentDataController extends Controller
 
 
         // Get last 5 academic years
-        $academicYears = AcademicYear::where('id', '<=', $currentAcademicYear->id)
+        $academicYears = AcademicYear::query()->where('id', '<=', $currentAcademicYear->id)
             ->orderBy('id', 'desc')
             ->limit(5)
             ->get();
@@ -316,19 +298,18 @@ class EnrollmentDataController extends Controller
         foreach ($academicYears as $year) {
             // Fetch enrollment data
             $enrollments = EnrollmentData::with('gradeLevel')
-                ->whereHas('submission', function ($q) use ($user, $year, $request) {
-                    $q->where('status', 'approved')
-                        ->where('academic_year_id', $year->id);
+                    ->where('academic_year_id', $year->id);
+
                     if ($user && $user->hasRole('School Account')) {
-                        $q->where('school_id', $user->school_id);
+                        $enrollments->where('school_id', $user->school_id);
                     } elseif ($request->filled('school_name')) {
                         $schoolName = $request->input('school_name');
-                        $q->whereHas('school', function ($q2) use ($schoolName) {
-                            $q2->where('school_name', $schoolName);
-                        });
+                        $school = School::query()->where('school_name', $schoolName)->first();
+
+                        $enrollments->where('school_id', $school->id);
                     }
-                })
-                ->get();
+
+            $enrollments = $enrollments->get();
             // Initialize category totals
             $levelTotals = [];
             foreach ($gradeGroups as $category => $grades) {
@@ -394,7 +375,7 @@ class EnrollmentDataController extends Controller
 
                 default => ['Kinder','Grade 1','Grade 2','Grade 3','Grade 4','Grade 5','Grade 6','Grade 7','Grade 8','Grade 9','Grade 10','Grade 11','Grade 12'],
             };
-        $academicYears = AcademicYear::where('id', '<=', $currentAcademicYear->id)
+        $academicYears = AcademicYear::query()->where('id', '<=', $currentAcademicYear->id)
             ->orderBy('id', 'desc')
             ->limit(5)
             ->get();
@@ -403,23 +384,20 @@ class EnrollmentDataController extends Controller
 
         foreach ($academicYears as $year) {
 
-            $enrollments = EnrollmentData::whereHas('submission', function ($q) use ($user, $year, $request) {
-
-                $q->where('status', 'approved')
+            $enrollments = EnrollmentData::query()
                 ->where('academic_year_id', $year->id);
 
                 if ($user && $user->hasRole('School Account')) {
-                    $q->where('school_id', $user->school_id);
+                    $enrollments->where('school_id', $user->school_id);
                 }
-                elseif ($request->filled('school_name')) {
+                else if ($request->filled('school_name')) {
                     $schoolName = $request->input('school_name');
+                    $school = School::query()->where('school_name', $schoolName)->first();
 
-                    $q->whereHas('school', function ($q2) use ($schoolName) {
-                        $q2->where('school_name', $schoolName);
-                    });
+                    $enrollments->where('school_id', $school->id);
                 }
 
-            })->get();
+            $enrollments = $enrollments->get();
 
             $gradeTotals = [];
 

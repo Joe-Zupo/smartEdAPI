@@ -2,20 +2,14 @@
 
 namespace App\Helpers;
 use App\Models\EnrollmentData;
-use App\Models\AcademicYear;
-
 trait calculateTotal
 {
-    private function calculateTotal(float $male, float $female, $yearID, bool $accurateComp = false): float 
+    private function calculateTotal(float $male, float $female, bool $accurateComp, $yearID): float 
     {
 
     // Future weighted support
-    $academicYear = AcademicYear::query()->where('id', $yearID)->first();
 
-    $totalsQuery = EnrollmentData::whereHas('submission', function ($q) use ($academicYear) {
-            $q->where('status', 'approved')
-                ->where('academic_year_id', $academicYear->id);
-            });
+    $totalsQuery = EnrollmentData::query()->where('academic_year_id', $yearID);
 
             $totals = $totalsQuery->selectRaw('
             SUM(male_count) as total_male,
@@ -25,13 +19,17 @@ trait calculateTotal
 
     if ($accurateComp) {
 
-        return round(
-            (
-                ($male * $totals->total_male)
-                + ($female * $totals->total_female)
-            ) / ($totals->total_male + $totals->total_female),
-            1
-        );
+        if ($totals->total_students == 0){
+            return 0;
+        }else{
+                return round(
+                (
+                    ($male * $totals->total_male)
+                    + ($female * $totals->total_female)
+                ) / ($totals->total_male + $totals->total_female),
+                1
+            ); 
+        }
     }
 
     // Current simple average
