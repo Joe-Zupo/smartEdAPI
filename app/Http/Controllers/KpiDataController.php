@@ -104,22 +104,31 @@ class KpiDataController extends Controller
             })
             ->get();
 
-          $groupedTrends = $totalsItems5Years->groupBy(['kpi_id','school_type','academic_year_id'])
-            ->map(function ($schoolTypes) {
-                return $schoolTypes->map(function ($yearGroups) {
-                    return $yearGroups->map(function ($items) {
-                        $first = $items->first();
-                        return [
-                            'trend_school_type' => $first->school_type,
-                            'academic_year_id'  => $first->academicYear->id,
-                            'academic_year'     => $first->academicYear->academic_year,
-                            'kpirate'           => $first->kpiRate->name,
-                            'male'              => (float) $first->male,
-                            'female'            => (float) $first->female,
-                            'total'             => (float) $first->total,
-                        ];
-                    })->sortByDesc('academic_year_id')->values();
-                });
+          $groupedTrends = $totalsItems5Years->groupBy(fn ($item) => $item->kpiRate->name)->map(function ($kpiItems) {
+
+                return $kpiItems
+                    ->groupBy('school_type')
+                    ->map(function ($schoolItems) {
+
+                        return $schoolItems
+                            ->sortByDesc('academic_year_id')
+                            ->map(function ($item) {
+
+                                return [
+                                    'trend_school_type' => $item->school_type,
+                                    'academic_year_id' => $item->academicYear->id,
+                                    'academic_year' => $item->academicYear->academic_year,
+                                    'kpirate' => $item->kpiRate->name,
+                                    'male' => (float) $item->male,
+                                    'female' => (float) $item->female,
+                                    'total' => (float) $item->total,
+                                ];
+
+                            })
+                            ->values();
+
+                    });
+
             });
         
         $trendOutput = collect();
