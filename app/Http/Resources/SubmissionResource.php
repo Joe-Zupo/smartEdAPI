@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use App\Models\SchoolType;
 use App\Models\School;
+use App\Http\Resources\EnrollmentDraftResource;
 use App\Helpers\EnrollmentData\GradesDisplay;
 
 class SubmissionResource extends JsonResource
@@ -34,17 +35,17 @@ class SubmissionResource extends JsonResource
             ],
 
             'details' => $this->when(
-                $this->relationLoaded('enrollmentData') || $this->relationLoaded('resourceData') || $this->relationLoaded('schoolInformationDraft'),
+                $this->relationLoaded('enrollmentDraft') || $this->relationLoaded('resourceDraft') || $this->relationLoaded('schoolInformationDraft'),
                 function (){
 
                     if ($this->type === 'enrollment') {
-                        $items = $this->displayRelevant($this->school, $this->enrollmentData);
+                        $items = $this->displayRelevant($this->school, $this->enrollmentDraft);
                         return [
-                            'items' => EnrollmentDataResource::collection($items)
+                            'items' => EnrollmentDraftResource::collection($items)
                             ];
                     }
                     if ($this->type === 'resource') {
-                        return $this->resourceData->map(function ($item) {
+                        return $this->resourceDraft->map(function ($item) {
                             return [
                                 'id' => $item->id,
                                 'resource_name' => $item->resource_name,

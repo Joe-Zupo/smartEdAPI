@@ -58,10 +58,8 @@ class UpdateAcademicYearRequest extends FormRequest
                     $q->where('id', '!=', $this->route('academic_year')->id);
                 })
                 ->where(function ($query) use ($start, $end) {
-
                     $query->whereDate('start_date', '<=', $end)
                         ->whereDate('end_date', '>=', $start);
-
                 })
                 ->exists();
 

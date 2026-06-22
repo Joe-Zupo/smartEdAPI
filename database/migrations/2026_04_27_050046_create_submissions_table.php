@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('submission_number')->nullable();
             $table->enum('type', ['enrollment', 'resource', 'information']);
             $table->enum('status', ['pending', 'approved', 'returned']);
+            $table->boolean('editable')->default(true);
             $table->timestamps();
         });
     }

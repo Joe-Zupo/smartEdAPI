@@ -48,6 +48,7 @@ class SubmissionSeeder extends Seeder
                             'user_id'          => $userId,
                             'type'             => $type,
                             'status'           => $status,
+                            'editable'         => false,
                         ]);
                     }
                 }

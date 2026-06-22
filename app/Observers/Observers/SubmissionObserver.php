@@ -3,6 +3,8 @@
 namespace App\Observers\Observers;
 
 use App\Models\EnrollmentData;
+use App\Models\EnrollmentDataDraft;
+use App\Models\ResourceDataDraft;
 use App\Models\ResourceData;
 use App\Models\Submission;
 
@@ -41,18 +43,40 @@ class SubmissionObserver
                 }
         }
         if($submission->type === 'enrollment'){
-            $enrollments = EnrollmentData::query()->where('submission_id', $submission->id)->get();
-
-            foreach($enrollments as $enrollment){
-                $enrollment->update();
-            }
+            $this->applyEnrollmentDraft($submission);
         }
         if($submission->type === 'resource'){
-            $resources = ResourceData::query()->where('submission_id', $submission->id)->get();
+            $this->applyResourceDraft($submission);
+        }
+    }
 
-            foreach($resources as $resource){
-                $resource->update();
-            }
+    private function applyEnrollmentDraft(Submission $submission)
+    {
+        foreach ($submission->enrollmentDraft as $draft) {
+
+            EnrollmentData::query()
+                ->where('academic_year_id', $submission->academic_year_id)
+                ->where('school_id', $submission->school_id)
+                ->where('grade_level', $draft->grade_level)
+                ->update([
+                    'male_count' => $draft->male_count,
+                    'female_count' => $draft->female_count,
+                ]);
+        }
+    }
+
+    private function applyResourceDraft(Submission $submission)
+    {
+        foreach ($submission->resourceDraft as $draft) {
+
+            ResourceData::query()
+                ->where('academic_year_id', $submission->academic_year_id)
+                ->where('school_id', $submission->school_id)
+                ->where('resource_name', $draft->resource_name)
+                ->update([
+                    'inventory' => $draft->inventory,
+                    'requirement' => $draft->requirement,
+                ]);
         }
     }
 
