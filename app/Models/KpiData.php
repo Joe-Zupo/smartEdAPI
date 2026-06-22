@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Helpers\calculateTotal;
 
 class KpiData extends Model
 {
+    use calculateTotal;
     protected $fillable = [
         'kpi_id',
         'academic_year_id',

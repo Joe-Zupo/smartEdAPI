@@ -9,6 +9,7 @@ use App\Models\AcademicYear;
 use App\Models\School;
 use App\Http\Resources\EnrollmentDataResource;
 use App\Http\Resources\SchoolResource;
+use Illuminate\Validation\Rule;
 use App\Helpers\EnrollmentData\GradesDisplay;
 use Illuminate\Support\Facades\DB;
 
@@ -450,5 +451,58 @@ class EnrollmentDataController extends Controller
         }
 
         return $byGrade;
+    }
+
+    /**
+     * Dashboard Enrollment Data
+     */
+        public function dashboardEnrollmentData(Request $request)
+    {
+        $request->validate([
+            'academic_year' => ['exists:academic_years,academic_year', Rule::in(AcademicYear::pluck('academic_year')->toArray())]
+        ]);
+        
+        if($request->filled('academic_year')){
+            $academicYear = AcademicYear::query()->where('academic_year', $request->academic_year)->value('id');
+        }else{
+            $academicYear = AcademicYear::query()->where('status', 'default')->value('id');
+        }
+        $academicYears = AcademicYear::query()->where('id', '<=', $academicYear)
+            ->orderBy('id', 'desc')
+            ->limit(5)
+            ->get();
+
+        $results = [];
+
+        foreach ($academicYears as $year) {
+
+            $districts = EnrollmentData::query()
+                ->join('submissions','enrollment_data.submission_id','=','submissions.id')
+                ->join('schools','submissions.school_id','=','schools.id')
+                ->where('submissions.status', 'approved')
+                ->where('submissions.academic_year_id', $year->id)
+
+                ->selectRaw('
+                    schools.district,
+                    SUM(enrollment_data.total_count) as total_students
+                ')
+                ->groupBy('schools.district')
+                ->get();
+
+            $row = [
+                'year' => $year->academic_year,
+            ];
+
+            foreach ($districts as $district) {
+                $row[$district->district] = (int) $district->total_students;
+            }
+
+            $results[] = $row;
+        }
+
+        
+        return $this->success("Comparative Enrollment Data fetched succesfully.", [
+            'data' => $results
+        ]);
     }
 }

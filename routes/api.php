@@ -148,10 +148,9 @@ Route::middleware('auth:sanctum')->group(function () {
         */
 
         Route::get('kpi-data', [KpiDataController::class, 'index']);
-        Route::get(
-            'kpi-data/{kpiData}',
-            [KpiDataController::class, 'show']
-        );
+        Route::get('kpi-data/{kpiData}',[KpiDataController::class, 'show']);
+        Route::put('kpi-data', [KpiDataController::class, 'update']);
+        Route::post('kpi-data', [KpiDataController::class, 'store']);
 
         /*
         |--------------------------------------------------------------------------
@@ -176,7 +175,7 @@ Route::middleware('auth:sanctum')->group(function () {
         */
         Route::apiResource('submissions', SubmissionsController::class)->except('destroy', 'update',);
         Route::post('submissions/{submission}/approve', [SubmissionsController::class, 'approve']);
-        //Route::post('submissions/{submission}/return', [SubmissionsController::class, 'return']);
+        Route::post('submissions/{submission}/return', [SubmissionsController::class, 'return']);
 
         /*
         |--------------------------------------------------------------------------
@@ -184,6 +183,16 @@ Route::middleware('auth:sanctum')->group(function () {
         |--------------------------------------------------------------------------
         */
         Route::apiResource('enrollment-data', EnrollmentDataController::class)->only(['index', 'show','update', 'destroy']);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Dashboard Data
+        |--------------------------------------------------------------------------
+        */
+        
+        Route::get('enrollment-data-dashboard', [EnrollmentDataController::class, 'dashboardEnrollmentData']);
+        Route::get('resource-data-dashboard', [ResourceDataController::class, 'dashboardResourceData']);
 
 
         /*

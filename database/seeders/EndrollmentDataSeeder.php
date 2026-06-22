@@ -56,6 +56,9 @@ class EndrollmentDataSeeder extends Seeder
                     $grade->name,
                     $allowedGrades
                 );
+                if (!$isAllowed){
+                    continue;
+                }
 
                 EnrollmentData::create([
                     'submission_id' => $submission->id,

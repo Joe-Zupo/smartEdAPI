@@ -49,7 +49,7 @@ class StoreSchoolRequest extends FormRequest
                 'city'                      => 'required|string|max:255',
                 'province'                  => 'required|string|max:255',
                 'region'                    => 'required|string|max:255',
-                'district'                  => 'required|string|max:255', //Await District Requirements (rn can be Compass directions)
+                'district'                  => 'required|string|max:255|in:North,South,East,West', //Await District Requirements (rn can be Compass directions)
 
             'latitude'                  => ['required', 'nullable', 'numeric', 'between:-90,90'],
             'longitude'                 => ['required', 'nullable', 'numeric', 'between:-180,180'],

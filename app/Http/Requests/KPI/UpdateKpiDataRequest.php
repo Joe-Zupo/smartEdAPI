@@ -22,15 +22,13 @@ class UpdateKpiDataRequest extends FormRequest
      */
     public function rules(): array
     {
+        
          return [
             'items' => ['required', 'array', 'min:1'],
-
             'items.*.id' => ['required', 'integer', 'exists:kpi_data,id'],
-
             // Numeric fields: min 0, max 100, up to 1 decimal
             'items.*.male' => ['required', 'numeric', 'min:0', 'max:100', 'regex:/^\d+(\.\d)?$/'],
             'items.*.female' => ['required', 'numeric', 'min:0', 'max:100', 'regex:/^\d+(\.\d)?$/'],
-            'items.*.total' => ['required', 'numeric', 'min:0', 'max:100', 'regex:/^\d+(\.\d)?$/'],
         ];
     }
 }
