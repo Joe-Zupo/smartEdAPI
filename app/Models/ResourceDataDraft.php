@@ -4,22 +4,22 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class ResourceData extends Model
+class ResourceDataDraft extends Model
 {
     protected $fillable = [
-        'academic_year_id',
-        'school_id',
         'submission_id',
         'resource_name',
         'inventory',
         'requirement',
-        //'need',
-    ];  
+    ];
 
     protected $casts = [
-        'submission_id' => 'integer',
-        'school_id' => 'integer',
+        'submission_id' => 'integer'
     ];
+
+    public function submission(){
+        return $this->belongsTo(Submission::class, 'submission_id');
+    }
 
     protected static function booted(): void{
         static::created(function (ResourceData $resource) {

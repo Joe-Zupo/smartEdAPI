@@ -60,6 +60,16 @@ class Submission extends Model
         return $this->hasMany(ResourceData::class);
     }
 
+        public function enrollmentDrafts()
+    {
+        return $this->hasMany(EnrollmentDataDraft::class);
+    }
+
+    public function resourceDrafts()
+    {
+        return $this->hasMany(ResourceDataDraft::class);
+    }
+
     public function schoolInformationDraft()
     {
         return $this->hasOne(SchoolInformationDraft::class);

@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use App\Models\AcademicYear;
 use App\Models\GradeLevel;
 use App\Models\Submission;
 use App\Models\School;
@@ -16,15 +17,14 @@ class EndrollmentDataSeeder extends Seeder
      */
     public function run(): void
     {
+        $academicYears = AcademicYear::all();
+        $schools = School::all();
         $grades = GradeLevel::all();
 
-        $submissions = Submission::where('type', 'enrollment')->get();
+        foreach($academicYears as $academicYear){
+            foreach($schools as $school){
 
-        foreach ($submissions as $submission) {
-            //Seeder Logic
-
-            $schoolId = $submission->school_id;
-            $school = School::where('id', $schoolId)->first();
+            $schoolId = $school->id;
             $type = $school->schoolType->name;
             
             $allowedGrades = match ($type) {  
@@ -60,13 +60,29 @@ class EndrollmentDataSeeder extends Seeder
                     continue;
                 }
 
-                EnrollmentData::create([
-                    'submission_id' => $submission->id,
-                    'grade_level' => $grade->name,
-                    'male_count' => $isAllowed ? rand(15, 60) : 0,
-                    'female_count' => $isAllowed ? rand(15, 60) : 0,
-                ]);
+                if(!$isAllowed){
+                    continue;
+                }
+
+                if($academicYear->status === 'upcoming' || $academicYear->status === 'default'){
+                        EnrollmentData::create([
+                        'academic_year_id' => $academicYear->id,
+                        'school_id' => $school->id,
+                        'grade_level' => $grade->name,
+                        'male_count' => 0,
+                        'female_count' => 0,
+                    ]);
+                }else{
+                        EnrollmentData::create([
+                        'academic_year_id' => $academicYear->id,
+                        'school_id' => $school->id,
+                        'grade_level' => $grade->name,
+                        'male_count' => $isAllowed ? rand(15, 60) : 0,
+                        'female_count' => $isAllowed ? rand(15, 60) : 0,
+                    ]);
+                }
             }
         }
     }
+}
 }
