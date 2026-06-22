@@ -62,7 +62,7 @@ class KpiDataController extends Controller
             }
 
         if ($request->filled('school_type')) {
-            $query->where('school_type', 'like', '%'. $request->school_type . '%');
+            $query->where('school_type', $request->school_type);
         }
 
         //Main Query
@@ -75,7 +75,7 @@ class KpiDataController extends Controller
         }
 
         //TREND PER SCHOOL LEVEL (FILTERED BY TREND SCHOOL LEVEL & KPI RATE)
-        if ($request->filled('filter.academic_year')) {
+        if ($request->filled('academic_year')) {
             // Get the requested year
             $startYear = AcademicYear::query()->where('academic_year', $request->input('academic_year'))->first();
             } else {
@@ -99,8 +99,8 @@ class KpiDataController extends Controller
                 $q->where('kpi_id', $kpiId);
             })
             ->whereIn('academic_year_id', $academicYearIds)
-            ->when($request->filled('filter.trend_school_level'), function ($q) use ($request) {
-                $q->where('school_type', $request->input('filter.trend_school_level'));
+            ->when($request->filled('trend_school_level'), function ($q) use ($request) {
+                $q->where('school_type', $request->input('trend_school_level'));
             })
             ->get();
 
@@ -154,12 +154,9 @@ class KpiDataController extends Controller
 
             return [
                 'kpirate' => $kpi['kpirate'],
-                'male_five_year_avg' => round(
-                    collect($kpi['trends'])->avg('male'),1),
-                'female_five_year_avg' => round(
-                    collect($kpi['trends'])->avg('female'),1),
-                'total_five_year_avg' => round(
-                    collect($kpi['trends'])->avg('total'),1),
+                'male_five_year_avg' => round(collect($kpi['trends'])->avg('male'),1),
+                'female_five_year_avg' => round(collect($kpi['trends'])->avg('female'),1),
+                'total_five_year_avg' => round(collect($kpi['trends'])->avg('total'),1),
             ];
         });
         
