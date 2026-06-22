@@ -75,9 +75,9 @@ class ResourceDataController extends Controller
             ->map(function ($item) {
                 return [
                     'resource_name' => $item->resource_name,
-                    'total_inventory' => (int) $item->total_inventory,
-                    'total_requirement' => (int) $item->total_requirement,
-                    'total_need' => (int) $item->total_need,
+                    'inventory' => (int) $item->total_inventory,
+                    'requirement' => (int) $item->total_requirement,
+                    'need' => (int) $item->total_need,
                 ];
             });
 
