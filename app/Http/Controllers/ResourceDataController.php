@@ -60,7 +60,7 @@ class ResourceDataController extends Controller
 
             if ($request->filled('school_name')) {
                 $schoolName = $request->input('school_name');
-                $schoolID = School::query()->where('school_name', $schoolName)->first('id');
+                $schoolID = School::query()->where('school_name', $schoolName)->value('id');
                 $totalsQuery->where('school_id', $schoolID);
             }
 
