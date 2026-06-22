@@ -454,11 +454,14 @@ class EnrollmentDataController extends Controller
 
         foreach ($academicYears as $year) {
 
+            $allDistricts = School::query()
+            ->distinct()
+            ->pluck('district')
+            ->toArray();
+
             $districts = EnrollmentData::query()
-                ->join('submissions','enrollment_data.submission_id','=','submissions.id')
-                ->join('schools','submissions.school_id','=','schools.id')
-                ->where('submissions.status', 'approved')
-                ->where('submissions.academic_year_id', $year->id)
+                ->join('schools', 'enrollment_data.school_id', '=', 'schools.id')
+                ->where('enrollment_data.academic_year_id', $year->id)
 
                 ->selectRaw('
                     schools.district,
@@ -470,6 +473,10 @@ class EnrollmentDataController extends Controller
             $row = [
                 'year' => $year->academic_year,
             ];
+
+            foreach ($allDistricts as $district) {
+                $row[$district] = 0;
+            }
 
             foreach ($districts as $district) {
                 $row[$district->district] = (int) $district->total_students;
