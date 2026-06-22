@@ -17,7 +17,6 @@ class EnrollmentData extends Model
     ];
 
     protected $casts = [
-        'submission_id' => 'integer',
         'school_id' => 'integer',
         'total_count' => 'integer',
     ];
