@@ -42,6 +42,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
         return new UserResource($request->user());
     });
+    Route::get('/user-returned-submissions', [UserController::class, 'returnedSubmissions']);
     Route::post('logout', [AuthController::class, 'logout']);
 
     /*

@@ -6,6 +6,8 @@ use App\Http\Requests\Users\ChangeUserPasswordRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use App\Models\School;
+use App\Models\Submission;
+use App\Models\AcademicYear;
 use App\Http\Requests\Users\IndexUserRequest;
 use App\Http\Requests\Users\StoreUserRequest;
 use App\Http\Requests\Users\UpdateUserRequest;
@@ -149,6 +151,34 @@ class UserController extends Controller
 
     //Custom Functions
 
+    /**
+     * Get User's Returned Submissions
+     */
+    public function returnedSubmissions(Request $request){
+        $user = $request->user();
+        $academicYear = AcademicYear::query()->where('status','default')->first();
+        if($user->hasRole('School Account') && $user->school_id){
+            $submissions = Submission::query()
+                ->where('academic_year_id', $academicYear->id)
+                ->where('school_id', $user->school_id)
+                ->where('status', 'returned')->get();
+
+            $submissionCollection = collect();
+            foreach($submissions as $submission){
+                $submissionCollection->push([
+                    'id' => $submission->id,
+                    'type' => $submission->type,
+                ]);
+            }
+
+            return $this->success('Returned Submissions fetched successfully', [
+                'user' => new UserResource($user),
+                'returned_submissions' => $submissionCollection->toArray()
+            ]);
+        }else{
+            return null;
+        }
+    }
 
     /**
      * Change a user's password
