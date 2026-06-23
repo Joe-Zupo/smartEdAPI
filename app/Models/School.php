@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Observers\SchoolObserver;
 use Illuminate\Database\Eloquent\Model;
 
 class School extends Model
@@ -41,4 +42,9 @@ class School extends Model
          return $this->hasOne(User::class, 'school_id')
               ->whereHas('roles', fn($q) => $q->where('name', 'School Account'));
      }
+    protected static function booted()
+    {
+        parent::booted();
+        School::observe(SchoolObserver::class); // Observes School Type Changes and Creates default values for Enrollment and Resource Data
+    }
 }
