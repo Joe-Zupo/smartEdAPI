@@ -29,9 +29,9 @@ class SubmissionResource extends JsonResource
             'submitted_by' => $this->user->name ?? 'Unknown User',
 
             'school' => [
-                'name' => $this->school->school_name,
+                'school_name' => $this->school->school_name,
                 'type' => $this->school->schoolType->name, // for testing
-                'code' => $this->school->school_code,
+                'school_code' => $this->school->school_code,
             ],
 
             'details' => $this->when(
@@ -63,8 +63,8 @@ class SubmissionResource extends JsonResource
                         }
                         $school_type_name = SchoolType::where('id', $draft->school_type_id)->value('name');
                         return [
-                            'name' => $draft->name,
-                            'code' => $draft->code,
+                            'school_name' => $draft->school_name,
+                            'school_code' => $draft->school_code,
                             'year_established' => $draft->year_established,
                             'school_type' => $school_type_name,
                             'address' => $draft->address,
@@ -73,7 +73,7 @@ class SubmissionResource extends JsonResource
                             'longitude' => $draft->longitude,
                             'image' => $draft->image ? asset('storage/' . $draft->image) : null,
                             'school_head' => $this->school->schoolHead->name,
-                            'principal_level' => $this->school->schoolHead->principal_level,
+                            'principal_level' => $this->school->position,
                             'principal_contact' => $this->school->schoolHead->phone_number,
                             'principal_email' => $this->school->schoolHead->email,
                         ];    
