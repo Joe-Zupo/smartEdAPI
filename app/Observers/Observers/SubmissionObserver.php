@@ -24,12 +24,12 @@ class SubmissionObserver
     public function updated(Submission $submission): void
     {
         //update totals of the data
-        if($submission->type === 'information'){
+        if($submission->type === 'information' && $submission->status === 'approved'){
             $draft = $submission->schoolInformationDraft->latest()->first();
                 if ($draft) {
                     $school = $submission->school;
-                    $school->name = $draft->name;
-                    $school->code = $draft->code;
+                    $school->school_name = $draft->school_name;
+                    $school->school_code = $draft->school_code;
                     $school->year_established = $draft->year_established;
                     $school->school_type_id = $draft->school_type_id;
                     $school->address = $draft->address;
@@ -42,10 +42,10 @@ class SubmissionObserver
                     $school->save();
                 }
         }
-        if($submission->type === 'enrollment'){
+        if($submission->type === 'enrollment' && $submission->status === 'approved'){
             $this->applyEnrollmentDraft($submission);
         }
-        if($submission->type === 'resource'){
+        if($submission->type === 'resource' && $submission->status === 'approved'){
             $this->applyResourceDraft($submission);
         }
     }

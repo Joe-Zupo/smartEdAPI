@@ -17,8 +17,8 @@ return new class extends Migration
             $table->foreignId('submission_id')->constrained()->cascadeOnDelete();
             $table->foreignId('school_id')->constrained()->cascadeOnDelete();
 
-            $table->string('name')->nullable();
-            $table->string('code')->nullable();
+            $table->string('school_name')->nullable();
+            $table->string('school_code')->nullable();
             $table->year('year_established')->nullable();
             $table->foreignId('school_type_id')->nullable()->constrained()->nullOnDelete();
             $table->string('address', 500)->nullable();

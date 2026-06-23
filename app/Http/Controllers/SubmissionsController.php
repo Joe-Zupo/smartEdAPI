@@ -8,8 +8,10 @@ use App\Http\Resources\SubmissionResource;
 use App\Models\AcademicYear;
 use App\Http\Requests\Submissions\IndexSubmissionsRequest;
 use App\Http\Requests\Submissions\StoreSubmissionsRequest;
+use App\Http\Requests\Submissions\UpdateSubmissionsRequest;
 use Illuminate\Support\Facades\DB;
 use App\Models\SchoolInformationDraft;
+use Illuminate\Support\Facades\Storage;
 use App\Models\EnrollmentData;
 use App\Models\EnrollmentDataDraft;
 use App\Models\SchoolType;
@@ -260,15 +262,15 @@ class SubmissionsController extends Controller
         });
 
 
-        // $submission->notifications()->create([
-        //     'title' => "New Submission from {$submission->school->name}",
-        //     'message' => ucfirst($submission->type) . " data for {$submission->academicYear->name} has been submitted by {$submission->user->name} and requires validation.",
-        // ]);
+        $submission->notifications()->create([
+            'title' => "New Submission from {$submission->school->name}",
+            'message' => ucfirst($submission->type) . " data for {$submission->academicYear->name} has been submitted by {$submission->user->name} and requires validation.",
+        ]);
 
-        // $submission->notifications()->create([
-        //     'title' => "Pending Review",
-        //     'message' => "Your submission {$submission->submission_number} has been successfully submitted and is awaiting approval.",
-        // ]);
+        $submission->notifications()->create([
+            'title' => "Pending Review",
+            'message' => "Your submission {$submission->submission_number} has been successfully submitted and is awaiting approval.",
+        ]);
 
         activity('Submitted Data')
             ->causedBy($user)
@@ -276,7 +278,7 @@ class SubmissionsController extends Controller
             ->withProperties([
                 'datetime' => now()->format('Y-m-d h:i:s A'),
             ])
-            ->log("{$user->name} submitted {$submission->type} data for {$submission->school->name}.");
+            ->log("{$user->name} submitted {$submission->type} data for {$submission->school->school_name}.");
 
         $submission->load([
             'enrollmentDraft.gradeLevel',
@@ -342,11 +344,11 @@ class SubmissionsController extends Controller
                 'editable' => false,
             ]);
 
-            // $submission->notifications()->create([
-            //     'title' => 'Approved Submission',
-            //     'message' => "Your submission for {$submission->submission_number} has been approved.",
-            //     'is_read' => false,
-            // ]);
+            $submission->notifications()->create([
+                'title' => 'Approved Submission',
+                'message' => "Your submission for {$submission->submission_number} has been approved.",
+                'is_read' => false,
+            ]);
 
             $actor = $request->user();
             if ($actor) {
@@ -386,19 +388,19 @@ class SubmissionsController extends Controller
                 'status' => 'returned',
             ]);
 
-            // $submission->comments()->create([
-            //     'submission_id' => $submission->id,
-            //     'user_id' => $request->user()->id,
-            //     'comment' => $validated['comment'],
-            // ]);
+             $submission->comments()->create([
+                 'submission_id' => $submission->id,
+                 'user_id' => $request->user()->id,
+                 'comment' => $validated['comment'],
+             ]);
 
-            // $comment = rtrim($validated['comment'], '.');
+             $comment = rtrim($validated['comment'], '.');
 
-            // $submission->notifications()->create([
-            //     'title' => 'Submission Returned',
-            //     'message' => "Your submission for {$submission->submission_number} has been returned. Reason: {$comment}. Please review and resubmit.",
-            //     'is_read' => false,
-            // ]);
+            $submission->notifications()->create([
+                'title' => 'Submission Returned',
+                'message' => "Your submission for {$submission->submission_number} has been returned. Reason: . Please review and resubmit.",//add {$comment to Reason}
+                'is_read' => false,
+            ]);
 
             $actor = $request->user();
             if ($actor) {
@@ -427,10 +429,128 @@ class SubmissionsController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Submissions $submissions)
+    public function update(UpdateSubmissionsRequest $request, Submission $submission)
     {
-        //
-    }
+        $user = $request->user();
+        if ($submission->user_id !== $user->id || $submission->school_id !== $user->school_id) {
+            return response()->json(['message' => 'Unauthorized to update this submission.'], 403);
+        }
+
+        if ($submission->status === 'approved') {
+            return response()->json(['message' => 'Only returned submissions cannot be edited.'], 403);
+        } elseif ($submission->status === 'pending') {
+            return response()->json(['message' => 'Only returned submissions can be edited.'], 403);
+        }
+
+        $validated = $request->validated();
+
+        DB::beginTransaction();
+        
+            if ($submission->type === 'enrollment') {
+
+                foreach ($validated['details'] as $row) {
+
+                    if (
+                        !isset($row['grade_level']) ||
+                        !isset($row['male_count']) ||
+                        !isset($row['female_count'])
+                    ) {
+                        continue;
+                    }
+
+                    $submission->enrollmentDraft()
+                        ->where('grade_level', $row['grade_level'])
+                        ->update([
+                            'male_count' => $row['male_count'],
+                            'female_count' => $row['female_count'],
+                        ]);
+                }
+            }
+            elseif ($submission->type === 'resource') {
+
+                foreach ($validated['details'] as $row) {
+
+                    if (
+                        !isset($row['resource_name']) ||
+                        !isset($row['inventory']) ||
+                        !isset($row['requirement'])
+                    ) { continue; }
+
+                    $submission->resourceDraft()
+                        ->where('resource_name', $row['resource_name'])
+                        ->update([
+                            'inventory' => $row['inventory'],
+                            'requirement' => $row['requirement'],
+                        ]);
+                }
+            } 
+
+            elseif ($submission->type === 'information') {
+
+                $draft = $submission->schoolInformationDraft;
+
+                if (!$draft) {
+                    throw new \Exception('Information draft not found.');
+                }
+
+                $info = $validated['details'][0] ?? [];
+
+                $schoolType = null;
+
+                if (!empty($info['school_type'])) {
+                    $schoolType = SchoolType::query()->where('name', $info['school_type'])->first();
+                }
+
+                $draft->update([
+                    'school_name' => $info['school_name'] ?? $draft->school_name,
+                    'school_code' => $info['school_code'] ?? $draft->school_code,
+                    'year_established' => $info['year_established'] ?? $draft->year_established,
+                    'school_type_id' => $schoolType?->id ?? $draft->school_type_id,
+                    'address' => $info['address'] ?? $draft->address,
+                    'district' => $info['district'] ?? $draft->district,
+                    'latitude' => $info['latitude'] ?? $draft->latitude,
+                    'longitude' => $info['longitude'] ?? $draft->longitude,
+                ]);
+                $path = $draft->image;
+                if ($request->hasFile('details.0.image')) {
+                    if ($info->image && Storage::disk('public')->exists($school->image)) {
+                            Storage::disk('public')->delete($school->image);
+                    }
+                        $path = $request->file('image')->store('school_images', 'public');
+                    }
+
+                    if ($path) {
+                        $draft->image = $path ?? $draft->image;
+                    }
+                    $draft->save();
+            }
+
+                $submission->update(['status' => 'pending']);
+                $submission->touch();
+
+                $submission->notifications()->create([
+                'title' => "New Submission from {$submission->school->name}",
+                'message' => ucfirst($submission->type) . " data for {$submission->academicYear->name} has been resubmitted by {$submission->user->name} and requires validation.",
+                ]);
+
+                $submission->notifications()->create([
+                    'title' => "Pending Review",
+                    'message' => "Your submission {$submission->submission_number} has been successfully resubmitted and is awaiting approval.",
+                ]);
+
+                activity('Resubmitted Data')
+                ->causedBy($user)
+                ->performedOn($submission)
+                ->withProperties([
+                    'datetime' => now()->format('Y-m-d h:i:s A'),
+                ])
+                ->log("{$user->name} resubmitted {$submission->type} data for {$submission->school->school_name}.");
+
+                 $submission->load(['enrollmentDraft.gradeLevel', 'resourceDraft', 'school', 'academicYear', 'comments', 'schoolInformationDraft',]);
+
+                DB::commit();
+                return $this->success('Submission updated successfully', ['data' => new SubmissionResource($submission)]);
+                }
 
     /**
      * Remove the specified resource from storage.

@@ -9,8 +9,8 @@ class SchoolInformationDraft extends Model
     protected $fillable = [
         'submission_id',
         'school_id',
-        'name',
-        'code',
+        'school_name',
+        'school_code',
         'year_established',
         'school_type_id',
         'address',
