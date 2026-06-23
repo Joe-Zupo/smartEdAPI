@@ -5,8 +5,10 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use App\Models\SchoolType;
+use App\Models\Comment;
 use App\Models\School;
 use App\Http\Resources\EnrollmentDraftResource;
+use App\Http\Resources\CommentResource;
 use App\Helpers\EnrollmentData\GradesDisplay;
 
 class SubmissionResource extends JsonResource
@@ -19,6 +21,7 @@ class SubmissionResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $comments = Comment::query()->where('submission_id', $this->id)->get();
         return [
             'id' => $this->id,
             'submission_number' => $this->submission_number,
@@ -79,7 +82,10 @@ class SubmissionResource extends JsonResource
                         ];    
                     }
                 }
-            )
+            ),
+
+            
+            'comments' => CommentResource::collection($comments),
 
         ];
     }

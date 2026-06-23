@@ -388,13 +388,13 @@ class SubmissionsController extends Controller
                 'status' => 'returned',
             ]);
 
-            // $submission->comments()->create([
-            //     'submission_id' => $submission->id,
-            //     'user_id' => $request->user()->id,
-            //     'comment' => $validated['comment'],
-            // ]);
+             $submission->comments()->create([
+                 'submission_id' => $submission->id,
+                 'user_id' => $request->user()->id,
+                 'comment' => $validated['comment'],
+             ]);
 
-            // $comment = rtrim($validated['comment'], '.');
+             $comment = rtrim($validated['comment'], '.');
 
             $submission->notifications()->create([
                 'title' => 'Submission Returned',
