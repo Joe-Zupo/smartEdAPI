@@ -11,8 +11,10 @@ use App\Http\Requests\Submissions\StoreSubmissionsRequest;
 use Illuminate\Support\Facades\DB;
 use App\Models\SchoolInformationDraft;
 use App\Models\EnrollmentData;
+use App\Models\EnrollmentDataDraft;
 use App\Models\SchoolType;
 use App\Models\ResourceData;
+use App\Models\ResourceDataDraft;
 use App\Models\GradeLevel;
 
 class SubmissionsController extends Controller
@@ -196,6 +198,7 @@ class SubmissionsController extends Controller
                 'status' => 'pending',
             ]);
 
+
             if ($validated['type'] === 'enrollment') {
                 $details = [];
                 foreach ($validated['details'] as $row) {
@@ -207,7 +210,7 @@ class SubmissionsController extends Controller
                         
                     ];
                 }
-                EnrollmentData::insert($details);
+                EnrollmentDataDraft::insert($details);
 
 
             } elseif ($validated['type'] === 'resource') {
@@ -220,7 +223,7 @@ class SubmissionsController extends Controller
                         'requirement' => $row['requirement'],
                     ];
                 }
-                ResourceData::insert($details);
+                ResourceDataDraft::insert($details);
 
 
             } elseif ($validated['type'] === 'information') {
@@ -276,8 +279,8 @@ class SubmissionsController extends Controller
             ->log("{$user->name} submitted {$submission->type} data for {$submission->school->name}.");
 
         $submission->load([
-            'enrollmentData.gradeLevel',
-            'resourceData',
+            'enrollmentDraft.gradeLevel',
+            'resourceDraft',
             'school',
             'academicYear',
             'user',
@@ -305,8 +308,8 @@ class SubmissionsController extends Controller
         }
 
         $submission->load([
-            'enrollmentData.gradeLevel',
-            'resourceData',
+            'enrollmentDraft.gradeLevel',
+            'resourceDraft',
             'school',
             'academicYear',
             'user',
@@ -336,6 +339,7 @@ class SubmissionsController extends Controller
 
             $submission->update([
                 'status' => 'approved',
+                'editable' => false,
             ]);
 
             // $submission->notifications()->create([

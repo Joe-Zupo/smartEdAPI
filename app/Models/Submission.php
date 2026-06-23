@@ -15,6 +15,7 @@ class Submission extends Model
         'submission_number',
         'type',
         'status',
+        'editable'
     ];
 
     protected $casts = [
@@ -50,22 +51,13 @@ class Submission extends Model
 
 
     //Details Relationships
-    public function enrollmentData()
-    {
-        return $this->hasMany(EnrollmentData::class);
-    }
 
-    public function resourceData()
-    {
-        return $this->hasMany(ResourceData::class);
-    }
-
-        public function enrollmentDrafts()
+        public function enrollmentDraft()
     {
         return $this->hasMany(EnrollmentDataDraft::class);
     }
 
-    public function resourceDrafts()
+    public function resourceDraft()
     {
         return $this->hasMany(ResourceDataDraft::class);
     }
