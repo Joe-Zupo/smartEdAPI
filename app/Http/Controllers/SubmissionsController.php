@@ -262,15 +262,15 @@ class SubmissionsController extends Controller
         });
 
 
-        // $submission->notifications()->create([
-        //     'title' => "New Submission from {$submission->school->name}",
-        //     'message' => ucfirst($submission->type) . " data for {$submission->academicYear->name} has been submitted by {$submission->user->name} and requires validation.",
-        // ]);
+        $submission->notifications()->create([
+            'title' => "New Submission from {$submission->school->name}",
+            'message' => ucfirst($submission->type) . " data for {$submission->academicYear->name} has been submitted by {$submission->user->name} and requires validation.",
+        ]);
 
-        // $submission->notifications()->create([
-        //     'title' => "Pending Review",
-        //     'message' => "Your submission {$submission->submission_number} has been successfully submitted and is awaiting approval.",
-        // ]);
+        $submission->notifications()->create([
+            'title' => "Pending Review",
+            'message' => "Your submission {$submission->submission_number} has been successfully submitted and is awaiting approval.",
+        ]);
 
         activity('Submitted Data')
             ->causedBy($user)
@@ -344,11 +344,11 @@ class SubmissionsController extends Controller
                 'editable' => false,
             ]);
 
-            // $submission->notifications()->create([
-            //     'title' => 'Approved Submission',
-            //     'message' => "Your submission for {$submission->submission_number} has been approved.",
-            //     'is_read' => false,
-            // ]);
+            $submission->notifications()->create([
+                'title' => 'Approved Submission',
+                'message' => "Your submission for {$submission->submission_number} has been approved.",
+                'is_read' => false,
+            ]);
 
             $actor = $request->user();
             if ($actor) {
@@ -396,11 +396,11 @@ class SubmissionsController extends Controller
 
             // $comment = rtrim($validated['comment'], '.');
 
-            // $submission->notifications()->create([
-            //     'title' => 'Submission Returned',
-            //     'message' => "Your submission for {$submission->submission_number} has been returned. Reason: {$comment}. Please review and resubmit.",
-            //     'is_read' => false,
-            // ]);
+            $submission->notifications()->create([
+                'title' => 'Submission Returned',
+                'message' => "Your submission for {$submission->submission_number} has been returned. Reason: . Please review and resubmit.",//add {$comment to Reason}
+                'is_read' => false,
+            ]);
 
             $actor = $request->user();
             if ($actor) {
@@ -528,15 +528,15 @@ class SubmissionsController extends Controller
                 $submission->update(['status' => 'pending']);
                 $submission->touch();
 
-                // $submission->notifications()->create([
-                // 'title' => "New Submission from {$submission->school->name}",
-                // 'message' => ucfirst($submission->type) . " data for {$submission->academicYear->name} has been resubmitted by {$submission->user->name} and requires validation.",
-                // ]);
+                $submission->notifications()->create([
+                'title' => "New Submission from {$submission->school->name}",
+                'message' => ucfirst($submission->type) . " data for {$submission->academicYear->name} has been resubmitted by {$submission->user->name} and requires validation.",
+                ]);
 
-                // $submission->notifications()->create([
-                //     'title' => "Pending Review",
-                //     'message' => "Your submission {$submission->submission_number} has been successfully resubmitted and is awaiting approval.",
-                // ]);
+                $submission->notifications()->create([
+                    'title' => "Pending Review",
+                    'message' => "Your submission {$submission->submission_number} has been successfully resubmitted and is awaiting approval.",
+                ]);
 
                 activity('Resubmitted Data')
                 ->causedBy($user)

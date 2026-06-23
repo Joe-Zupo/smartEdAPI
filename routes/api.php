@@ -13,6 +13,7 @@ use App\Http\Controllers\EnrollmentDataController;
 use App\Http\Controllers\SchoolController;
 use App\Http\Controllers\KpiDataController;
 use App\Http\Controllers\ResourceDataController;
+use App\Http\Controllers\NotificationsController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SchoolTypeController;
 use App\Http\Controllers\SubmissionsController;
@@ -184,6 +185,15 @@ Route::middleware('auth:sanctum')->group(function () {
         |--------------------------------------------------------------------------
         */
         Route::apiResource('enrollment-data', EnrollmentDataController::class)->only(['index', 'show','update', 'destroy']);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Notifications
+        |--------------------------------------------------------------------------
+        */
+        Route::get('notifications', [NotificationsController::class, 'index']);
+        Route::put('/notifications/{notification}/read', [NotificationsController::class, 'markAsRead']);
 
 
         /*

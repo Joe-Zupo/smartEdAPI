@@ -33,6 +33,7 @@ class DatabaseSeeder extends Seeder
         $this->call(ResourceDataSeeder::class);
         $this->call(GradeLevelSeeder::class);
         $this->call(EndrollmentDataSeeder::class);
+        $this->call(NotificationSeeder::class);
         $this->call(KpiRateDataSeeder::class);
         $this->call(KpiDataSeeder::class);
     }
