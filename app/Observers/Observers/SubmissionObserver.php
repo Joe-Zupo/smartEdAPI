@@ -42,10 +42,10 @@ class SubmissionObserver
                     $school->save();
                 }
         }
-        if($submission->type === 'enrollment'){
+        if($submission->type === 'enrollment' && $submission->status === 'approved'){
             $this->applyEnrollmentDraft($submission);
         }
-        if($submission->type === 'resource'){
+        if($submission->type === 'resource' && $submission->status === 'approved'){
             $this->applyResourceDraft($submission);
         }
     }

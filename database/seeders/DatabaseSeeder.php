@@ -8,6 +8,7 @@ use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
+    use WithoutModelEvents;
 
     /**
      * Seed the application's database.
@@ -33,7 +34,7 @@ class DatabaseSeeder extends Seeder
         $this->call(ResourceDataSeeder::class);
         $this->call(GradeLevelSeeder::class);
         $this->call(EndrollmentDataSeeder::class);
-        $this->call(NotificationSeeder::class);
+        //$this->call(NotificationSeeder::class);
         $this->call(KpiRateDataSeeder::class);
         $this->call(KpiDataSeeder::class);
         //$this->call(CommentSeeder::class);
