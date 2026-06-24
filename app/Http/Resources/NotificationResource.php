@@ -39,7 +39,7 @@ class NotificationResource extends JsonResource
             'title' => $this->title,
             'message' => $this->message,
             'is_read' => $this->is_read,
-            'created_at' => $this->created_at->format('Y-m-d \a\t h:i:s A'),
+            'created_at' => $this->created_at,
         ];
 
         // Only include the action_required field for School Account users
