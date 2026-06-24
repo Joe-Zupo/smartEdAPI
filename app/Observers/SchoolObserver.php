@@ -82,7 +82,7 @@ class SchoolObserver
 
             $gradesToRemove = array_diff($oldGrades,$newGrades);
 
-            foreach (AcademicYear::query()->where('status', ['default', 'upcoming'])->get() as $year) {
+            foreach (AcademicYear::query()->whereIn('status', ['default', 'upcoming'])->get() as $year) {
 
                 foreach ($gradesToAdd as $grade) {
 

@@ -18,70 +18,75 @@ class EndrollmentDataSeeder extends Seeder
     public function run(): void
     {
         $academicYears = AcademicYear::all();
-        $schools = School::all();
-        $grades = GradeLevel::all();
+        $schools = School::with('schoolType')->get();
 
-        foreach($academicYears as $academicYear){
-            foreach($schools as $school){
+        foreach ($academicYears as $academicYear) {
 
-            $schoolId = $school->id;
-            $type = $school->schoolType->name;
-            
-            $allowedGrades = match ($type) {  
-                'Elementary' => [
-                    'Kinder','Grade 1','Grade 2','Grade 3','Grade 4','Grade 5','Grade 6',
-                ],
+            // Skip current and future years
+            if (in_array($academicYear->status, ['default', 'upcoming'])) {
+                continue;
+            }
 
-                'Junior High School' => [
-                    'Grade 7','Grade 8','Grade 9','Grade 10',
-                ],
+            foreach ($schools as $school) {
 
-                'Standalone SHS' => [
-                    'Grade 11','Grade 12',
-                ],
+                $allowedGrades = match ($school->schoolType->name) {
 
-                'Integrated School',
-                'Science High School',
-                'ALS',
-                'Junior High School with SHS' => [
-                    'Kinder','Grade 1','Grade 2','Grade 3','Grade 4','Grade 5','Grade 6','Grade 7','Grade 8','Grade 9','Grade 10','Grade 11','Grade 12',
-                ],
+                    'Elementary' => [
+                        'Kinder',
+                        'Grade 1',
+                        'Grade 2',
+                        'Grade 3',
+                        'Grade 4',
+                        'Grade 5',
+                        'Grade 6',
+                    ],
 
-                default => [],
-            };
+                    'Junior High School' => [
+                        'Grade 7',
+                        'Grade 8',
+                        'Grade 9',
+                        'Grade 10',
+                    ],
 
-            foreach ($grades as $grade) {
+                    'Standalone SHS' => [
+                        'Grade 11',
+                        'Grade 12',
+                    ],
 
-                $isAllowed = in_array(
-                    $grade->name,
-                    $allowedGrades
-                );
-                if (!$isAllowed){
-                    continue;
-                }
+                    'Integrated School',
+                    'Science High School',
+                    'ALS',
+                    'Junior High School with SHS' => [
+                        'Kinder',
+                        'Grade 1',
+                        'Grade 2',
+                        'Grade 3',
+                        'Grade 4',
+                        'Grade 5',
+                        'Grade 6',
+                        'Grade 7',
+                        'Grade 8',
+                        'Grade 9',
+                        'Grade 10',
+                        'Grade 11',
+                        'Grade 12',
+                    ],
 
-                if(!$isAllowed){
-                    continue;
-                }
+                    default => [],
+                };
 
-                $enrollment = EnrollmentData::query()
-                ->where('academic_year_id', $academicYear->id)
-                ->where('school_id', $school->id)
-                ->where('grade_level', $grade->name)->first();
+                foreach ($allowedGrades as $grade) {
 
-                if($academicYear->status === 'upcoming' || $academicYear->status === 'default'){
-                        $enrollment->update([
-                        'male_count' => 0,
-                        'female_count' => 0,
-                    ]);
-                }else{
-                        $enrollment->update([
-                        'male_count' => $isAllowed ? rand(15, 60) : 0,
-                        'female_count' => $isAllowed ? rand(15, 60) : 0,
-                    ]);
+                    EnrollmentData::query()
+                        ->where('academic_year_id', $academicYear->id)
+                        ->where('school_id', $school->id)
+                        ->where('grade_level', $grade)
+                        ->update([
+                            'male_count' => rand(15, 60),
+                            'female_count' => rand(15, 60),
+                        ]);
                 }
             }
         }
-    }
-}
+    } 
 }
