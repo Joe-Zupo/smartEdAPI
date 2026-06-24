@@ -12,7 +12,7 @@ use App\Helpers\SeederFileTrait;
 
 class SchoolSeeder extends Seeder
 {
-    use SeederFileTrait;
+    use SeederFileTrait, WithoutModelEvents;
     /**
      * Run the database seeds.
      */
