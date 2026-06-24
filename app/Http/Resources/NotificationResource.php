@@ -35,6 +35,7 @@ class NotificationResource extends JsonResource
 
         $data = [
             'id' => $this->id,
+            'submission_id' => $this->submission->id,
             'submission_number' => $this->submission->submission_number,
             'title' => $this->title,
             'message' => $this->message,
