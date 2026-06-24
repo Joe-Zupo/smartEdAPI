@@ -64,19 +64,18 @@ class EndrollmentDataSeeder extends Seeder
                     continue;
                 }
 
+                $enrollment = EnrollmentData::query()
+                ->where('academic_year_id', $academicYear->id)
+                ->where('school_id', $school->id)
+                ->where('grade_level', $grade->name)->first();
+
                 if($academicYear->status === 'upcoming' || $academicYear->status === 'default'){
-                        EnrollmentData::create([
-                        'academic_year_id' => $academicYear->id,
-                        'school_id' => $school->id,
-                        'grade_level' => $grade->name,
+                        $enrollment->update([
                         'male_count' => 0,
                         'female_count' => 0,
                     ]);
                 }else{
-                        EnrollmentData::create([
-                        'academic_year_id' => $academicYear->id,
-                        'school_id' => $school->id,
-                        'grade_level' => $grade->name,
+                        $enrollment->update([
                         'male_count' => $isAllowed ? rand(15, 60) : 0,
                         'female_count' => $isAllowed ? rand(15, 60) : 0,
                     ]);
