@@ -16,28 +16,31 @@ class ResourceDataSeeder extends Seeder
      */
     public function run(): void
     {
-        $resources = ['Classrooms', 'Teachers', 'Seats', 'Learning Materials'];
+        $resources = [
+            'Classrooms',
+            'Teachers',
+            'Seats',
+            'Learning Materials'
+        ];
 
-        $academicYears = AcademicYear::all();
-        $schools = School::all();
+        foreach (AcademicYear::all() as $academicYear) {
 
-        foreach($academicYears as $academicYear){
-            foreach($schools as $school){
+            if (in_array($academicYear->status, ['default', 'upcoming'])) {
+                continue;
+            }
+
+            foreach (School::all() as $school) {
+
                 foreach ($resources as $resourceName) {
-                    if($academicYear->status === 'default' || $academicYear->status === 'upcoming'){
-                        $req = 0;
-                        $inv = 0;
-                    }else{
-                        $req = rand(20, 150);
-                        $inv = rand(10, 140);
-                    }
-                    ResourceData::create([
-                        'academic_year_id' => $academicYear->id,
-                        'school_id' => $school->id,
-                        'resource_name' => $resourceName,
-                        'inventory' => $inv,
-                        'requirement' => $req,
-                    ]);
+
+                    ResourceData::query()
+                        ->where('academic_year_id', $academicYear->id)
+                        ->where('school_id', $school->id)
+                        ->where('resource_name', $resourceName)
+                        ->update([
+                            'inventory' => rand(10, 140),
+                            'requirement' => rand(20, 150),
+                        ]);
                 }
             }
         }
