@@ -48,6 +48,7 @@ class UpdateSubmissionsRequest extends FormRequest
             'details.*.requirement' => ['exclude_unless:type,resource', 'required', 'integer', 'min:0'],
             'details.*.school_name' => [
                 'exclude_unless:type,information',
+                'unique:school_information_drafts,school_name',
                 'sometimes',
                 'string',
                 'max:255',
@@ -80,12 +81,20 @@ class UpdateSubmissionsRequest extends FormRequest
                 'exists:school_types,name',
             ],
 
-            'details.*.address' => [
-                'exclude_unless:type,information',
-                'sometimes',
-                'string',
-                'max:500',
-            ],
+            
+            'details.*.street'                    => 'exclude_unless:type,information|string|max:255',
+            'details.*.barangay'                  => 'exclude_unless:type,information|string|max:255|exists:barangays,name', // In the context that this is for mabalacat, currently mabalacat brngys are only avail
+            'details.*.city'                      => 'exclude_unless:type,information|string|max:255',
+            'details.*.province'                  => 'exclude_unless:type,information|string|max:255',
+            'details.*.region'                    => 'exclude_unless:type,information|string|max:255',
+            'details.*.district'                  => 'exclude_unless:type,information|string|max:255|in:North,South,East,West', //Await District Requirements (rn can be Compass directions)
+
+            // 'details.*.address' => [
+            //     'exclude_unless:type,information',
+            //     'sometimes',
+            //     'string',
+            //     'max:500',
+            // ],
 
             'details.*.district' => [
                 'exclude_unless:type,information',

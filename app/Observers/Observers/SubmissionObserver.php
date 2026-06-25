@@ -31,7 +31,7 @@ class SubmissionObserver
                     $school->school_name = $draft->school_name;
                     $school->school_code = $draft->school_code;
                     $school->year_established = $draft->year_established;
-                    $school->school_type_id = $draft->school_type_id;
+                    $school->school_type_id = intval($draft->school_type_id);
                     $school->address = $draft->address;
                     $school->district = $draft->district;
                     $school->latitude = $draft->latitude;

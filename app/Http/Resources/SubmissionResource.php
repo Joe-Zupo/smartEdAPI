@@ -9,6 +9,7 @@ use App\Models\Comment;
 use App\Models\School;
 use App\Http\Resources\EnrollmentDraftResource;
 use App\Http\Resources\CommentResource;
+use Illuminate\Support\Str;
 use App\Helpers\EnrollmentData\GradesDisplay;
 
 class SubmissionResource extends JsonResource
@@ -71,13 +72,24 @@ class SubmissionResource extends JsonResource
                         if (!$draft) {
                             return null;
                         }
-                        $school_type_name = SchoolType::where('id', $draft->school_type_id)->value('name');
+                        $school_type_name = SchoolType::query()->where('id', $draft->school_type_id)->value('name');
+                        $addressArray = Str::of($draft->address)->explode(', ');
+
+                        $street = $addressArray[0];
+                        $barangay = $addressArray[1];
+                        $city = $addressArray[2];
+                        $province = $addressArray[3];                        
                         return [
                             'school_name' => $draft->school_name,
                             'school_code' => $draft->school_code,
                             'year_established' => $draft->year_established,
                             'school_type' => $school_type_name,
-                            'address' => $draft->address,
+                            'address' => [
+                                'street' => $street,
+                                'city'  => $city,
+                                'barangay' => $barangay,
+                                'province' => $province,
+                            ],
                             'district' => $draft->district,
                             'latitude' => $draft->latitude,
                             'longitude' => $draft->longitude,
