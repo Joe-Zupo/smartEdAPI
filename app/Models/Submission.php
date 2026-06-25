@@ -22,6 +22,7 @@ class Submission extends Model
         'academic_year_id' => 'integer',
         'school_id' => 'integer',
         'user_id' => 'integer',
+        'editable' => 'boolean',
     ];
 
     public function user()
@@ -75,46 +76,24 @@ class Submission extends Model
         Submission::observe(SubmissionObserver::class);
         static::creating(function ($submission) {
 
-            self::$creationCounter++;
-            $year = AcademicYear::find($submission->academic_year_id);
-            $school = School::find($submission->school_id);
+        $year = AcademicYear::find($submission->academic_year_id);
 
-            if (!$year || !$school) {
+            if (!$year) {
                 $submission->submission_number = 'ERR-' . uniqid();
                 return;
             }
 
-            // $cleanYears = str_replace(['S.Y.', ' '], '', $year->academic_year);
-
-            // $parts = explode('-', $cleanYears);
-
-            // $yearName = substr($parts[0], -2) . substr($parts[1], -2);
-
-            // $suffix = match ($submission->type) {
-            //     'enrollment' => 'ED', // Enrollment Data
-            //     'resource' => 'RD', // Resource Data
-            //     'information' => 'ID', // School Information Draft
-            //     default => 'XX',
-            // };
-            //$submission->submission_number = "SUB-{$yearName}-{$school->code}-{$suffix}";
-
             $yearStr = Carbon::parse($year->start_date)->format('Y');
 
-            $counter = self::$creationCounter;
-            $digits = strlen($counter);
-                switch($digits) {
-                    case(1):
-                        $suffix = "00{$counter}";
-                        break;
-                    case(2):
-                        $suffix = "0{$counter}";
-                        break;
-                    case(3):
-                    default:
-                        $suffix = "{$counter}";
-                        break;
-                } 
-            $submission->submission_number = "SUB-{$yearStr}-{$suffix}";
+            $counter = Submission::query()->where(
+                'academic_year_id',
+                $submission->academic_year_id
+            )->count() + 1;
+
+            $suffix = str_pad($counter, 3, '0', STR_PAD_LEFT);
+
+            $submission->submission_number =
+                "SUB-{$yearStr}-{$suffix}";
         });
     }
 }

@@ -178,7 +178,12 @@ Route::middleware('auth:sanctum')->group(function () {
         */
         Route::apiResource('submissions', SubmissionsController::class)->except('destroy',);
         Route::post('submissions/{submission}/approve', [SubmissionsController::class, 'approve']);
+    
         Route::post('submissions/{submission}/return', [SubmissionsController::class, 'return']);
+
+        Route::post('submissions/{submission}/edit-request', [SubmissionsController::class, 'requestEdit']);
+        Route::post('submissions/{submission}/decline-request', [SubmissionsController::class, 'declineRequest']);
+        Route::post('submissions/{submission}/approve-request', [SubmissionsController::class, 'approveRequest']);
 
         /*
         |--------------------------------------------------------------------------
