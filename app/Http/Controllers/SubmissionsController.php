@@ -259,7 +259,7 @@ class SubmissionsController extends Controller
 
                 if ($request->hasFile('details.0.image')) {
 
-                    $path = upload_image($request, 'details.0.image', 'school_images'); // remake
+                    $path = $request->file('image')->store('school_images', 'public');
 
                     $draft->image = $path;
                     $draft->save();
@@ -271,7 +271,7 @@ class SubmissionsController extends Controller
 
 
         $submission->notifications()->create([
-            'title' => "New Submission from {$submission->school->name}",
+            'title' => "New Submission from {$submission->school->school_name}",
             'message' => ucfirst($submission->type) . " data for {$submission->academicYear->name} has been submitted by {$submission->user->name} and requires validation.",
         ]);
 
@@ -576,8 +576,8 @@ class SubmissionsController extends Controller
                     $submission->touch();
 
                     $submission->notifications()->create([
-                    'title' => "New Submission from {$submission->school->name}",
-                    'message' => ucfirst($submission->type) . " data for {$submission->academicYear->name} has been resubmitted by {$submission->user->name} and requires validation.",
+                    'title' => "New Submission from {$submission->school->school_name}",
+                    'message' => ucfirst($submission->type) . " data for {$submission->academicYear->academic_year} has been resubmitted by {$submission->user->name} and requires validation.",
                     ]);
 
                     $submission->notifications()->create([
@@ -628,8 +628,8 @@ class SubmissionsController extends Controller
             $submission->update(['status' => 'pending']);
 
         $submission->notifications()->create([
-            'title' => "New Submission from {$submission->school->name}",
-            'message' => ucfirst($submission->type) . " data for {$submission->academicYear->name} has been submitted by {$submission->user->name} and requires validation.",
+            'title' => "New Submission from {$submission->school->school_name}",
+            'message' => ucfirst($submission->type) . " data for {$submission->academicYear->academic_year} has been submitted by {$submission->user->name} and requires validation.",
         ]);
 
         $submission->notifications()->create([
@@ -715,6 +715,9 @@ class SubmissionsController extends Controller
 
         if($user->hasRole('School Account')){
             return $this->error('Submission cannot be approved by user, User must be an admin', 403);
+        }
+        if($submission->status !== 'pending' || $submission->editable !== false){
+            return $this->error('Wrong function used. Cannot return decline request for submission is not a pending edit request', 403);
         }
 
         DB::transaction(function () use ($submission, $request) {
