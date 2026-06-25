@@ -56,14 +56,15 @@ class StoreSubmissionsRequest extends FormRequest
             //
             'details.*.school_name' => [
                 'exclude_unless:type,information',
-                'sometimes',
+                'required_if:type,information',
+                'unique:school_information_drafts,school_name',
                 'string',
                 'max:255',
             ],
 
             'details.*.school_code' => [
                 'exclude_unless:type,information',
-                'sometimes',
+                'required_if:type,information',
                 'string',
                 'max:50',
                 Rule::unique('schools', 'school_code')->ignore(auth()->user()->school_id),
@@ -71,50 +72,78 @@ class StoreSubmissionsRequest extends FormRequest
 
             'details.*.year_established' => [
                 'exclude_unless:type,information',
-                'sometimes',
+                'required_if:type,information',
                 'digits:4',
                 'integer',
             ],
 
             'details.*.school_type' => [
                 'exclude_unless:type,information',
-                'sometimes',
+                'required_if:type,information',
                 'exists:school_types,name',
                 Rule::in(SchoolType::pluck('name')->toArray())
             ],
 
-            'details.*.address' => [
-                'exclude_unless:type,information',
-                'sometimes',
-                'string',
-                'max:500',
-            ],
+                'details.*.street' => [
+                    'exclude_unless:type,information',
+                    'required_if:type,information',
+                    'string',
+                    'max:255',
+                ],
 
-            'details.*.district' => [
-                'exclude_unless:type,information',
-                'sometimes',
-                'string',
-                'max:255',
-                'in:North,South,East,West'
-            ],
+                'details.*.barangay' => [
+                    'exclude_unless:type,information',
+                    'required_if:type,information',
+                    'string',
+                    'max:255',
+                    'exists:barangays,name',
+                ],
+
+                'details.*.city' => [
+                    'exclude_unless:type,information',
+                    'required_if:type,information',
+                    'string',
+                    'max:255',
+                ],
+
+                'details.*.province' => [
+                    'exclude_unless:type,information',
+                    'required_if:type,information',
+                    'string',
+                    'max:255',
+                ],
+
+                'details.*.region' => [
+                    'exclude_unless:type,information',
+                    'required_if:type,information',
+                    'string',
+                    'max:255',
+                ],
+
+                'details.*.district' => [
+                    'exclude_unless:type,information',
+                    'required_if:type,information',
+                    'string',
+                    'max:255',
+                    'in:North,South,East,West',
+                ],
 
             'details.*.latitude' => [
                 'exclude_unless:type,information',
-                'sometimes',
+                'required_if:type,information',
                 'numeric',
                 'between:-90,90',
             ],
 
             'details.*.longitude' => [
                 'exclude_unless:type,information',
-                'sometimes',
+                'required_if:type,information',
                 'numeric',
                 'between:-180,180',
             ],
 
             'details.*.image' => [
                 'exclude_unless:type,information',
-                'sometimes',
                 'nullable',
                 'image',
                 'mimes:jpg,jpeg,png',

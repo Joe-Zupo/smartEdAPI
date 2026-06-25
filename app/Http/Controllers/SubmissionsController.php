@@ -12,6 +12,7 @@ use App\Http\Requests\Submissions\UpdateSubmissionsRequest;
 use Illuminate\Support\Facades\DB;
 use App\Models\SchoolInformationDraft;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use App\Models\School;
 use App\Models\EnrollmentData;
 use App\Models\EnrollmentDataDraft;
@@ -236,6 +237,12 @@ class SubmissionsController extends Controller
                 $school_type = SchoolType::query()->where('name', $info['school_type'])->first();
                 $info['school_type_id'] = $school_type->id ?? null;
 
+                $info['address'] = implode(', ', [
+                    $info['street'],
+                    $info['barangay'],
+                    $info['city'],
+                    $info['province'],
+                ]);
                 $draft = SchoolInformationDraft::create([
                     'submission_id' => $submission->id,
                     'school_id' => $user->school_id,
@@ -525,6 +532,21 @@ class SubmissionsController extends Controller
                     if (!empty($info['school_type'])) {
                         $schoolType = SchoolType::query()->where('name', $info['school_type'])->first();
                     }
+
+                    //address appending
+                        $address = explode(', ', $draft->address);
+
+                        $street = $info['street'] ?? ($address[0] ?? '');
+                        $barangay = $info['barangay'] ?? ($address[1] ?? '');
+                        $city = $info['city'] ?? ($address[2] ?? '');
+                        $province = $info['province'] ?? ($address[3] ?? '');
+
+                        $info['address'] = implode(', ', [
+                            $street,
+                            $barangay,
+                            $city,
+                            $province,
+                        ]);
 
                     $draft->update([
                         'school_name' => $info['school_name'] ?? $draft->school_name,
