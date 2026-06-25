@@ -10,6 +10,8 @@ use App\Models\Submission;
 use App\Models\School;
 use Illuminate\Validation\Rule;
 use App\Models\EnrollmentData;
+use App\Models\DivisionLeadership;
+use App\Http\Resources\DivisionLeadershipResource;
 use Illuminate\Http\Request;
 
 class ResourceDataController extends Controller
@@ -125,6 +127,70 @@ class ResourceDataController extends Controller
             ]);
         }
 
+    }
+
+    /**
+     * Public Index Resource Data
+     */
+    public function publicIndex(Request $request)
+    {
+        $academicYear = AcademicYear::query()->where('status', 'default')->first();
+
+        if (!$academicYear) {
+            return response()->json(['message' => 'Academic year not found'], 404);
+        }
+
+        $filterPosition = $request->validate(['position' => Rule::in(['Schools Division Superintendent', 'Assistant Schools Division Superintendent'])]);
+
+        if (isset($filterPosition['position'])) {
+            $divisionLeaderships = DivisionLeadership::query()->where('position', $filterPosition['position'])
+                ->orderByRaw('CASE WHEN term_end IS NULL THEN 0 ELSE 1 END')
+                ->orderBy('term_end', 'desc')
+                ->orderBy('term_start', 'desc')
+                ->get();
+        } else {
+            $divisionLeaderships = DivisionLeadership::orderByRaw('CASE WHEN term_end IS NULL THEN 0 ELSE 1 END')
+                ->orderBy('term_end', 'desc')
+                ->orderBy('term_start', 'desc')
+                ->get();
+        }
+        // Base query
+        $query = ResourceData::query()->where('academic_year_id', $academicYear->id);
+
+        // Totals by resource type
+        $totalsQuery = ResourceData::query()->where('academic_year_id', $academicYear->id);
+
+        $totals = $totalsQuery->selectRaw('
+            resource_name,
+            SUM(inventory) as total_inventory,
+            SUM(requirement) as total_requirement,
+            SUM(need) as total_need
+        ')
+            ->groupBy('resource_name')
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'resource_name' => $item->resource_name,
+                    'total_inventory' => (int) $item->total_inventory,
+                    'total_requirement' => (int) $item->total_requirement,
+                    'total_need' => (int) $item->total_need,
+                ];
+            });
+
+        $items = $query->get();
+
+        return response()->json([
+            'message' => 'Resource data retrieved successfully',
+            'data' => [
+                'academic_year' => [
+                    'id' => $academicYear->id,
+                    'name' => $academicYear->name,
+                ],
+                'totals_by_resource' => $totals,
+                // 'items' => ResourceDataResource::collection($items),
+                'office_of_the_superintendent' => DivisionLeadershipResource::collection($divisionLeaderships),
+            ],
+        ]);
     }
 
     /**
