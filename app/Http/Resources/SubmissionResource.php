@@ -22,10 +22,17 @@ class SubmissionResource extends JsonResource
     public function toArray(Request $request): array
     {
         $comments = Comment::query()->where('submission_id', $this->id)->get();
+
+        if($this->editable === false && $this->status === 'pending'){
+            $typeMessage = 'Edit Request - ' . $this->type;
+        }
+        else{
+            $typeMessage = $this->type;
+        }
         return [
             'id' => $this->id,
             'submission_number' => $this->submission_number,
-            'type' => $this->type,
+            'type' => $typeMessage,
             'status' => $this->status,
             'date_submitted' => $this->updated_at->format('M d, Y h:i A'),
             'comments_count' => $this->comments()->count(),
