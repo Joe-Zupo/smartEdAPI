@@ -228,5 +228,5 @@ Route::middleware('auth:sanctum')->group(function () {
             $r->get('enrollment-data', [EnrollmentDataController::class, 'publicIndex'])->name('enrollment-data.publicIndex');
             $r->get('resource-data', [ResourceDataController::class, 'publicIndex'])->name('resource-data.publicIndex');
             // $r->get('kpi-data', [KpiDataController::class, 'publicIndex'])->name('kpi-data.publicIndex');
-            // $r->get('division-leaderships', [DivisionLeadershipController::class, 'publicIndex'])->name('division-leaderships.publicIndex');
+            $r->get('division-leaderships', [DivisionLeadershipController::class, 'publicIndex'])->name('division-leaderships.publicIndex');
         });

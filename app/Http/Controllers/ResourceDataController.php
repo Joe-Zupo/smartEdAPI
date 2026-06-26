@@ -184,7 +184,7 @@ class ResourceDataController extends Controller
             'data' => [
                 'academic_year' => [
                     'id' => $academicYear->id,
-                    'name' => $academicYear->name,
+                    'name' => $academicYear->academic_year,
                 ],
                 'totals_by_resource' => $totals,
                 // 'items' => ResourceDataResource::collection($items),
