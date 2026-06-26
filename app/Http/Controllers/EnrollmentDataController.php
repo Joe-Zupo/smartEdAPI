@@ -123,7 +123,7 @@ class EnrollmentDataController extends Controller
                         'school_type' => $school->schoolType->name
                     ],
                     'items' => $displayedItems,
-                    'school_totals' => [
+                    'enrollments_totals' => [
                         'total_male' => (int) ($totals->total_male ?? 0),
                         'total_female' => (int) ($totals->total_female ?? 0),
                         'total_students' => (int) ($totals->total_students ?? 0),
