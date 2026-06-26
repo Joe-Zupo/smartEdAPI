@@ -313,6 +313,9 @@ class SchoolController extends Controller
         }
     }
 
+    /**
+     * Public Index Schools
+     */
     public function publicIndex(Request $request)
     {
         $validated = $request->validate([
