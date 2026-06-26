@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('position'/*, ['Schools Division Superintendent', 'Assistant Schools Division Superintendent']*/);
-            //$table->string('image_path')->nullable();
+            $table->string('image_path')->nullable();
             $table->boolean('is_oic')->default(false);
             $table->year('term_start');
             $table->year('term_end')->nullable();
