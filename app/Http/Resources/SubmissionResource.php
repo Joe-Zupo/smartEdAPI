@@ -104,7 +104,7 @@ class SubmissionResource extends JsonResource
             ),
 
             
-            'comments' => CommentResource::collection($comments)->sortByDesc('created_at'),
+            'comments' => CommentResource::collection($comments)->sortByDesc('created_at')->toArray(),
 
         ];
     }
