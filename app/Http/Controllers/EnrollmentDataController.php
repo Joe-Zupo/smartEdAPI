@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Http\Requests\EnrollmentData\IndexEnrollmentDataRequest;
 use App\Models\EnrollmentData;
 use Illuminate\Http\Request;
+use App\Models\DivisionLeadership;
+use App\Http\Resources\DivisionLeadershipResource;
 use App\Models\AcademicYear;
 use App\Models\School;
 use App\Http\Resources\EnrollmentDataResource;
@@ -488,6 +490,77 @@ class EnrollmentDataController extends Controller
         
         return $this->success("Comparative Enrollment Data fetched succesfully.", [
             'data' => $results
+        ]);
+    }
+
+    /**
+     * Public Index Enrollment Data
+     */
+    public function publicIndex(Request $request)
+    {
+        $academicYear = AcademicYear::where('status', 'default')->first();
+        if (!$academicYear) {
+            return response()->json(['message' => 'Academic year not found'], 404);
+        }
+
+        $filterPosition = $request->validate(['position' => Rule::in(['Schools Division Superintendent', 'Assistant Schools Division Superintendent'])]);
+
+        if (isset($filterPosition['position'])) {
+            $divisionLeaderships = DivisionLeadership::where('position', $filterPosition['position'])
+                ->orderByRaw('CASE WHEN term_end IS NULL THEN 0 ELSE 1 END')
+                ->orderBy('term_end', 'desc')
+                ->orderBy('term_start', 'desc')
+                ->get();
+        } else {
+            $divisionLeaderships = DivisionLeadership::orderByRaw('CASE WHEN term_end IS NULL THEN 0 ELSE 1 END')
+                ->orderBy('term_end', 'desc')
+                ->orderBy('term_start', 'desc')
+                ->get();
+        }
+
+        // Base query
+        $query = EnrollmentData::with(['gradeLevel'])
+                ->where('academic_year_id', $academicYear->id);
+
+        // Get totals
+        $totalsQuery = EnrollmentData::query()
+                ->where('academic_year_id', $academicYear->id);
+
+        $totals = $totalsQuery->selectRaw('
+            SUM(male_count) as total_male,
+            SUM(female_count) as total_female,
+            SUM(total_count) as total_students
+        ')->first();
+
+        // Five-year trend
+        $fiveYearTrend = $this->getFiveYearTrend(null, $academicYear, $request);
+
+        // Enrollment by level
+        $enrollmentByLevel = $this->getEnrollmentByLevel(null, $academicYear, $request);
+
+        // Enrollment by grade level
+        $enrollmentByGrade = $this->getEnrollmentByGrade(null, $academicYear, $request);
+
+        $items = $query->get();
+
+        return response()->json([
+            'message' => 'Enrollment data retrieved successfully',
+            'data' => [
+                'academic_year' => [
+                    'id' => $academicYear->id,
+                    'name' => $academicYear->academic_year,
+                ],
+                'totals' => [
+                    'total_male' => (int) ($totals->total_male ?? 0),
+                    'total_female' => (int) ($totals->total_female ?? 0),
+                    'total_students' => (int) ($totals->total_students ?? 0),
+                ],
+                'five_year_trend' => $fiveYearTrend,
+                'enrollment_by_level' => $enrollmentByLevel,
+                'enrollment_by_grade' => $enrollmentByGrade,
+                // 'items' => EnrollmentDataResource::collection($items),
+                'office_of_the_superintendent' => DivisionLeadershipResource::collection($divisionLeaderships),
+            ],
         ]);
     }
 }
