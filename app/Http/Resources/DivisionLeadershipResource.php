@@ -18,6 +18,7 @@ class DivisionLeadershipResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'is_oic' => (bool) $this->is_oic,
+            'image_path' => $this->image_path ? asset('storage/' . $this->image_path) : null,
             'position' => $this->position,
             'term_start' => $this->term_start,
             'term_end' => $this->term_end,

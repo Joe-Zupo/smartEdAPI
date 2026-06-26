@@ -17,6 +17,7 @@ use App\Http\Controllers\NotificationsController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SchoolTypeController;
 use App\Http\Controllers\SubmissionsController;
+use App\Http\Controllers\HomeController;
 use App\Http\Resources\UserResource;
 use App\Models\EnrollmentData;
 
@@ -220,13 +221,14 @@ Route::middleware('auth:sanctum')->group(function () {
         |--------------------------------------------------------------------------
         */
         Route::group(['prefix' => 'public'], function ($r) {
-            // $r->get('home', [HomeController::class, 'index'])->name('home.index');
+            $r->get('home', [HomeController::class, 'index'])->name('home.index');
             $r->get('announcements', [AnnouncementController::class, 'publicIndex'])->name('announcements.publicIndex');
             $r->get('announcements/{announcement}', [AnnouncementController::class, 'publicShow'])->name('announcements.publicShow');
             $r->get('schools', [SchoolController::class, 'publicIndex'])->name('schools.publicIndex');
             $r->get('schools/{school}', [SchoolController::class, 'publicShow'])->name('schools.publicShow');
             $r->get('enrollment-data', [EnrollmentDataController::class, 'publicIndex'])->name('enrollment-data.publicIndex');
             $r->get('resource-data', [ResourceDataController::class, 'publicIndex'])->name('resource-data.publicIndex');
-            // $r->get('kpi-data', [KpiDataController::class, 'publicIndex'])->name('kpi-data.publicIndex');
-            // $r->get('division-leaderships', [DivisionLeadershipController::class, 'publicIndex'])->name('division-leaderships.publicIndex');
+            $r->get('kpi-data', [KpiDataController::class, 'publicIndex'])->name('kpi-data.publicIndex');
+            $r->get('kpi-trends', [KpiDataController::class, 'publicKPITrends'])->name('kpi-data.publicTrends');
+            $r->get('division-leaderships', [DivisionLeadershipController::class, 'publicIndex'])->name('division-leaderships.publicIndex');
         });

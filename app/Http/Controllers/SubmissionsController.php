@@ -710,6 +710,12 @@ class SubmissionsController extends Controller
         
     }
 
+    /**
+     * Decline Edit Request
+     * 
+     * Returns submissions that have the pending status AND are not editable (after being approved)
+     * 
+     */
     public function declineRequest(Request $request, Submission $submission){
         $user = $request->user();
 
