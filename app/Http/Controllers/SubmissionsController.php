@@ -18,6 +18,7 @@ use App\Models\EnrollmentData;
 use App\Models\EnrollmentDataDraft;
 use App\Models\SchoolType;
 use App\Models\ResourceData;
+use App\Policies\SubmissionPolicy;
 use App\Models\ResourceDataDraft;
 use App\Models\GradeLevel;
 
@@ -28,6 +29,7 @@ class SubmissionsController extends Controller
      */
     public function index(IndexSubmissionsRequest $request)
     {
+        $this->authorize('viewAny', Submission::class);
         $request->validated();
 
         $user = $request->user();
@@ -307,6 +309,7 @@ class SubmissionsController extends Controller
      */
     public function show($id)
     {
+        $this->authorize('view', Submission::class);
         $submission = Submission::find($id);
         $defaultYear = AcademicYear::query()->where('status', 'default')->first();
 
@@ -339,6 +342,7 @@ class SubmissionsController extends Controller
      */
     public function approve(Request $request, Submission $submission)
     {
+        $this->authorize('adminFunc', Submission::class);
             if ($submission->academicYear->status !== 'default') {
                 return $this->error('You can only approve submissions for the current default school year.', 403);
             }
@@ -392,6 +396,7 @@ class SubmissionsController extends Controller
      */
      public function return(Request $request, Submission $submission)
     {
+        $this->authorize('adminFunc', Submission::class);
         if ($submission->academicYear->status !== 'default') {
             return $this->error('You can only return submissions for the current default school year.');
         }
@@ -461,6 +466,7 @@ class SubmissionsController extends Controller
      */
     public function update(UpdateSubmissionsRequest $request, Submission $submission)
     {
+        $this->authorize('update', Submission::class);
         $user = $request->user();
         if ($submission->user_id !== $user->id || $submission->school_id !== $user->school_id) {
             return $this->error(['message' => 'Unauthorized to update this submission.'], 403);
@@ -608,6 +614,7 @@ class SubmissionsController extends Controller
      * 
      */
     public function requestEdit(Request $request , Submission $submission){
+        $this->authorize('schoolFunc', Submission::class);
         $user = $request->user();
 
         if(!$user->hasRole('School Account')){
@@ -659,6 +666,7 @@ class SubmissionsController extends Controller
      * 
      */
     public function approveRequest(Request $request, Submission $submission){
+        $this->authorize('adminFunc', Submission::class);
         $user = $request->user();
 
         if($user->hasRole('School Account')){
@@ -717,6 +725,7 @@ class SubmissionsController extends Controller
      * 
      */
     public function declineRequest(Request $request, Submission $submission){
+        $this->authorize('adminFunc', Submission::class);
         $user = $request->user();
 
         if($user->hasRole('School Account')){

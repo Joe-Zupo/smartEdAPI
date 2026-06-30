@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\AcademicYears;
 
+use App\Helpers\updateValidator;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
@@ -11,6 +12,7 @@ use App\Models\AcademicYear;
 
 class UpdateAcademicYearRequest extends FormRequest
 {
+    use updateValidator;
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -27,12 +29,30 @@ class UpdateAcademicYearRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'start_date' => 'sometimes|date|before:end_date|unique:academic_years,start_date|'. Rule::after(2020-01-01),
+            'start_date' => 'sometimes|date|before:end_date|unique:academic_years,start_date|',
             'end_date' => 'sometimes|date|after:start_date|unique:academic_years,end_date',
         ];
     }
+
+    protected function prepareForValidation(): void
+        {
+            $academicYear = $this->route('academic_year');
+
+            $data = $this->validateUpdate(
+                $this->all(),
+                $academicYear,
+                [
+                    'start_date',
+                    'end_date',
+                ]
+            );
+
+            $this->replace($data);
+        }
+
     public function withValidator(Validator $validator): void
     {
+        
          $validator->after(function ($validator){
             $start = Carbon::parse($this->start_date);
             $end = Carbon::parse($this->end_date);
@@ -53,7 +73,7 @@ class UpdateAcademicYearRequest extends FormRequest
                     );
                 }
             
-            $overlap = AcademicYear::query()
+            $overlap = (AcademicYear::query()
                 ->when($this->route('academic_year'), function ($q) {
                     $q->where('id', '!=', $this->route('academic_year')->id);
                 })
@@ -61,7 +81,7 @@ class UpdateAcademicYearRequest extends FormRequest
                     $query->whereDate('start_date', '<=', $end)
                         ->whereDate('end_date', '>=', $start);
                 })
-                ->exists();
+                ->exists());
 
             if ($overlap){
                 $validator->errors()->add(

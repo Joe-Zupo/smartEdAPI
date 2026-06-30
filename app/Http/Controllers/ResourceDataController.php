@@ -13,6 +13,7 @@ use App\Models\EnrollmentData;
 use App\Models\DivisionLeadership;
 use App\Http\Resources\DivisionLeadershipResource;
 use Illuminate\Http\Request;
+use App\Policies\ResourceDataPolicy;
 
 class ResourceDataController extends Controller
 {
@@ -21,6 +22,7 @@ class ResourceDataController extends Controller
      */
     public function index(IndexResourceRequest $request)
     {
+        $this->authorize('viewAny', ResourceData::class);
         $request->validated();
 
         $perPage = $request['per_page'] ?? 5;
@@ -214,6 +216,7 @@ class ResourceDataController extends Controller
      */
     public function show($id)
     {
+        $this->authorize('view', ResourceData::class);
         $resourceData = ResourceData::find($id);
 
         return $this->success('Resource Data fetched successfully', ['data' => $resourceData]);
@@ -248,6 +251,7 @@ class ResourceDataController extends Controller
      */
     public function dashboardResourceData(Request $request)
     {
+        $this->authorize('dashboard', ResourceData::class);
         $request->validate([
             'academic_year' => [
                 'exists:academic_years,academic_year',

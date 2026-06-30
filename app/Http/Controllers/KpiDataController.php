@@ -14,6 +14,7 @@ use Illuminate\Validation\Rule;
 use App\Http\Requests\KPI\StoreKpiDataRequest;
 use App\Helpers\calculateTotal;
 use App\Models\DivisionLeadership;
+use App\Policies\KpiDataPolicy;
 use App\Http\Requests\KPI\UpdateKpiDataRequest;
 use App\Models\SchoolType;
 
@@ -25,6 +26,7 @@ class KpiDataController extends Controller
      */
     public function index(Request $request)
     {
+        $this->authorize('viewAny', KpiData::class);
         $perPage = $request->get('per_page', 10);
         $getAll  = $request->boolean('all');
 
@@ -169,6 +171,7 @@ class KpiDataController extends Controller
      */
     public function store(StoreKpiDataRequest $request)
     {
+        $this->authorize('create', KpiData::class);
         $validated = $request->validated(); // user input
 
         $created = DB::transaction(function () use ($validated) {
@@ -242,6 +245,7 @@ class KpiDataController extends Controller
      */
     public function show(KpiData $kpiData)
     {
+        $this->authorize('view', KpiData::class);
         return $this->success('KPI data fetched successfully',
         ['kpi_data' => new KpiDataResource($kpiData->load([
                         'academicYear',
@@ -254,6 +258,7 @@ class KpiDataController extends Controller
      */
     public function update(UpdateKpiDataRequest $request)
     {
+        $this->authorize('update', KpiData::class);
         $validated = $request->validated();
 
         $updated = DB::transaction(function () use ($validated) {
@@ -284,7 +289,8 @@ class KpiDataController extends Controller
      * KPI Trends
      */
     public function kpiTrends(Request $request){
-        
+
+        $this->authorize('viewAny', KpiData::class);
         $request->validate([[
             'kpi_rate' => [
                 'string',

@@ -21,7 +21,7 @@ class ActivityLogController extends Controller
      */
     public function index(IndexActivityLogRequest $request)
     {
-        $this->authorize('viewAny', User::class);
+        $this->authorize('viewAny', Activity::class);
         $search = $request->input('search');
         $perPage = $request->get('per_page', 5);
         $sortBy = $request->input('sortBy', 'id');

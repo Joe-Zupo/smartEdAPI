@@ -2,26 +2,27 @@
 
 namespace App\Policies;
 
-use Spatie\Activitylog\Models\Activity;
+use App\Models\Announcement;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
 
-class ActivityLogPolicy
+class AnnouncementPolicy
 {
     /**
      * Determine whether the user can view any models.
      */
     public function viewAny(User $user): bool
     {
-        return ($user->hasRole(['System Admin', 'School Account', 'Division Admin']) && $user->is_active == true);
+
+        return ($user->hasRole(['System Admin', 'Division Admin', 'School Account']) && $user->is_active == true);
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Activity $activity): bool
+    public function view(User $user): bool
     {
-        return false;
+        return ($user->hasRole(['System Admin', 'Division Admin', 'School Account']) && $user->is_active == true);
     }
 
     /**
@@ -29,21 +30,21 @@ class ActivityLogPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        return $user->hasRole(['System Admin', 'Division Admin']) && $user->is_active == true;
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, Activity $activity): bool
+    public function update(User $user): bool
     {
-        return false;
+        return $user->hasRole(['System Admin']) && $user->is_active == true;
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Activity $activity): bool
+    public function delete(User $user): bool
     {
         return false;
     }
@@ -51,7 +52,7 @@ class ActivityLogPolicy
     /**
      * Determine whether the user can restore the model.
      */
-    public function restore(User $user, Activity $activity): bool
+    public function restore(User $user): bool
     {
         return false;
     }
@@ -59,7 +60,7 @@ class ActivityLogPolicy
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, Activity $activity): bool
+    public function forceDelete(User $user): bool
     {
         return false;
     }

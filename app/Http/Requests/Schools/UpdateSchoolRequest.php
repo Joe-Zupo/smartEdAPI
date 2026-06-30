@@ -62,7 +62,7 @@ class UpdateSchoolRequest extends FormRequest
                 $string = implode(', ', $validUsers); 
                 return [
                 'position.in' =>
-                    'Invalid position selected. Valid positions are: Principal IV,Head Teacher III,Teacher I,Principal III',
+                    'Invalid position selected. Valid positions are: Principal I,Principal II,Principal III,Principal IV',
                 
                 'school_head.in' => "Invalid Input! Valid users: ". $string
                     
