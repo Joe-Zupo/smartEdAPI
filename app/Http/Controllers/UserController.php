@@ -49,7 +49,7 @@ class UserController extends Controller
 
         if ($request->has('role')) {
             $query->whereHas('roles', function ($q) use ($request) {
-                $q->where('name', 'like', '%'. $request->input('role') . '%');
+                $q->where('name', 'like', '%' . $request->input('role') . '%');
             });
         }
 
@@ -97,10 +97,10 @@ class UserController extends Controller
         if ($user->hasRole('School Account')) {
             if (isset($validatedRequest['school'])) {
                 $user->school_id = $validatedRequest['school'] ?
-                School::where('school_name', $validatedRequest['school'])->value('id') : null;
+                    School::where('school_name', $validatedRequest['school'])->value('id') : null;
                 $message = 'School Account fully initialized, account is set as active';
                 $user->save();
-            }else{
+            } else {
                 $message = 'School Account partially initialized, account is set as inactive';
                 $user['is_active'] = false;
             }
@@ -144,7 +144,7 @@ class UserController extends Controller
 
         DB::commit();
         return $this->success('User Updated successfully', [
-                new UserResource($user)
+            new UserResource($user)
         ]);
     }
 
@@ -159,17 +159,18 @@ class UserController extends Controller
     /**
      * Get User's Returned Submissions
      */
-    public function returnedSubmissions(Request $request){
+    public function returnedSubmissions(Request $request)
+    {
         $user = $request->user();
-        $academicYear = AcademicYear::query()->where('status','default')->first();
-        if($user->hasRole('School Account') && $user->school_id){
+        $academicYear = AcademicYear::query()->where('status', 'default')->first();
+        if ($user->hasRole('School Account') && $user->school_id) {
             $submissions = Submission::query()
                 ->where('academic_year_id', $academicYear->id)
                 ->where('school_id', $user->school_id)
                 ->where('status', 'returned')->get();
 
             $submissionCollection = collect();
-            foreach($submissions as $submission){
+            foreach ($submissions as $submission) {
                 $submissionCollection->push([
                     'id' => $submission->id,
                     'type' => $submission->type,
@@ -180,8 +181,11 @@ class UserController extends Controller
                 'user' => new UserResource($user),
                 'returned_submissions' => $submissionCollection->toArray()
             ]);
-        }else{
-            return null;
+        } else {
+            return $this->success('User fetched successfully', [
+                'user' => new UserResource($user),
+                'returned_submissions' => []
+            ]);
         }
     }
 

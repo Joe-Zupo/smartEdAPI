@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\UserResource;
+use App\Models\AcademicYear;
+use App\Models\Submission;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
@@ -45,7 +47,7 @@ class AuthController extends Controller
         $env = strtolower($request->header('Environment', 'backend'));
         $useCookies = $env === 'frontend' || $request->hasHeader('X-XSRF-TOKEN');
 
-        $key = Str::lower($request->email).'|'.$request->ip();
+        $key = Str::lower($request->email) . '|' . $request->ip();
         $decay = min(60 * pow(2, RateLimiter::attempts($key)), 3600);
 
         if (RateLimiter::tooManyAttempts($key, 5)) {
@@ -93,19 +95,19 @@ class AuthController extends Controller
 
         $user = auth()->user();
 
-        if(!$useCookies){
-        $token = $user->createToken('api-token')->plainTextToken;
+        if (!$useCookies) {
+            $token = $user->createToken('api-token')->plainTextToken;
 
             activity('Logged In')
-            ->causedBy($user)
-            ->performedOn($user)
-            ->withProperties([
-                'datetime' => now()->format('Y-m-d h:i:s A'),
-            ])
-            ->log($user->name . ' has successfully logged in.');
+                ->causedBy($user)
+                ->performedOn($user)
+                ->withProperties([
+                    'datetime' => now()->format('Y-m-d h:i:s A'),
+                ])
+                ->log($user->name . ' has successfully logged in.');
 
             RateLimiter::clear($key);
-            
+
             return $this->success('User Logged in successfully', [
                 'User' => new UserResource($user),
                 'token' => $token,
@@ -113,22 +115,46 @@ class AuthController extends Controller
         }
 
         if ($request->hasSession()) {
-                    $request->session()->regenerate();
-                }
+            $request->session()->regenerate();
+        }
 
         RateLimiter::clear($key);
 
         $user = User::where('username', $request->username)->first();
 
-         activity('Logged In')
+        activity('Logged In')
             ->causedBy($user)
             ->performedOn($user)
             ->withProperties([
                 'datetime' => now()->format('Y-m-d h:i:s A'),
             ])
             ->log($user->name . ' has successfully logged in.');
-        
-        return $this->success('Logged in successfully', ['user' => new UserResource($user)]);
+
+        $academicYear = AcademicYear::query()->where('status', 'default')->first();
+        if ($user->hasRole('School Account') && $user->school_id) {
+            $submissions = Submission::query()
+                ->where('academic_year_id', $academicYear->id)
+                ->where('school_id', $user->school_id)
+                ->where('status', 'returned')->get();
+
+            $submissionCollection = collect();
+            foreach ($submissions as $submission) {
+                $submissionCollection->push([
+                    'id' => $submission->id,
+                    'type' => $submission->type,
+                ]);
+            }
+
+            return $this->success('Logged in successfully', [
+                'user' => new UserResource($user),
+                'returned_submissions' => $submissionCollection->toArray()
+            ]);
+        } else {
+            return $this->success('Logged in successfully', [
+                'user' => new UserResource($user),
+                'returned_submissions' => []
+            ]);
+        }
     }
 
     /**
@@ -138,7 +164,7 @@ class AuthController extends Controller
     {
         $env = strtolower($request->header('Environment', 'backend'));
         $useCookies = $env === 'frontend' || $request->hasHeader('X-XSRF-TOKEN');
-        
+
         $user = User::where('username', $request->username)->first();
 
         if ($useCookies) {
@@ -150,12 +176,12 @@ class AuthController extends Controller
             }
 
             activity("Logged Out")
-                    ->causedBy($request->user())
-                    ->performedOn($request->user())
-                    ->withProperties([
-                        'datetime' => now()->format('Y-m-d h:i:s A'),
-                    ])
-                    ->log($request->user()->name . ' logged out');
+                ->causedBy($request->user())
+                ->performedOn($request->user())
+                ->withProperties([
+                    'datetime' => now()->format('Y-m-d h:i:s A'),
+                ])
+                ->log($request->user()->name . ' logged out');
             return $this->success('Logout successful');
         }
 
@@ -165,12 +191,12 @@ class AuthController extends Controller
             $user->tokens()->delete();
         }
         activity("Logged Out")
-                    ->causedBy($request->user())
-                    ->performedOn($request->user())
-                    ->withProperties([
-                        'datetime' => now()->format('Y-m-d h:i:s A'),
-                    ])
-                    ->log($user->name . ' logged out');
+            ->causedBy($request->user())
+            ->performedOn($request->user())
+            ->withProperties([
+                'datetime' => now()->format('Y-m-d h:i:s A'),
+            ])
+            ->log($user->name . ' logged out');
 
         return $this->success('Logout successful', 200);
 
