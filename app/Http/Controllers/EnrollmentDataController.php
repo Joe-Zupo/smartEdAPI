@@ -438,6 +438,8 @@ class EnrollmentDataController extends Controller
      */
         public function dashboardEnrollmentData(Request $request)
     {
+
+        $yearLimit = 5;
         $request->validate([
             'academic_year' => ['exists:academic_years,academic_year', Rule::in(AcademicYear::pluck('academic_year')->toArray())]
         ]);
@@ -449,7 +451,7 @@ class EnrollmentDataController extends Controller
         }
         $academicYears = AcademicYear::query()->where('id', '<=', $academicYear)
             ->orderBy('id', 'desc')
-            ->limit(5)
+            ->limit($yearLimit)
             ->get();
 
         $results = [];
