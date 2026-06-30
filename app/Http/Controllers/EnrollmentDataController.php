@@ -14,6 +14,7 @@ use App\Http\Resources\SchoolResource;
 use Illuminate\Validation\Rule;
 use App\Helpers\EnrollmentData\GradesDisplay;
 use Illuminate\Support\Facades\DB;
+use App\Policies\EnrollmentDataPolicy;
 
 class EnrollmentDataController extends Controller
 {
@@ -24,6 +25,7 @@ class EnrollmentDataController extends Controller
      */
     public function index(IndexEnrollmentDataRequest $request)
     {
+        $this->authorize('viewAny', EnrollmentData::class);
         $request->validated();
 
         $perPage = $request['per_page'] ?? 5;
@@ -144,7 +146,7 @@ class EnrollmentDataController extends Controller
      */
     public function show($id)
     {
-
+        $this->authorize('view', EnrollmentData::class);
         $enrollmentData = EnrollmentData::find($id);
 
         return $this->success('Enrollment data retrieved successfully', [
@@ -155,10 +157,11 @@ class EnrollmentDataController extends Controller
 
     /**
      * Update Enrollment Data.
-     * Used only for testing
+     * Used only for testing (OBSOLETE FUNCTION)
      */
     public function update(Request $request, $id)
     {
+        $this->authorize('update', EnrollmentData::class);
         DB::beginTransaction();
         // basic update and fire totals change
         $validated = $request->validate([
@@ -181,9 +184,12 @@ class EnrollmentDataController extends Controller
 
     /**
      * Delete Enrollment Data
+     * 
+     * Obsolete Function
      */
     public function destroy($id)
     {
+        $this->authorize('delete', EnrollmentData::class);
         $enrollmentData = EnrollmentData::find($id);
 
         $yearId = $enrollmentData->academic_year_id;
@@ -438,7 +444,7 @@ class EnrollmentDataController extends Controller
      */
         public function dashboardEnrollmentData(Request $request)
     {
-
+        $this->authorize('dashboard', EnrollmentData::class);
         $yearLimit = 5;
         $request->validate([
             'academic_year' => ['exists:academic_years,academic_year', Rule::in(AcademicYear::pluck('academic_year')->toArray())]
@@ -454,45 +460,71 @@ class EnrollmentDataController extends Controller
             ->limit($yearLimit)
             ->get();
 
+        $user = $request->user();
+        if($user->hasRole('School Account') && !$user->school_id){
+            return $this->error('School Account does not have a school id, please contact admin', 403);
+        }
         $results = [];
 
         foreach ($academicYears as $year) {
 
-            $allDistricts = School::query()
-            ->distinct()
-            ->pluck('district')
-            ->toArray();
-
-            $districts = EnrollmentData::query()
-                ->join('schools', 'enrollment_data.school_id', '=', 'schools.id')
-                ->where('enrollment_data.academic_year_id', $year->id)
-
+            if($user->hasRole('School Account')){
+                $schoolID = $user->school_id;
+              $totals = EnrollmentData::query()
+                ->where('school_id', $schoolID)
+                ->where('academic_year_id', $year->id)
                 ->selectRaw('
-                    schools.district,
-                    SUM(enrollment_data.total_count) as total_students
+                    SUM(male_count) as male_count,
+                    SUM(female_count) as female_count,
+                    SUM(total_count) as total_students
                 ')
-                ->groupBy('schools.district')
-                ->get();
+                ->first();
 
-            $row = [
-                'year' => $year->academic_year,
-            ];
 
-            foreach ($allDistricts as $district) {
-                $row[$district] = 0;
+                $row = [
+                    'year' => $year->academic_year,
+                    'male_count' => (int) ($totals->male_count ?? 0),
+                    'female_count' => (int) ($totals->female_count ?? 0),
+                ];
+
+                $results[] = $row;
+
+            }else{
+                $allDistricts = School::query()
+                ->distinct()
+                ->pluck('district')
+                ->toArray();
+
+                $districts = EnrollmentData::query()
+                    ->join('schools', 'enrollment_data.school_id', '=', 'schools.id')
+                    ->where('enrollment_data.academic_year_id', $year->id)
+
+                    ->selectRaw('
+                        schools.district,
+                        SUM(enrollment_data.total_count) as total_students
+                    ')
+                    ->groupBy('schools.district')
+                    ->get();
+
+                $row = [
+                    'year' => $year->academic_year,
+                ];
+
+                foreach ($allDistricts as $district) {
+                    $row[$district] = 0;
+                }
+
+                foreach ($districts as $district) {
+                    $row[$district->district] = (int) $district->total_students;
+                }
+
+                $results[] = $row;
             }
-
-            foreach ($districts as $district) {
-                $row[$district->district] = (int) $district->total_students;
-            }
-
-            $results[] = $row;
         }
-
-        
+                
         return $this->success("Comparative Enrollment Data fetched succesfully.", [
-            'data' => $results
-        ]);
+                'data' => $results
+            ]);
     }
 
     /**
