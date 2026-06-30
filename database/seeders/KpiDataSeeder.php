@@ -39,13 +39,16 @@ class KpiDataSeeder extends Seeder
                         $total = $this->calculateTotal($male, $female, true, $year->id);
                     }
 
-                    KpiData::create([
+                    $kpiData = KpiData::query()->where([
                         'kpi_id' => $i,
                         'academic_year_id' => $year->id,
+                        'school_type' => $schoolType,
+                    ])->first();
+                    
+                    $kpiData->update([
                         'male' => $male,
                         'female' => $female,
                         'total' => $total,
-                        'school_type' => $schoolType,
                     ]);
                 }
             }
