@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\DivisionLeadership;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use App\Http\Requests\DivisionLeadership\StoreDivisionLeadershipRequest;
 use App\Http\Requests\DivisionLeadership\UpdateDivisionLeadershipRequest;
 use App\Http\Requests\DivisionLeadership\IndexDivisionLeadershipRequest;
@@ -20,7 +21,7 @@ class DivisionLeadershipController extends Controller
      */
     public function index(IndexDivisionLeadershipRequest $request)
     {
-        //$this->authorize('viewAny', User::class);
+        $this->authorize('viewAny', DivisionLeadership::class);
         $perPage = $request->get('per_page', 5);
         $sortBy = $request->input('sortBy', 'id');
         $sortOrder = $request->input('sortOrder', 'desc');
@@ -97,6 +98,7 @@ class DivisionLeadershipController extends Controller
      */
     public function store(StoreDivisionLeadershipRequest $request)
     {
+        $this->authorize('create', DivisionLeadership::class);
         $validatedRequest = $request->validated();
         
         DB::beginTransaction();
@@ -121,6 +123,7 @@ class DivisionLeadershipController extends Controller
      */
     public function show(DivisionLeadership $divisionLeadership)
     {
+        $this->authorize('view', DivisionLeadership::class);
         try{
             return $this->success('Successfully fetched Division Leadership',[
                 'division_leadership' => new DivisionLeadershipResource($divisionLeadership)
@@ -137,7 +140,7 @@ class DivisionLeadershipController extends Controller
      */
     public function update(UpdateDivisionLeadershipRequest $request, DivisionLeadership $divisionLeadership)
     {
-        
+        $this->authorize('update', DivisionLeadership::class);
         DB::beginTransaction();
 
         try{
@@ -166,6 +169,7 @@ class DivisionLeadershipController extends Controller
      */
     public function destroy(DivisionLeadership $divisionLeadership)
     {
+        $this->authorize('delete', DivisionLeadership::class);
         try {
             DB::beginTransaction();
             
@@ -177,6 +181,50 @@ class DivisionLeadershipController extends Controller
             DB::rollBack();
             return $this->error('Failed to delete Division Leadership');
         }
+    }
+
+    /**
+     * Public Index Division Leadership
+     * 
+     * Display a listing of the resource for public access.
+     */
+    public function publicIndex(Request $request)
+    {
+
+        $filterPosition = $request->validate(['position' => Rule::in(['Schools Division Superintendent', 'Assistant Schools Division Superintendent'])]);
+
+        if (isset($filterPosition['filter']['position'])) {
+            $divisionLeaderships = DivisionLeadership::query()->where('position', $filterPosition['position'])
+                ->orderByRaw('CASE WHEN term_end IS NULL THEN 0 ELSE 1 END')
+                ->orderBy('term_end', 'desc')
+                ->orderBy('term_start', 'desc')
+                ->get();
+        } else {
+            $divisionLeaderships = DivisionLeadership::orderByRaw('CASE WHEN term_end IS NULL THEN 0 ELSE 1 END')
+                ->orderBy('term_end', 'desc')
+                ->orderBy('term_start', 'desc')
+                ->get();
+        }
+
+        if ($divisionLeaderships->isEmpty()) {
+            return response()->json([
+                'message' => 'No division leadership records found',
+            ]);
+        }
+
+        return response()->json([
+            'message' => 'Division leadership records retrieved successfully',
+            'data' => [
+                'Regional Office' => 'Region III - Central Luzon',
+                'Division Office' => 'Mabalacat City',
+                'address' => 'P. Burgos ST., Poblacion, Mabalacat City, Pampanga',
+                'website' => 'depedmabalacat.org',
+                'Schools Division Superintendent' => DivisionLeadershipResource::collection($divisionLeaderships->where('position', 'Schools Division Superintendent')),
+                'Assistant Schools Division Superintendent' => DivisionLeadershipResource::collection($divisionLeaderships->where('position', 'Assistant Schools Division Superintendent')),
+                'office of the superintendent' => DivisionLeadershipResource::collection($divisionLeaderships),
+                'telephone' => '(045) 402-7534',
+            ],
+        ]);
     }
 }
 

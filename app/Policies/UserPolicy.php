@@ -18,7 +18,7 @@ class UserPolicy
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, User $model): bool
+    public function view(User $user): bool
     {
         return $user->hasRole(['System Admin']);
     }
@@ -34,7 +34,7 @@ class UserPolicy
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, User $model): bool
+    public function update(User $user): bool
     {
         return $user->hasRole(['System Admin']);
     }
@@ -42,7 +42,7 @@ class UserPolicy
     /**
      * Determine whether the user can change passwords.
      */
-    public function changePW(User $user, User $model): bool
+    public function changePW(User $user): bool
     {
         return $user->hasRole(['System Admin']);
     }
@@ -50,9 +50,14 @@ class UserPolicy
     /**
      * Determine whether the user can toggle status.
      */
-    public function toggleStatus(User $user, User $model): bool
+    public function toggleStatus(User $user): bool
     {
         return $user->hasRole(['System Admin']);
+    }
+
+    public function viewAnyRoles(User $user): bool
+    {
+        return ($user->hasRole(['System Admin', 'School Account', 'Division Admin']) && $user->is_active == true);
     }
 
     // /**

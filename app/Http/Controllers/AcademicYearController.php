@@ -21,6 +21,7 @@ class AcademicYearController extends Controller
      */
     public function index(IndexAcademicYearsRequest $request)
     {
+        $this->authorize('viewAny', AcademicYear::class);
         $perPage = $request->get('per_page', 5);
         $sortBy = $request->input('sortBy', 'id');
         $sortOrder = $request->input('sortOrder', 'desc');
@@ -58,7 +59,7 @@ class AcademicYearController extends Controller
      */
     public function store(StoreAcademicYearRequest $request)
     {
-    //$this->authorize('create', User::class);
+    $this->authorize('create', AcademicYear::class);
     $validated = $request->validated();
 
     DB::beginTransaction();
@@ -119,7 +120,7 @@ class AcademicYearController extends Controller
      */
     public function show(AcademicYear $academicYear)
     {
-       // $this->authorize('view', User::class);
+        $this->authorize('view', AcademicYear::class);
         try{
             return $this->success('Successfully fetched Academic Year',[
                 'academic_year' => new AcademicYearResource($academicYear)
@@ -134,7 +135,7 @@ class AcademicYearController extends Controller
      */
         public function update(UpdateAcademicYearRequest $request, AcademicYear $academicYear)
     {
-        //$this->authorize('update', User::class);
+        $this->authorize('update', AcademicYear::class);
         $validated = $request->validated();
 
         DB::beginTransaction();
@@ -172,9 +173,10 @@ class AcademicYearController extends Controller
             //Active to Archived DONE
             //Archived to Active DONE
 
+            $this->authorize('changeStatus', AcademicYear::class);
             DB::beginTransaction();
 
-            $currentDefault = AcademicYear::where('status', 'default')->first();
+            $currentDefault = AcademicYear::query()->where('status', 'default')->first();
             $today = now();
 
             $defaultEndDate = Carbon::parse($currentDefault->end_date);

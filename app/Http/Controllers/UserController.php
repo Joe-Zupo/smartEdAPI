@@ -15,6 +15,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use App\Policies\UserPolicy;
 
 class UserController extends Controller
 {
@@ -24,6 +25,7 @@ class UserController extends Controller
      */
     public function index(IndexUserRequest $request)
     {
+        $this->authorize('viewAny', User::class);
         $page = $request->input('page', 1);
         $perPage = $request->input('per_page', 10);
         $sortBy = $request->input('sortBy', 'id');
@@ -85,6 +87,7 @@ class UserController extends Controller
      */
     public function store(StoreUserRequest $request)
     {
+        $this->authorize('create', User::class);
         $validatedRequest = $request->validated();
         //dd($validatedRequest);
         DB::beginTransaction();
@@ -117,6 +120,7 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
+        $this->authorize('view', User::class);
         try {
             return $this->success(
                 'User fetched successfully',
@@ -132,6 +136,7 @@ class UserController extends Controller
      */
     public function update(UpdateUserRequest $request, User $user)
     {
+        $this->authorize('update', User::class);
         $validatedRequest = $request->validated();
         DB::beginTransaction();
 
@@ -185,6 +190,7 @@ class UserController extends Controller
      */
     public function changePassword(User $user, ChangeUserPasswordRequest $request)
     {
+        $this->authorize('changePW', User::class);
         $validatedRequest = $request->validated();
 
         DB::transaction(function () use ($user, $validatedRequest) {
@@ -203,7 +209,7 @@ class UserController extends Controller
      */
     public function changeStatus(User $user)
     {
-
+        $this->authorize('toggleStatus', User::class);
         DB::transaction(function () use ($user) {
             $user->is_active = !$user->is_active;
             $user->save();

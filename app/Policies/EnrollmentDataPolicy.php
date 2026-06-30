@@ -2,11 +2,11 @@
 
 namespace App\Policies;
 
-use App\Models\AcademicYear;
+use App\Models\EnrollmentData;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
 
-class AcademicYearPolicy
+class EnrollmentDataPolicy
 {
     /**
      * Determine whether the user can view any models.
@@ -30,7 +30,7 @@ class AcademicYearPolicy
      */
     public function create(User $user): bool
     {
-        return $user->hasRole(['System Admin']) && $user->is_active == true;
+        return $user->hasRole(['School Account']) && $user->is_active == true;
     }
 
     /**
@@ -38,26 +38,26 @@ class AcademicYearPolicy
      */
     public function update(User $user): bool
     {
-        return $user->hasRole(['System Admin']) && $user->is_active == true;
+        return $user->hasRole(['School Account']) && $user->is_active == true;
     }
 
-    public function changeStatus(User $user): bool
+    public function dashboard(User $user): bool
     {
-        return $user->hasRole(['System Admin']) && $user->is_active == true;
+        return $user->hasRole(['System Admin', 'School Account', 'Division Admin']) && $user->is_active == true;
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, AcademicYear $academicYear): bool
+    public function delete(User $user): bool
     {
-        return false;
+        return $user->hasRole(['System Admin', 'School Account', 'Division Admin']) && $user->is_active == true;
     }
 
     /**
      * Determine whether the user can restore the model.
      */
-    public function restore(User $user, AcademicYear $academicYear): bool
+    public function restore(User $user): bool
     {
         return false;
     }
@@ -65,7 +65,7 @@ class AcademicYearPolicy
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, AcademicYear $academicYear): bool
+    public function forceDelete(User $user): bool
     {
         return false;
     }

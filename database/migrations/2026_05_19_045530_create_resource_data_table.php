@@ -21,7 +21,7 @@ return new class extends Migration
             $table->enum('resource_name', ['Classrooms', 'Teachers', 'Seats', 'Learning Materials']);
             $table->mediumInteger('inventory');
             $table->mediumInteger('requirement');
-            $table->mediumInteger('need')->storedAs('GREATEST(0, CAST(requirement AS SIGNED) - CAST(inventory AS SIGNED))');;
+            $table->mediumInteger('need')->storedAs('GREATEST(0, CAST(requirement AS SIGNED) - CAST(inventory AS SIGNED))');
             $table->timestamps();
         });
     }

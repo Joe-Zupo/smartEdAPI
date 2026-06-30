@@ -13,19 +13,19 @@ class SchoolPolicy
      */
     public function viewAny(User $user)
     {
-        return $user->hasRole(['System Admin', 'Division Admin'])
+        return $user->hasRole(['System Admin', 'Division Admin', 'School Account'])
             ? Response::allow()
-            : response::deny('You do not have permission to view users.');
+            : response::deny('You do not have permission to view schools.');
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, School $school)
+    public function view(User $user)
     {
-         return $user->hasRole(['System Admin', 'Division Admin']) || $user->school_id === $school->id
+         return $user->hasRole(['System Admin', 'Division Admin'])
             ? Response::allow()
-            : response::deny('You do not have permission to view users.');
+            : response::deny('You do not have permission to view schools.');
     }
 
     /**
@@ -35,25 +35,25 @@ class SchoolPolicy
     {
          return $user->hasRole(['System Admin'])
             ? Response::allow()
-            : response::deny('You do not have permission to view users.');
+            : response::deny('You do not have permission to create schools.');
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, School $school)
+    public function update(User $user)
     {
-         return $user->hasRole(['System Admin']) || $user->school_id === $school->id
+         return $user->hasRole(['System Admin'])
             ? Response::allow()
-            : response::deny('You do not have permission to view users.');
+            : response::deny('You do not have permission to update schools.');
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, School $school): bool
+    public function delete(User $user, School $school)
     {
-        return false;
+        return $user->hasRole(['System Admin']) ? Response::allow() : response::deny('You do not have permission to delete schools.');
     }
 
     /**

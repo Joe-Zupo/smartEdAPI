@@ -6,6 +6,7 @@ use App\Http\Requests\Schools\IndexSchoolRequest;
 use App\Http\Requests\Schools\StoreSchoolRequest;
 use App\Http\Requests\Schools\UpdateSchoolRequest;
 use App\Http\Resources\SchoolResource;
+use Illuminate\Validation\Rule;
 use App\Models\School;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -15,6 +16,7 @@ use App\Models\SchoolType;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Arr;
+use App\Policies\SchoolPolicy;
 
 class SchoolController extends Controller
 {
@@ -23,7 +25,7 @@ class SchoolController extends Controller
      */
     public function index(IndexSchoolRequest $request)
     {
-
+        $this->authorize('viewAny', School::class);
         $validated = $request->validated();
 
         $perPage = $validated['per_page'] ?? 5;
@@ -106,7 +108,7 @@ class SchoolController extends Controller
      */
     public function store(StoreSchoolRequest $request)
     {
-
+        $this->authorize('create', School::class);
         DB::beginTransaction();
         if ($request->school_type) {
             $typeID = SchoolType::where('name', $request['school_type'])->value('id');
@@ -160,6 +162,7 @@ class SchoolController extends Controller
      */
     public function show(School $school)
     {
+        $this->authorize('view', School::class);
         return $this->success(
             'School fetched successfully',
             [
@@ -176,9 +179,11 @@ class SchoolController extends Controller
     /**
      * Update School
      * 
+     * OBSOLETE FUNCTION
      */
     public function update(UpdateSchoolRequest $request, School $school)
     {
+            $this->authorize('update', School::class);
             DB::beginTransaction();
             
             $validated = $request->validated();
@@ -249,9 +254,12 @@ class SchoolController extends Controller
 
     /**
      * Upload Image for School
+     * 
+     * OBSOLETE FUNCTION
      */
     public function uploadImage(Request $request, School $school)
     {
+        $this->authorize('create', School::class);
         $user = Auth::user();
         DB::beginTransaction();
         if ($request->hasFile('image')) {
@@ -290,6 +298,7 @@ class SchoolController extends Controller
      */
     public function destroy(School $school)
     {
+        $this->authorize('delete', School::class);
         DB::beginTransaction();
 
         try {
@@ -310,5 +319,80 @@ class SchoolController extends Controller
                 'Failed to delete school'
             );
         }
+    }
+
+    /**
+     * Public Index Schools
+     */
+    public function publicIndex(Request $request)
+    {
+        $validated = $request->validate([
+            'district' => ['nullable', Rule::in(['North', 'South', 'East', 'West'])],
+            'search' => ['nullable', 'string'],
+            'per_page' => ['nullable', 'integer', 'min:1'],
+            'all' => ['nullable', 'boolean'],
+        ]);
+
+        $perPage = $validated['per_page'] ?? 5;
+        $getAll = $validated['all'] ?? false;
+        $searchRequest = $validated['search'] ?? null;
+
+        $query = School::query()
+            ->with('schoolType');
+
+        if ($request->filled('district')) {
+            $query->where('district', $validated['district']);
+        }
+
+        if ($searchRequest) {
+            $query->where(function ($q) use ($searchRequest) {
+                $q->where('school_name', 'like', "%{$searchRequest}%")
+                ->orWhere('school_code', 'like', "%{$searchRequest}%");
+            });
+        }
+
+        $schools = $getAll
+            ? $query->get()
+            : $query->paginate($perPage)->appends($request->query());
+
+        if ($schools->isEmpty()) {
+            return $this->success(
+                'No schools found',
+                [
+                    'data' => [],
+                    'pagination' => $getAll ? null : null,
+                ]
+            );
+        }
+
+        return $this->success(
+            'Schools retrieved successfully',
+            [
+                'data' => SchoolResource::collection($schools),
+                'pagination' => $getAll
+                    ? null
+                    : $this->paginateReturn($schools),
+            ]
+        );
+    }
+
+    /**
+     * Show Public School
+     * 
+     * Display the specified resource for public.
+     */
+    public function publicShow(School $school)
+    {
+        return $this->success(
+            'School fetched successfully',
+            [
+                'school' => new SchoolResource(
+                    $school->load([
+                        'schoolType',
+                        'schoolHead'
+                    ])
+                )
+            ]
+        );
     }
 }
