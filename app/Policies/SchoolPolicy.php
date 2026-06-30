@@ -23,7 +23,7 @@ class SchoolPolicy
      */
     public function view(User $user)
     {
-         return $user->hasRole(['System Admin', 'Division Admin'])
+         return $user->hasRole(['System Admin', 'Division Admin', 'School Account'])
             ? Response::allow()
             : response::deny('You do not have permission to view schools.');
     }
