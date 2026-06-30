@@ -7,6 +7,7 @@ use App\Models\AcademicYear;
 use Illuminate\Http\Request;
 use App\Http\Resources\AnnouncementResource;
 use App\Http\Requests\Announcements\StoreAnnouncementRequest;
+use App\Policies\AnnouncementPolicy;
 
 class AnnouncementController extends Controller
 {
@@ -16,6 +17,7 @@ class AnnouncementController extends Controller
      */
     public function index(Request $request)
     {
+        $this->authorize('viewAny', Announcement::class);
         $user = $request->user();
          $public = collect();
          $dashboard = collect();
@@ -61,6 +63,7 @@ class AnnouncementController extends Controller
      */
     public function store(StoreAnnouncementRequest $request)
     {
+        $this->authorize('create', AcademicYear::class);
         $validated = $request->validated();
 
         $year = AcademicYear::where('status', 'default')->first();

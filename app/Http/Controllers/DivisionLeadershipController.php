@@ -21,7 +21,7 @@ class DivisionLeadershipController extends Controller
      */
     public function index(IndexDivisionLeadershipRequest $request)
     {
-        //$this->authorize('viewAny', User::class);
+        $this->authorize('viewAny', DivisionLeadership::class);
         $perPage = $request->get('per_page', 5);
         $sortBy = $request->input('sortBy', 'id');
         $sortOrder = $request->input('sortOrder', 'desc');
@@ -98,6 +98,7 @@ class DivisionLeadershipController extends Controller
      */
     public function store(StoreDivisionLeadershipRequest $request)
     {
+        $this->authorize('create', DivisionLeadership::class);
         $validatedRequest = $request->validated();
         
         DB::beginTransaction();
@@ -122,6 +123,7 @@ class DivisionLeadershipController extends Controller
      */
     public function show(DivisionLeadership $divisionLeadership)
     {
+        $this->authorize('view', DivisionLeadership::class);
         try{
             return $this->success('Successfully fetched Division Leadership',[
                 'division_leadership' => new DivisionLeadershipResource($divisionLeadership)
@@ -138,7 +140,7 @@ class DivisionLeadershipController extends Controller
      */
     public function update(UpdateDivisionLeadershipRequest $request, DivisionLeadership $divisionLeadership)
     {
-        
+        $this->authorize('update', DivisionLeadership::class);
         DB::beginTransaction();
 
         try{
@@ -167,6 +169,7 @@ class DivisionLeadershipController extends Controller
      */
     public function destroy(DivisionLeadership $divisionLeadership)
     {
+        $this->authorize('delete', DivisionLeadership::class);
         try {
             DB::beginTransaction();
             

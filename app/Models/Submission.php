@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Observers\Observers\SubmissionObserver;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
+use App\Policies\SubmissionPolicy;
 
 class Submission extends Model
 {
@@ -68,7 +69,9 @@ class Submission extends Model
         return $this->hasOne(SchoolInformationDraft::class);
     }
 
-    public static $creationCounter = 0;
+    protected $policies = [
+    Submission::class => SubmissionPolicy::class,
+    ];
 
     protected static function booted()
     {

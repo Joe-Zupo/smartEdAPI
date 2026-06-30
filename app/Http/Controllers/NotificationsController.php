@@ -15,6 +15,7 @@ class NotificationsController extends Controller
      */
     public function index(Request $request)
     {
+        $this->authorize('viewAny', Notifications::class);
         $user = $request->user();
         
         $request->validate([
@@ -164,6 +165,7 @@ class NotificationsController extends Controller
      */
     public function markAsRead(Request $request, Notifications $notification)
     {
+        $this->authorize('customFunc', Notifications::class);
         $user = $request->user();
 
         $alreadyRead = $notification->readers()

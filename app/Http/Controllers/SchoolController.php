@@ -16,6 +16,7 @@ use App\Models\SchoolType;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Arr;
+use App\Policies\SchoolPolicy;
 
 class SchoolController extends Controller
 {
@@ -24,7 +25,7 @@ class SchoolController extends Controller
      */
     public function index(IndexSchoolRequest $request)
     {
-
+        $this->authorize('viewAny', School::class);
         $validated = $request->validated();
 
         $perPage = $validated['per_page'] ?? 5;
@@ -107,7 +108,7 @@ class SchoolController extends Controller
      */
     public function store(StoreSchoolRequest $request)
     {
-
+        $this->authorize('create', School::class);
         DB::beginTransaction();
         if ($request->school_type) {
             $typeID = SchoolType::where('name', $request['school_type'])->value('id');
@@ -161,6 +162,7 @@ class SchoolController extends Controller
      */
     public function show(School $school)
     {
+        $this->authorize('view', School::class);
         return $this->success(
             'School fetched successfully',
             [
@@ -177,9 +179,11 @@ class SchoolController extends Controller
     /**
      * Update School
      * 
+     * OBSOLETE FUNCTION
      */
     public function update(UpdateSchoolRequest $request, School $school)
     {
+            $this->authorize('update', School::class);
             DB::beginTransaction();
             
             $validated = $request->validated();
@@ -250,9 +254,12 @@ class SchoolController extends Controller
 
     /**
      * Upload Image for School
+     * 
+     * OBSOLETE FUNCTION
      */
     public function uploadImage(Request $request, School $school)
     {
+        $this->authorize('create', School::class);
         $user = Auth::user();
         DB::beginTransaction();
         if ($request->hasFile('image')) {
@@ -291,6 +298,7 @@ class SchoolController extends Controller
      */
     public function destroy(School $school)
     {
+        $this->authorize('delete', School::class);
         DB::beginTransaction();
 
         try {
