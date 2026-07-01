@@ -129,7 +129,7 @@ class DivisionLeadershipController extends Controller
                 'division_leadership' => new DivisionLeadershipResource($divisionLeadership)
             ]);
         }catch(\Exception $e){
-            return $this->error('Could not fetch the Division Leadership');
+            return $this->error('Division Leadership record not found', 404);
         }
     }
 
@@ -158,7 +158,7 @@ class DivisionLeadershipController extends Controller
 
         }catch(\Exception $e){
             DB::rollBack();
-            return $this->error('Failed to update Division Leadership');
+            return $this->error('Failed to update Division Leadership', 403);
         }
     }
 
@@ -172,6 +172,11 @@ class DivisionLeadershipController extends Controller
         $this->authorize('delete', DivisionLeadership::class);
         try {
             DB::beginTransaction();
+
+            if(!$divisionLeadership){
+                DB::rollBack();
+                return $this->error('Division Leadership record not found', 404);
+            }
             
             $divisionLeadership->delete();
 
@@ -179,7 +184,7 @@ class DivisionLeadershipController extends Controller
             return $this->success('Division Leadership Deleted successfully');
         } catch (\Exception $e) {
             DB::rollBack();
-            return $this->error('Failed to delete Division Leadership');
+            return $this->error('Failed to delete Division Leadership', 403);
         }
     }
 

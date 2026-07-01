@@ -114,7 +114,7 @@ class SchoolController extends Controller
             $typeID = SchoolType::where('name', $request['school_type'])->value('id');
             if (!$typeID) {
                 DB::rollBack();
-                return $this->error('School type not found for school type input');
+                return $this->error('School type not found for school type input', 403);
             }
             $request->request->remove('school_type');
             $validated = $request->validated();
@@ -274,7 +274,7 @@ class SchoolController extends Controller
                 }
 
                 if (!$request->hasFile('image')) {
-                    return $this->error('No valid image provided');
+                    return $this->error('No valid image provided', 406);
                 }
 
                 $validated['image'] = $request->file('image')->store('school_images', 'public');
@@ -289,7 +289,7 @@ class SchoolController extends Controller
                 ]);
             }
         } else {
-            return $this->error('No image provided');
+            return $this->error('No image provided', 406);
         }
     }
 
@@ -302,6 +302,10 @@ class SchoolController extends Controller
         DB::beginTransaction();
 
         try {
+
+            if(!$school){
+                return $this->error('School not found', 404);
+            }
 
             $school->delete();
 
@@ -316,7 +320,7 @@ class SchoolController extends Controller
             DB::rollBack();
 
             return $this->error(
-                'Failed to delete school'
+                'Failed to delete school', 403
             );
         }
     }
