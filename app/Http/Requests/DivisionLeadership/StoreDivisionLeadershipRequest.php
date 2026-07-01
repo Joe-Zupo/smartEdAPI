@@ -23,11 +23,12 @@ class StoreDivisionLeadershipRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string|',
+            'name' => 'required|string|unique:division_leaderships,name',
             'position' => 'required|string|in:Schools Division Superintendent,Assistant Schools Division Superintendent',
-            'is_oic' => 'required|boolean',
-            'current_term' => 'required|boolean',
+            'is_oic' => 'required|in:true,false',
+            'current_term' => 'required|in:true,false',
             'term_start' => 'required|integer|digits:4|max:' .date('Y'),
+            'image'    => ['required', 'nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
             'term_end' => 'required_if:current_term,false|integer|gte:term_start|digits:4|nullable',
         ];
     }
