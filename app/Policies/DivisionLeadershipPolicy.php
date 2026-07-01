@@ -10,59 +10,52 @@ use Illuminate\Auth\Access\Response;
 
 class DivisionLeadershipPolicy
 {
-    /**
-     * Determine whether the user can view any models.
-     */
-    public function viewAny(User $user): bool
+    public function viewAny(User $user)
     {
-        return $user->hasRole(['System Admin']) && $user->is_active == true;
+        return $user->hasRole('System Admin') && $user->is_active
+            ? Response::allow()
+            : Response::deny('You do not have permission to view division leadership records.');
     }
 
-    /**
-     * Determine whether the user can view the model.
-     */
-    public function view(User $user): bool
+    public function view(User $user)
     {
-        return $user->hasRole(['System Admin']) && $user->is_active == true;
+        return $user->hasRole('System Admin') && $user->is_active
+            ? Response::allow()
+            : Response::deny('You do not have permission to view division leadership records.');
     }
 
-    /**
-     * Determine whether the user can create models.
-     */
-    public function create(User $user): bool
+    public function create(User $user)
     {
-        return $user->hasRole(['System Admin']) && $user->is_active == true;
+        return $user->hasRole('System Admin') && $user->is_active
+            ? Response::allow()
+            : Response::deny('You do not have permission to create division leadership records.');
     }
 
-    /**
-     * Determine whether the user can update the model.
-     */
-    public function update(User $user): bool
+    public function update(User $user)
     {
-        return $user->hasRole(['System Admin']) && $user->is_active == true;
+        return $user->hasRole('System Admin') && $user->is_active
+            ? Response::allow()
+            : Response::deny('You do not have permission to update division leadership records.');
     }
 
-    /**
-     * Determine whether the user can delete the model.
-     */
-    public function delete(User $user): bool
+    public function delete(User $user)
     {
-        return $user->hasRole(['System Admin']) && $user->is_active == true;
+        return $user->hasRole('System Admin') && $user->is_active
+            ? Response::allow()
+            : Response::deny('You do not have permission to delete division leadership records.');
     }
 
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user): bool
+    public function restore(User $user)
     {
-        return false;
+        return Response::deny(
+            'Division leadership records cannot be restored.'
+        );
     }
 
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user): bool
+    public function forceDelete(User $user)
     {
-        return false;
+        return Response::deny(
+            'Division leadership records cannot be permanently deleted.'
+        );
     }
 }

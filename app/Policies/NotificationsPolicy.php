@@ -4,24 +4,34 @@ namespace App\Policies;
 
 use App\Models\Notifications;
 use App\Models\User;
+use Illuminate\Auth\Access\Response;
 
 class NotificationsPolicy
 {
-    /**
-     * Determine whether the user can view any models.
-     */
-    public function viewAny(User $user): bool
-    {
 
-        return ($user->hasRole(['School Account','System Admin', 'Division Admin']) && $user->is_active == true);
+public function viewAny(User $user)
+{
+    return $user->hasAnyRole([
+            'School Account',
+            'System Admin',
+            'Division Admin',
+        ]) && $user->is_active
+            ? Response::allow()
+            : Response::deny(
+                'You do not have permission to view notifications.'
+            );
     }
 
-    /**
-     * Determine whether the user can view any models.
-     */
-    public function customFunc(User $user): bool
+    public function customFunc(User $user)
     {
-
-        return ($user->hasRole(['School Account','System Admin', 'Division Admin']) && $user->is_active == true);
+        return $user->hasAnyRole([
+            'School Account',
+            'System Admin',
+            'Division Admin',
+        ]) && $user->is_active
+            ? Response::allow()
+            : Response::deny(
+                'You do not have permission to access notifications.'
+            );
     }
 }

@@ -11,34 +11,42 @@ class AnnouncementPolicy
     /**
      * Determine whether the user can view any models.
      */
-    public function viewAny(User $user): bool
+    public function viewAny(User $user)
     {
 
-        return ($user->hasRole(['System Admin', 'Division Admin', 'School Account']) && $user->is_active == true);
+        return ($user->hasRole(['System Admin', 'Division Admin', 'School Account']) && $user->is_active == true)
+        ? Response::allow()
+        : Response::deny('You do not have permission to view announcements.');;
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user): bool
+    public function view(User $user)
     {
-        return ($user->hasRole(['System Admin', 'Division Admin', 'School Account']) && $user->is_active == true);
+        return ($user->hasRole(['System Admin', 'Division Admin', 'School Account']) && $user->is_active == true)
+        ? Response::allow()
+        : Response::deny('You do not have permission to fetch for announcements.');;
     }
 
     /**
      * Determine whether the user can create models.
      */
-    public function create(User $user): bool
+    public function create(User $user)
     {
-        return $user->hasRole(['System Admin', 'Division Admin']) && $user->is_active == true;
+        return ($user->hasRole(['System Admin', 'Division Admin']) && $user->is_active == true) 
+            ? Response::allow()
+            : Response::deny('You do not have permission to create announcements.');
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user): bool
+    public function update(User $user)
     {
-        return $user->hasRole(['System Admin']) && $user->is_active == true;
+        return ($user->hasRole(['System Admin']) && $user->is_active == true)
+        ? Response::allow()
+        : Response::deny('You do not have permission to update academic years.');;
     }
 
     /**
