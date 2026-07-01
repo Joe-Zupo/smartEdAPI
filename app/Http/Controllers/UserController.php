@@ -127,7 +127,7 @@ class UserController extends Controller
                 ['user' => new UserResource($user)]
             );
         } catch (\Exception $e) {
-            return $this->error('User not Found');
+            return $this->error('User not Found', 404);
         }
     }
 

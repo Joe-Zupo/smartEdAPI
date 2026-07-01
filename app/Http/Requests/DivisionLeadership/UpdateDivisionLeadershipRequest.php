@@ -25,11 +25,12 @@ class UpdateDivisionLeadershipRequest extends FormRequest
     public function rules(): array
     {
        return [
-            'name' => 'sometimes|string|',
+            'name' => 'sometimes|string|unique:division_leaderships,name',
             'position' => 'sometimes|string|in:Schools Division Superintendent,Assistant Schools Division Superintendent',
-            'is_oic' => 'sometimes|boolean',
-            'current_term' => 'sometimes|boolean',
+            'is_oic' => 'sometimes|in:true,false',
+            'current_term' => 'sometimes|in:true,false',
             'term_start' => 'sometimes|integer|digits:4|max:' .date('Y'),
+            'image'    => ['sometimes', 'nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
             'term_end' => 'sometimes|integer|gte:term_start|digits:4',
         ];
     }

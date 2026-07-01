@@ -103,17 +103,15 @@ class DivisionLeadershipController extends Controller
         
         DB::beginTransaction();
 
-        //try{
+            $validatedRequest['is_oic'] = $request->boolean('is_oic');
+            $validatedRequest['current_term'] = $request->boolean('current_term');
+            $validatedRequest['image_path'] = $request->file('image')->store('division-leadership', 'public');
             $divLead = DivisionLeadership::create($validatedRequest);
 
             DB::commit();
             return $this->success('Division Leader: ' . $divLead->name . ' Created Successfully',[
                 'Division Leader' => new DivisionLeadershipResource($divLead)
             ]);
-        // }catch(\Exception $e){
-        //     DB::rollBack();
-        //     return $this->error('Division Leader could not be created');
-        // }
     }
 
     /**
@@ -129,7 +127,7 @@ class DivisionLeadershipController extends Controller
                 'division_leadership' => new DivisionLeadershipResource($divisionLeadership)
             ]);
         }catch(\Exception $e){
-            return $this->error('Could not fetch the Division Leadership');
+            return $this->error('Division Leadership record not found', 404);
         }
     }
 
@@ -145,10 +143,21 @@ class DivisionLeadershipController extends Controller
 
         try{
             $validatedRequest = $request->validated();
-            if($request->boolean('current_term')){
-                $divisionLeadership->term_end = null;
-                $divisionLeadership->save();
+            if($request->filled('is_oic')){
+                $validatedRequest['is_oic'] = $request->boolean('is_oic');
             }
+            if($request->filled('current_term')){
+                $validatedRequest['current_term'] = $request->boolean('current_term');
+                    if($request->boolean('current_term')){
+                    $divisionLeadership->term_end = null;
+                    $divisionLeadership->save();
+                }
+            }
+            if ($request->hasFile('image')){
+                $validatedRequest['image_path'] = $request->file('image')->store('division-leadership', 'public');
+            }
+
+            
             $divisionLeadership->update($validatedRequest);
 
             DB::commit();
@@ -158,7 +167,7 @@ class DivisionLeadershipController extends Controller
 
         }catch(\Exception $e){
             DB::rollBack();
-            return $this->error('Failed to update Division Leadership');
+            return $this->error('Failed to update Division Leadership', 403);
         }
     }
 
@@ -172,6 +181,11 @@ class DivisionLeadershipController extends Controller
         $this->authorize('delete', DivisionLeadership::class);
         try {
             DB::beginTransaction();
+
+            if(!$divisionLeadership){
+                DB::rollBack();
+                return $this->error('Division Leadership record not found', 404);
+            }
             
             $divisionLeadership->delete();
 
@@ -179,7 +193,7 @@ class DivisionLeadershipController extends Controller
             return $this->success('Division Leadership Deleted successfully');
         } catch (\Exception $e) {
             DB::rollBack();
-            return $this->error('Failed to delete Division Leadership');
+            return $this->error('Failed to delete Division Leadership', 403);
         }
     }
 

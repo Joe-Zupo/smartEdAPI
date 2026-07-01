@@ -173,7 +173,7 @@ class NotificationsController extends Controller
             ->exists();
 
         if ($alreadyRead) {
-            return $this->error('Notification already marked as read');
+            return $this->error('Notification already marked as read', 403);
         }
 
         $notification->readers()->attach($user->id);

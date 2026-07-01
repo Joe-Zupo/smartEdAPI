@@ -11,6 +11,7 @@ class DivisionLeadership extends Model
         'name',
         'position',
         'is_oic',
+        'image_path',
         'term_start',
         'term_end',
     ];

@@ -68,21 +68,21 @@ class AuthController extends Controller
 
         // Check if user exists first
         if (!$user) {
-            return $this->error('Invalid credentials.');
+            return $this->error('Invalid credentials.', 403);
         }
 
         // Custom checks
         if (!$user->is_active) {
-            return $this->error('User is inactive!');
+            return $this->error('User is inactive! Please Contact the administrator', 403);
         }
 
         if (!$user->roles()->exists()) {
             return $this->error(
-                'No role assigned to this account. Please contact the administrator.'
+                'No role assigned to this account. Please contact the administrator.', 403
             );
         } else if ($user->hasRole('School Account') && !$user->school_id) {
             return $this->error(
-                'No school assigned to this account. Please contact the administrator.'
+                'No school assigned to this account. Please contact the administrator.', 403
             );
         }
 
@@ -90,7 +90,7 @@ class AuthController extends Controller
         if (!Auth::attempt($credentials, $request->boolean('remember'))) {
             RateLimiter::hit($key, $decay);
 
-            return $this->error('Invalid credentials.');
+            return $this->error('Invalid credentials.', 403);
         }
 
         $user = auth()->user();

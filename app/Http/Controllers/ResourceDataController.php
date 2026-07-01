@@ -35,7 +35,7 @@ class ResourceDataController extends Controller
             if($request->filled('school_name')){
                 $schoolName = School::query()->where('id', $user->school_id)->value('school_name');
                 if ($schoolName !== $request->school_name)
-                    return $this->error('This School Account can only access data of the school they are under.');
+                    return $this->error('This School Account can only access data of the school they are under.', 401);
             }else{
                 $schoolName = School::query()->where('id', $user->school_id)->value('school_name');
                 $request['school_name'] = $schoolName;
@@ -231,7 +231,7 @@ class ResourceDataController extends Controller
         $academicYear = AcademicYear::query()->where('id', $resourceData->academic_year_id)->first();
 
         if(!$academicYear->status === 'default'){
-            return $this->error('You cannot update resource data that is not under the default year');
+            return $this->error('You cannot update resource data that is not under the default year', 403);
         }
 
         // only allow numeric fields to be modified
