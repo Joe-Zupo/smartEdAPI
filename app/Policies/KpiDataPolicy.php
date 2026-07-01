@@ -8,61 +8,78 @@ use Illuminate\Auth\Access\Response;
 
 class KpiDataPolicy
 {
-    /**
-     * Determine whether the user can view any models.
-     */
-    public function viewAny(User $user): bool
-    {
 
-        return ($user->hasRole(['System Admin', 'Division Admin']) && $user->is_active == true);
+    public function viewAny(User $user)
+    {
+        return $user->hasAnyRole([
+            'System Admin',
+            'Division Admin',
+        ]) && $user->is_active
+            ? Response::allow()
+            : Response::deny(
+                'You do not have permission to view KPI data.'
+            );
     }
 
-    /**
-     * Determine whether the user can view the model.
-     */
-    public function view(User $user): bool
+    public function view(User $user)
     {
-        return ($user->hasRole(['System Admin', 'Division Admin']) && $user->is_active == true);
+        return $user->hasAnyRole([
+            'System Admin',
+            'Division Admin',
+        ]) && $user->is_active
+            ? Response::allow()
+            : Response::deny(
+                'You do not have permission to view KPI data.'
+            );
     }
 
-    /**
-     * Determine whether the user can create models.
-     */
-    public function create(User $user): bool
+    public function create(User $user)
     {
-        return $user->hasRole(['System Admin', 'Division Admin']) && $user->is_active == true;
+        return $user->hasAnyRole([
+            'System Admin',
+            'Division Admin',
+        ]) && $user->is_active
+            ? Response::allow()
+            : Response::deny(
+                'You do not have permission to create KPI data.'
+            );
     }
 
-    /**
-     * Determine whether the user can update the model.
-     */
-    public function update(User $user): bool
+    public function update(User $user)
     {
-        return $user->hasRole(['System Admin', 'Division Admin']) && $user->is_active == true;
+        return $user->hasAnyRole([
+            'System Admin',
+            'Division Admin',
+        ]) && $user->is_active
+            ? Response::allow()
+            : Response::deny(
+                'You do not have permission to update KPI data.'
+            );
     }
 
-
-    /**
-     * Determine whether the user can delete the model.
-     */
-    public function delete(User $user): bool
+    public function delete(User $user)
     {
-        return $user->hasRole(['System Admin', 'Division Admin']) && $user->is_active == true;
+        return $user->hasAnyRole([
+            'System Admin',
+            'Division Admin',
+        ]) && $user->is_active
+            ? Response::allow()
+            : Response::deny(
+                'You do not have permission to delete KPI data.'
+            );
     }
 
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user): bool
+    public function restore(User $user)
     {
-        return false;
+        return Response::deny(
+            'KPI data cannot be restored.'
+        );
     }
 
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user): bool
+    public function forceDelete(User $user)
     {
-        return false;
+        return Response::deny(
+            'KPI data cannot be permanently deleted.'
+        );
     }
 }

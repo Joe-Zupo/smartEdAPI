@@ -8,65 +8,46 @@ use Illuminate\Auth\Access\Response;
 
 class AcademicYearPolicy
 {
-    /**
-     * Determine whether the user can view any models.
-     */
-    public function viewAny(User $user): bool
+    public function viewAny(User $user)
     {
-
-        return ($user->hasRole(['System Admin', 'Division Admin', 'School Account']) && $user->is_active == true);
+        return $user->hasAnyRole([
+            'System Admin',
+            'Division Admin',
+            'School Account',
+        ]) && $user->is_active
+            ? Response::allow()
+            : Response::deny('You do not have permission to view academic years.');
     }
 
-    /**
-     * Determine whether the user can view the model.
-     */
-    public function view(User $user): bool
+    public function view(User $user)
     {
-        return ($user->hasRole(['System Admin', 'Division Admin', 'School Account']) && $user->is_active == true);
+        return $user->hasAnyRole([
+            'System Admin',
+            'Division Admin',
+            'School Account',
+        ]) && $user->is_active
+            ? Response::allow()
+            : Response::deny('You do not have permission to view academic years.');
     }
 
-    /**
-     * Determine whether the user can create models.
-     */
-    public function create(User $user): bool
+    public function create(User $user)
     {
-        return $user->hasRole(['System Admin']) && $user->is_active == true;
+        return $user->hasRole('System Admin') && $user->is_active
+            ? Response::allow()
+            : Response::deny('You do not have permission to create academic years.');
     }
 
-    /**
-     * Determine whether the user can update the model.
-     */
-    public function update(User $user): bool
+    public function update(User $user)
     {
-        return $user->hasRole(['System Admin']) && $user->is_active == true;
+        return $user->hasRole('System Admin') && $user->is_active
+            ? Response::allow()
+            : Response::deny('You do not have permission to update academic years.');
     }
 
-    public function changeStatus(User $user): bool
+    public function changeStatus(User $user)
     {
-        return $user->hasRole(['System Admin']) && $user->is_active == true;
-    }
-
-    /**
-     * Determine whether the user can delete the model.
-     */
-    public function delete(User $user, AcademicYear $academicYear): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, AcademicYear $academicYear): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, AcademicYear $academicYear): bool
-    {
-        return false;
+        return $user->hasRole('System Admin') && $user->is_active
+            ? Response::allow()
+            : Response::deny('You do not have permission to change academic year statuses.');
     }
 }

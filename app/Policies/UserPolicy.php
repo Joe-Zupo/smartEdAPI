@@ -7,85 +7,78 @@ use Illuminate\Auth\Access\Response;
 
 class UserPolicy
 {
-    /**
-     * Determine whether the user can view any models.
-     */
-    public function viewAny(User $user): bool
+
+    public function viewAny(User $user)
     {
-        return $user->hasRole(['System Admin']);
+        return $user->hasRole('System Admin') && $user->is_active
+            ? Response::allow()
+            : Response::deny(
+                'You do not have permission to view users.'
+            );
     }
 
-    public function viewAnyActivity(User $user): bool
+    public function viewAnyLogs(User $user)
     {
-        return ($user->hasRole(['System Admin', 'School Account', 'Division Admin']) && $user->is_active == true);
+        return ($user->hasRole(['System Admin', 'School Account', 'Division Admin']) && $user->is_active == true)
+            ? Response::allow()
+            : Response::deny('You do not have permission to activity logs.');
     }
 
-    /**
-     * Determine whether the user can view the model.
-     */
-    public function view(User $user): bool
+    public function view(User $user)
     {
-        return $user->hasRole(['System Admin']);
+        return $user->hasRole('System Admin') && $user->is_active
+            ? Response::allow()
+            : Response::deny(
+                'You do not have permission to view users.'
+            );
     }
 
-    /**
-     * Determine whether the user can create models.
-     */
-    public function create(User $user): bool
+    public function create(User $user)
     {
-        return $user->hasRole(['System Admin']);
+        return $user->hasRole('System Admin') && $user->is_active
+            ? Response::allow()
+            : Response::deny(
+                'You do not have permission to create users.'
+            );
     }
 
-    /**
-     * Determine whether the user can update the model.
-     */
-    public function update(User $user): bool
+    public function update(User $user)
     {
-        return $user->hasRole(['System Admin']);
+        return $user->hasRole('System Admin') && $user->is_active
+            ? Response::allow()
+            : Response::deny(
+                'You do not have permission to update users.'
+            );
     }
 
-    /**
-     * Determine whether the user can change passwords.
-     */
-    public function changePW(User $user): bool
+    public function changePW(User $user)
     {
-        return $user->hasRole(['System Admin']);
+        return $user->hasRole('System Admin') && $user->is_active
+            ? Response::allow()
+            : Response::deny(
+                'You do not have permission to change user passwords.'
+            );
     }
 
-    /**
-     * Determine whether the user can toggle status.
-     */
-    public function toggleStatus(User $user): bool
+    public function toggleStatus(User $user)
     {
-        return $user->hasRole(['System Admin']);
+        return $user->hasRole('System Admin') && $user->is_active
+            ? Response::allow()
+            : Response::deny(
+                'You do not have permission to change user statuses.'
+            );
     }
 
-    public function viewAnyRoles(User $user): bool
+    public function viewAnyRoles(User $user)
     {
-        return ($user->hasRole(['System Admin', 'School Account', 'Division Admin']) && $user->is_active == true);
+        return $user->hasAnyRole([
+            'System Admin',
+            'Division Admin',
+            'School Account',
+        ]) && $user->is_active
+            ? Response::allow()
+            : Response::deny(
+                'You do not have permission to view roles.'
+            );
     }
-
-    // /**
-    //  * Determine whether the user can delete the model.
-    //  */
-    // public function delete(User $user, User $model): bool
-    // {
-    //     return false;
-    // }
-
-    // /**
-    //  * Determine whether the user can restore the model.
-    //  */
-    // public function restore(User $user, User $model): bool
-    // {
-    //     return false;
-    // }
-
-    // /**
-    //  * Determine whether the user can permanently delete the model.
-    //  */
-    // public function forceDelete(User $user, User $model): bool
-    // {
-    //     return false;
-    // }
 }

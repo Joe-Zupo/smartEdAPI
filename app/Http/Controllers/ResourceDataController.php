@@ -259,6 +259,7 @@ class ResourceDataController extends Controller
             ]
         ]);
 
+        $user = $request->user();
         $academicYearId = $request->filled('academic_year')
             ? AcademicYear::where('academic_year', $request->academic_year)->value('id')
             : AcademicYear::where('status', 'default')->value('id');
@@ -272,12 +273,12 @@ class ResourceDataController extends Controller
 
         foreach ($academicYears as $year) {
 
+            if($user->hasRole('School Account')){
             // Enrollment Summary
             $summary = EnrollmentData::query()
-                ->join('schools', 'enrollment_data.school_id', '=', 'schools.id')
+                ->where('school_id', $user->school_id)
                 ->where('enrollment_data.academic_year_id', $year->id)
                 ->selectRaw('
-                    COUNT(DISTINCT schools.id) as total_schools,
                     SUM(enrollment_data.total_count) as total_students
                 ')
                 ->first();
@@ -285,6 +286,8 @@ class ResourceDataController extends Controller
             // Resource Totals
             $resources = ResourceData::query()
                 ->where('academic_year_id', $year->id)
+                ->where('school_id', $user->school_id)
+                ->whereIn('resource_name', ['Classrooms', 'Teachers'])
                 ->selectRaw('
                     resource_name,
                     SUM(inventory) as total_inventory
@@ -306,6 +309,43 @@ class ResourceDataController extends Controller
             }
 
             $results[] = $row;
+            }else{
+            // Enrollment Summary
+            $summary = EnrollmentData::query()
+                ->join('schools', 'enrollment_data.school_id', '=', 'schools.id')
+                ->where('enrollment_data.academic_year_id', $year->id)
+                ->selectRaw('
+                    COUNT(DISTINCT schools.id) as total_schools,
+                    SUM(enrollment_data.total_count) as total_students
+                ')
+                ->first();
+
+            // Resource Totals
+            $resources = ResourceData::query()
+                ->where('academic_year_id', $year->id)
+                ->whereIn('resource_name', ['Classrooms', 'Teachers'])
+                ->selectRaw('
+                    resource_name,
+                    SUM(inventory) as total_inventory
+                ')
+                ->groupBy('resource_name')
+                ->get();
+
+            $row = [
+                'year' => $year->academic_year,
+                'total_schools' => (int) ($summary->total_schools ?? 0),
+                'total_students' => (int) ($summary->total_students ?? 0),
+            ];
+
+            foreach ($resources as $resource) {
+
+                $key = str_replace(' ', '_', strtolower($resource->resource_name));
+
+                $row[$key] = (int) $resource->total_inventory;
+            }
+
+            $results[] = $row;
+            }
         }
 
         return $this->success(

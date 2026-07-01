@@ -4,64 +4,87 @@ namespace App\Policies;
 
 use App\Models\Submission;
 use App\Models\User;
+use Illuminate\Auth\Access\Response;
 
 class SubmissionPolicy
 {
-    /**
-     * Determine whether the user can view any models.
-     */
-    public function viewAny(User $user): bool
+
+    public function viewAny(User $user)
     {
-        return ($user->hasRole(['System Admin', 'Division Admin', 'School Account']) && $user->is_active == true);
+        return $user->hasAnyRole([
+            'System Admin',
+            'Division Admin',
+            'School Account',
+        ]) && $user->is_active
+            ? Response::allow()
+            : Response::deny(
+                'You do not have permission to view submissions.'
+            );
     }
 
-    /**
-     * Determine whether the user can view the model.
-     */
-    public function view(User $user): bool
+    public function view(User $user)
     {
-        return ($user->hasRole(['System Admin', 'Division Admin', 'School Account']) && $user->is_active == true);
+        return $user->hasAnyRole([
+            'System Admin',
+            'Division Admin',
+            'School Account',
+        ]) && $user->is_active
+            ? Response::allow()
+            : Response::deny(
+                'You do not have permission to view submissions.'
+            );
     }
 
-    /**
-     * Determine whether the user can create models.
-     */
-    public function create(User $user): bool
+    public function create(User $user)
     {
-        return $user->hasRole(['School Account']) && $user->is_active == true;
+        return $user->hasRole('School Account') && $user->is_active
+            ? Response::allow()
+            : Response::deny(
+                'You do not have permission to create submissions.'
+            );
     }
 
-    /**
-     * Determine whether the user can update the model.
-     */
-    public function update(User $user): bool
+    public function update(User $user)
     {
-        return $user->hasRole(['School Account']) && $user->is_active == true;
+        return $user->hasRole('School Account') && $user->is_active
+            ? Response::allow()
+            : Response::deny(
+                'You do not have permission to update submissions.'
+            );
     }
 
-    public function adminFunc(User $user): bool
+    public function adminFunc(User $user)
     {
-        return $user->hasRole(['System Admin', 'Division Admin']) && $user->is_active == true;
+        return $user->hasAnyRole([
+            'System Admin',
+            'Division Admin',
+        ]) && $user->is_active
+            ? Response::allow()
+            : Response::deny(
+                'You do not have permission to perform administrative submission actions.'
+            );
     }
 
-    public function schoolFunc(User $user): bool
+    public function schoolFunc(User $user)
     {
-        return $user->hasRole(['School Account']) && $user->is_active == true;
+        return $user->hasRole('School Account') && $user->is_active
+            ? Response::allow()
+            : Response::deny(
+                'You do not have permission to perform school submission actions.'
+            );
     }
 
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user): bool
+    public function restore(User $user)
     {
-        return false;
+        return Response::deny(
+            'Submissions cannot be restored.'
+        );
     }
 
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user): bool
+    public function forceDelete(User $user)
     {
-        return false;
+        return Response::deny(
+            'Submissions cannot be permanently deleted.'
+        );
     }
 }
