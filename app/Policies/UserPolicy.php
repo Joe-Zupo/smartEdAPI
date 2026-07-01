@@ -15,6 +15,11 @@ class UserPolicy
         return $user->hasRole(['System Admin']);
     }
 
+    public function viewAnyActivity(User $user): bool
+    {
+        return ($user->hasRole(['System Admin', 'School Account', 'Division Admin']) && $user->is_active == true);
+    }
+
     /**
      * Determine whether the user can view the model.
      */
