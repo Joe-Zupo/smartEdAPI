@@ -156,7 +156,6 @@ class DivisionLeadershipController extends Controller
             if ($request->hasFile('image')){
                 $validatedRequest['image_path'] = $request->file('image')->store('division-leadership', 'public');
             }
-
             
             $divisionLeadership->update($validatedRequest);
 

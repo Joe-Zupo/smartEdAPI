@@ -46,7 +46,7 @@ class NotificationsController extends Controller
                     $q->where('school_id', $user->school_id);
                 });
             }
-            $query->whereIn('title', ['Submission Returned', 'Approved Submission', 'Pending Review']);
+            $query->whereIn('title', ['Submission Returned', 'Approved Submission', 'Pending Review', "Pending Request for Edit Access", "Declined Edit Request", "Approved Edit Request"]);
         }
 
         $baseQuery = $query->clone();
