@@ -167,11 +167,6 @@ class AcademicYearController extends Controller
      */
         public function changeStatus(AcademicYear $academicYear)
         {
-            //End Goals
-            //Upcoming to Default and Default to Active-> with checking if now between or on start and end date of upcoming
-            //Default to Active and Upcoming to new Default -> checks if Upcoming is eligible to be the new default
-            //Active to Archived DONE
-            //Archived to Active DONE
 
             $this->authorize('changeStatus', AcademicYear::class);
             DB::beginTransaction();
@@ -180,11 +175,6 @@ class AcademicYearController extends Controller
             $today = now();
 
             $defaultEndDate = Carbon::parse($currentDefault->end_date);
-
-
-            //NEW
-            
-            //Upcoming to Default and Default to Active
 
             if($academicYear->status === 'upcoming'){
                     if($today->between($academicYear->start_date, $academicYear->end_date)){
@@ -197,10 +187,10 @@ class AcademicYearController extends Controller
                             'academic_year' => new AcademicYearResource($academicYear),
                             'old_default' => new AcademicYearResource($currentDefault)
                         ]);
-                }else{
+                    }else{
                     DB::rollBack();
                     return $this->error('Changing the default does not match current time', 403);
-                }
+                    }
             }
 
             // Default to Active and Upcoming to Default

@@ -689,7 +689,7 @@ class SubmissionsController extends Controller
                     ]);
 
                     $submission->notifications()->create([
-                        'title' => 'Submission Returned',
+                        'title' => 'Approved Edit Request',
                         'message' => "Your submission for {$submission->submission_number}, for the request of edit access has been returned. Please review and resubmit.",
                         'is_read' => false,
                     ]);
@@ -735,16 +735,28 @@ class SubmissionsController extends Controller
             return $this->error('Wrong function used. Cannot return decline request for submission is not a pending edit request', 403);
         }
 
+        $request->validate([
+                'comment' => ['required', 'string', 'max:1000'],
+        ]);
+
         DB::transaction(function () use ($submission, $request) {
 
-                        $submission->update([
+                    $submission->update([
                         'status' => 'approved',
                         'editable' => false,
                     ]);
 
+                        $submission->comments()->create([
+                            'submission_id' => $submission->id,
+                            'user_id' => $request->user()->id,
+                            'comment' => $request['comment'],
+                    ]);
+
+                    $comment = rtrim($request['comment'], '.');
+                    
                     $submission->notifications()->create([
                         'title' => 'Declined Edit Request',
-                        'message' => "Your submission for {$submission->submission_number} to request for edit access has been declined.",
+                        'message' => "Your submission for {$submission->submission_number} to request for edit access has been declined. Reason: {$comment} Please review.",
                         'is_read' => false,
                     ]);
 
@@ -758,12 +770,14 @@ class SubmissionsController extends Controller
                             ])
                             ->log($actor->name . ' has approved submission ' . $submission->submission_number . '.');
                         }
+                    $submission->save();
             });
 
          $submission->load([
                         'school',
                         'academicYear',
                         'user',
+                        'comments'
                     ]);
 
         return $this->success('Edit request declined successfully', ['data' => new SubmissionResource($submission)]);
