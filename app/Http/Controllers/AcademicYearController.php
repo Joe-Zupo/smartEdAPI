@@ -81,7 +81,7 @@ class AcademicYearController extends Controller
                 DB::rollBack();
 
                 return $this->error(
-                    'There is already a default academic year.', 403
+                    'There is already a default academic year.', 409
                 );
             }
 
@@ -110,7 +110,7 @@ class AcademicYearController extends Controller
         DB::rollBack();
 
         return $this->error(
-            'Academic Year could not be created', 403
+            'Exception, Academic Year could not be created', 500
         );
     }
 }
@@ -126,7 +126,7 @@ class AcademicYearController extends Controller
                 'academic_year' => new AcademicYearResource($academicYear)
             ]);
         }catch(\Exception $e){
-            return $this->error('Could not fetch the Academic Year', 404);
+            return $this->error('Exception, Could not fetch the Academic Year', 500);
         }
     }
 
@@ -157,7 +157,7 @@ class AcademicYearController extends Controller
             DB::rollBack();
 
             return $this->error(
-                'Failed to Update Academic Year', 403
+                'Failed to Update Academic Year', 500
             );
         }
     }
@@ -189,7 +189,7 @@ class AcademicYearController extends Controller
                         ]);
                     }else{
                     DB::rollBack();
-                    return $this->error('Changing the default does not match current time', 403);
+                    return $this->error('Changing the default does not match current time', 409);
                     }
             }
 
@@ -199,7 +199,7 @@ class AcademicYearController extends Controller
                 //check if ended
                 if($today->lte($defaultEndDate)){
                     DB::rollBack();
-                    return $this->error('Default year has still not concluded', 403);
+                    return $this->error('Default year has still not concluded', 409);
                 }else{
                     $upcomingYear = AcademicYear::where('status', 'upcoming')
                     ->orderBy('start_date')
@@ -207,7 +207,7 @@ class AcademicYearController extends Controller
                 
                     if(!$upcomingYear){
                         DB::rollBack();
-                        return $this->error("Could not update, no eligible upcoming years found", 404);
+                        return $this->error("Could not update, no eligible upcoming years found", 409);
                     }else{
                         $academicYear->update(['status' => 'active']);
                         $upcomingYear->update(['status' => 'default']);
@@ -244,7 +244,7 @@ class AcademicYearController extends Controller
 
             if(!$academicYear){
                 DB::rollBack();
-                return $this->error('Could not find Academic Year Status', 401);
+                return $this->error('Could not find Academic Year Status', 404);
             }
     }
 

@@ -159,7 +159,7 @@ class UserController extends Controller
     /**
      * Get User's Returned Submissions
      */
-    public function returnedSubmissions(Request $request)
+    public function userSubmissions(Request $request)
     {
         $user = $request->user();
         $academicYear = AcademicYear::query()->where('status', 'default')->first();
@@ -167,19 +167,20 @@ class UserController extends Controller
             $submissions = Submission::query()
                 ->where('academic_year_id', $academicYear->id)
                 ->where('school_id', $user->school_id)
-                ->where('status', 'returned')->get();
+                ->get();
 
             $submissionCollection = collect();
             foreach ($submissions as $submission) {
                 $submissionCollection->push([
                     'id' => $submission->id,
                     'type' => $submission->type,
+                    'status' => $submission->status
                 ]);
             }
 
             return $this->success('Returned Submissions fetched successfully', [
                 'user' => new UserResource($user),
-                'returned_submissions' => $submissionCollection->toArray()
+                'submission_data' => $submissionCollection->toArray()
             ]);
         } else {
             return $this->success('User fetched successfully', [
