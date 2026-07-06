@@ -114,7 +114,7 @@ class SchoolController extends Controller
             $typeID = SchoolType::where('name', $request['school_type'])->value('id');
             if (!$typeID) {
                 DB::rollBack();
-                return $this->error('School type not found for school type input', 403);
+                return $this->error('School type not found for school type input', 404);
             }
             $request->request->remove('school_type');
             $validated = $request->validated();
@@ -320,7 +320,7 @@ class SchoolController extends Controller
             DB::rollBack();
 
             return $this->error(
-                'Failed to delete school', 403
+                'Failed to delete school', 500
             );
         }
     }

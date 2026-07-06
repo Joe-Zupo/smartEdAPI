@@ -231,7 +231,7 @@ class ResourceDataController extends Controller
         $academicYear = AcademicYear::query()->where('id', $resourceData->academic_year_id)->first();
 
         if(!$academicYear->status === 'default'){
-            return $this->error('You cannot update resource data that is not under the default year', 403);
+            return $this->error('You cannot update resource data that is not under the default year', 409);
         }
 
         // only allow numeric fields to be modified

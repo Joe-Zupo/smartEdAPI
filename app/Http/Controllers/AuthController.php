@@ -66,7 +66,7 @@ class AuthController extends Controller
 
         // Check if user exists first
         if (!$user) {
-            return $this->error('Invalid credentials.', 403);
+            return $this->error('Invalid credentials. User Not found', 401);
         }
 
         // Custom checks
@@ -88,7 +88,7 @@ class AuthController extends Controller
         if (!Auth::attempt($credentials, $request->boolean('remember'))) {
             RateLimiter::hit($key, $decay);
 
-            return $this->error('Invalid credentials.', 403);
+            return $this->error('Invalid credentials.', 401);
         }
 
         $user = auth()->user();

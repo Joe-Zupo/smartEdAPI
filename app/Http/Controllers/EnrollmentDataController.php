@@ -534,7 +534,7 @@ class EnrollmentDataController extends Controller
     {
         $academicYear = AcademicYear::where('status', 'default')->first();
         if (!$academicYear) {
-            return response()->json(['message' => 'Academic year not found'], 404);
+            return $this->error('Academic year not found', 404);
         }
 
         $filterPosition = $request->validate(['position' => Rule::in(['Schools Division Superintendent', 'Assistant Schools Division Superintendent'])]);

@@ -166,7 +166,7 @@ class DivisionLeadershipController extends Controller
 
         }catch(\Exception $e){
             DB::rollBack();
-            return $this->error('Failed to update Division Leadership', 403);
+            return $this->error('Failed to update Division Leadership', 500);
         }
     }
 
@@ -192,7 +192,7 @@ class DivisionLeadershipController extends Controller
             return $this->success('Division Leadership Deleted successfully');
         } catch (\Exception $e) {
             DB::rollBack();
-            return $this->error('Failed to delete Division Leadership', 403);
+            return $this->error('Failed to delete Division Leadership', 500);
         }
     }
 
