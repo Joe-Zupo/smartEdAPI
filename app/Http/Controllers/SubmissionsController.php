@@ -96,13 +96,13 @@ class SubmissionsController extends Controller
         $user = $request->user();
 
         if (!$user->school_id) {
-            return response()->json(['message' => 'User is not assigned to a school.'], 403);
+            return $this->error('User is not assigned to a school.', 403);
         }
 
         $defaultYear = AcademicYear::query()->where('status', 'default')->first();
 
         if (!$defaultYear) {
-            return response()->json(['message' => 'No default academic year found.'], 422);
+            return $this->error('No default academic year found.', 422);
         }
 
         $query = Submission::query()->where('school_id', $user->school_id)
@@ -317,7 +317,7 @@ class SubmissionsController extends Controller
             return $this->error('Submission not found', 404);
         }
         if (!$defaultYear || $submission->academic_year_id !== $defaultYear->id) {
-            return $this->error('You can only view submissions for the current default school year.', 403);
+            return $this->error('You can only view submissions for the current default school year.', 409);
         }
 
         $submission->load([
@@ -344,10 +344,10 @@ class SubmissionsController extends Controller
     {
         $this->authorize('adminFunc', Submission::class);
             if ($submission->academicYear->status !== 'default') {
-                return $this->error('You can only approve submissions for the current default school year.', 403);
+                return $this->error('You can only approve submissions for the current default school year.', 409);
             }
             if($submission->editable === false){
-                return $this->error('You can only approve submissions that have edit access.', 403);
+                return $this->error('You can only approve submissions that have edit access.', 409);
             }
 
             DB::transaction(function () use ($submission, $request) {
@@ -398,7 +398,7 @@ class SubmissionsController extends Controller
     {
         $this->authorize('adminFunc', Submission::class);
         if ($submission->academicYear->status !== 'default') {
-            return $this->error('You can only return submissions for the current default school year.');
+            return $this->error('You can only return submissions for the current default school year.', 409);
         }
 
         if($submission->status !== 'pending'){
@@ -473,10 +473,10 @@ class SubmissionsController extends Controller
         }
 
         if ($submission->status === 'approved') {
-            return $this->error(['Only returned submissions can be edited, Please request for edit access.'], 403);
+            return $this->error(['Only returned submissions can be edited, Please request for edit access.'], 409);
             }
        if ($submission->status === 'pending') {
-                return $this->error(['message' => 'Only returned submissions can be edited.'], 403);
+                return $this->error(['message' => 'Only returned submissions can be edited.'], 409);
             }
 
         $validated = $request->validated();
@@ -627,8 +627,8 @@ class SubmissionsController extends Controller
         DB::beginTransaction();
 
         if($submission->status !== 'approved'){
-            return $this->error('Cannot request for edit access for unapproved submission.', 403);
             DB::rollBack();
+            return $this->error('Cannot request for edit access for unapproved submission.', 409);
         }
 
         if($submission->status === 'approved'){
@@ -674,10 +674,10 @@ class SubmissionsController extends Controller
         }
         
         if ($submission->academicYear->status !== 'default') {
-                return $this->error('You can only return submissions for the current default school year.');
+                return $this->error('You can only return submissions for the current default school year.', 409);
         }
         if($submission->status !== 'pending' || $submission->editable !== false){
-                return $this->error('Cannot approve submission for it is not a edit request.', 403);
+                return $this->error('Cannot approve submission for it is not a edit request.', 409);
         }
 
         DB::beginTransaction();
@@ -732,7 +732,7 @@ class SubmissionsController extends Controller
             return $this->error('Submission cannot be approved by user, User must be an admin', 403);
         }
         if($submission->status !== 'pending' || $submission->editable !== false){
-            return $this->error('Wrong function used. Cannot return decline request for submission is not a pending edit request', 403);
+            return $this->error('Wrong function used. Cannot return decline request for submission is not a pending edit request', 409);
         }
 
         $request->validate([
