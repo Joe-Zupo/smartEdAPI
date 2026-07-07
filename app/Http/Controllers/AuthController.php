@@ -6,9 +6,11 @@ use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
+use App\Models\Submission;
 use Spatie\Activitylog\Models\Activity;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\RateLimiter;
+use App\Models\AcademicYear;
 
 class AuthController extends Controller
 {
@@ -93,6 +95,24 @@ class AuthController extends Controller
 
         $user = auth()->user();
 
+        $submissionCollection = null;
+        $academicYear = AcademicYear::query()->where('status','default')->first();
+        if($user->hasRole('School Account')){
+            $submissions = Submission::query()
+                ->where('academic_year_id', $academicYear->id)
+                ->where('school_id', $user->school_id)
+                ->get();
+
+            $submissionCollection = collect();
+            foreach($submissions as $submission){
+                $submissionCollection->push([
+                    'id' => $submission->id,
+                    'type' => $submission->type,
+                    'status' => $submission->status
+                ]);
+            }
+        }
+
         if(!$useCookies){
         $token = $user->createToken('api-token')->plainTextToken;
 
@@ -105,11 +125,19 @@ class AuthController extends Controller
             ->log($user->name . ' has successfully logged in.');
 
             RateLimiter::clear($key);
-            
-            return $this->success('User Logged in successfully', [
-                'User' => new UserResource($user),
-                'token' => $token,
-            ]);
+            if($user->hasRole('School Account')){
+                return $this->success('User Logged in successfully', [
+                    'User' => new UserResource($user),
+                    'submission_data' => $submissionCollection->toArray(),
+                    'token' => $token,
+                ]);
+            }else{
+                return $this->success('User Logged in successfully', [
+                    'User' => new UserResource($user),
+                    'submission_data' => [],
+                    'token' => $token,
+                ]);
+            }
         }
 
         if ($request->hasSession()) {
@@ -128,7 +156,18 @@ class AuthController extends Controller
             ])
             ->log($user->name . ' has successfully logged in.');
         
-        return $this->success('Logged in successfully', ['user' => new UserResource($user)]);
+
+        if($user->hasRole('School Account')){
+                return $this->success('User Logged in successfully', [
+                    'User' => new UserResource($user),
+                    'submission_data' => $submissionCollection->toArray(),
+                ]);
+            }else{
+                return $this->success('User Logged in successfully', [
+                    'User' => new UserResource($user),
+                    'submission_data' => [],
+                ]);
+            }
     }
 
     /**
