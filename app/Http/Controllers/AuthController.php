@@ -8,11 +8,9 @@ use App\Models\Submission;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
-use App\Models\Submission;
 use Spatie\Activitylog\Models\Activity;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\RateLimiter;
-use App\Models\AcademicYear;
 
 class AuthController extends Controller
 {
