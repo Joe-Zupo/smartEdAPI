@@ -48,7 +48,13 @@ class SubmissionsController extends Controller
         }
 
         if($request->filled('status')){
-            $query->where('status', $request['status']);
+            if($request['status'] === 'returned'){
+                $query->whereIn('status', ['returned', 'edit-granted']);
+            }else if($request['status'] === 'pending'){
+                $query->whereIn('status', ['pending', 'edit-request', 'edit-pending']);
+            }else{
+                $query->where('status', $request['status']);
+            }
         }
 
         if($user->school_id){ //Restricts School Accounts from searching other schools
@@ -78,8 +84,8 @@ class SubmissionsController extends Controller
                     'counts' => [
                         'submissions' => (clone $countQuery)->count(),
                         'approved' => (clone $countQuery)->where('status', 'approved')->count(),
-                        'pending' => (clone $countQuery)->where('status', 'pending')->count(),
-                        'returned' => (clone $countQuery)->where('status', 'returned')->count(),
+                        'pending' => (clone $countQuery)->whereIn('status', ['pending', 'edit-pending'])->count(),
+                        'returned' => (clone $countQuery)->whereIn('status', ['returned', 'edit-granted'])->count(),
                     ],
                     'submissions' => SubmissionResource::collection($items),
                 ],
@@ -401,25 +407,22 @@ class SubmissionsController extends Controller
             return $this->error('You can only return submissions for the current default school year.', 409);
         }
 
-        if($submission->status !== 'pending'){
-            return $this->error('Submissions must be pending to be returned.', 403);
-        }
-
-        if($submission->status === 'pending' && $submission->editable === false){
-            return $this->error('Wrong function used. Cannot return submission for edit request with this function.', 403);
-        }
-
         $validated = $request->validate([
                 'comment' => ['required', 'string', 'max:1000'],
         ]);      
 
         DB::transaction(function () use ($submission, $request, $validated) {
 
-            if($submission->status === 'pending' && $submission->editable === true){
-                $submission->update([
+            if(($submission->status === 'pending' && $submission->editable === true) or ($submission->status === 'edit-pending' && $submission->editable === true)){
+                if($submission->status === 'edit-pending'){
+                    $submission->update([
+                    'status' => 'edit-returned',
+                    ]);
+                }else{
+                    $submission->update([
                     'status' => 'returned',
-                ]);
-
+                    ]);
+                }
                 $submission->comments()->create([
                     'submission_id' => $submission->id,
                     'user_id' => $request->user()->id,
@@ -445,6 +448,8 @@ class SubmissionsController extends Controller
                         ->log($actor->name . ' has returned submission ' . $submission->submission_number . '.');
                 }
 
+            }else{
+                return $this->error('Cannot return Submission; Submission is not a pending request!', 409);
             }
         });
 
@@ -473,17 +478,17 @@ class SubmissionsController extends Controller
         }
 
         if ($submission->status === 'approved') {
-            return $this->error(['Only returned submissions can be edited, Please request for edit access.'], 409);
+            return $this->error(['Only returned and edit-granted submissions can be edited, Please request for edit access.'], 409);
             }
        if ($submission->status === 'pending') {
-                return $this->error(['message' => 'Only returned submissions can be edited.'], 409);
+                return $this->error(['message' => 'Only returned and edit-granted submissions can be edited.'], 409);
             }
 
         $validated = $request->validated();
 
         DB::beginTransaction();
         $school = School::query()->where('id', $user->school_id)->first();
-        if($submission->status === 'returned'){
+        if($submission->status === 'returned' || $submission->status === 'edit-granted'){
                 if ($submission->type === 'enrollment') {
 
                     foreach ($validated['details'] as $row) {
@@ -577,8 +582,12 @@ class SubmissionsController extends Controller
                         }
                         $draft->save();
                 }
+                    if($submission->status === 'edit-granted'){
+                        $submission->update(['status' => 'edit-pending']);
+                    }else{
+                        $submission->update(['status' => 'pending']);
+                    }
 
-                    $submission->update(['status' => 'pending']);
                     $submission->touch();
 
                     $submission->notifications()->create([
@@ -632,7 +641,7 @@ class SubmissionsController extends Controller
         }
 
         if($submission->status === 'approved'){
-            $submission->update(['status' => 'pending']);
+            $submission->update(['status' => 'edit-request']);
 
         $submission->notifications()->create([
             'title' => "New Submission from {$submission->school->school_name}",
@@ -676,15 +685,15 @@ class SubmissionsController extends Controller
         if ($submission->academicYear->status !== 'default') {
                 return $this->error('You can only return submissions for the current default school year.', 409);
         }
-        if($submission->status !== 'pending' || $submission->editable !== false){
-                return $this->error('Cannot approve submission for it is not a edit request.', 409);
+        if($submission->status !== 'edit-request' || $submission->editable !== false){
+                return $this->error('Cannot approve submission for it is not a pending edit request.', 409);
         }
 
         DB::beginTransaction();
-            if($submission->status === 'pending' && $submission->editable === false){
+            if($submission->status === 'edit-request' && $submission->editable === false){
 
                     $submission->update([
-                        'status' => 'returned',
+                        'status' => 'edit-granted',
                         'editable' => true,
                     ]);
 
@@ -731,7 +740,7 @@ class SubmissionsController extends Controller
         if($user->hasRole('School Account')){
             return $this->error('Submission cannot be approved by user, User must be an admin', 403);
         }
-        if($submission->status !== 'pending' || $submission->editable !== false){
+        if($submission->status !== 'edit-request' || $submission->editable !== false){
             return $this->error('Wrong function used. Cannot return decline request for submission is not a pending edit request', 409);
         }
 
