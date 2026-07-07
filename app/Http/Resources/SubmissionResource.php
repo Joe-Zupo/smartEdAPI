@@ -24,12 +24,17 @@ class SubmissionResource extends JsonResource
     {
         $comments = Comment::query()->where('submission_id', $this->id)->get();
 
-        if($this->editable === false && $this->status === 'pending'){
+        $typeMessage = $this->type;
+        if($this->status === 'edit-request'){
             $typeMessage = 'Edit Request - ' . $this->type;
+        }else if($this->status === 'edit-granted'){
+            $typeMessage = 'Edit Granted - ' . $this->type;
+        }else if($this->status === 'edit-returned'){
+            $typeMessage = 'Edit Returned - ' . $this->type;
+        }else if($this->status === 'edit-pending'){
+            $typeMessage = 'Edit Pending - ' . $this->type;
         }
-        else{
-            $typeMessage = $this->type;
-        }
+        
         return [
             'id' => $this->id,
             'submission_number' => $this->submission_number,

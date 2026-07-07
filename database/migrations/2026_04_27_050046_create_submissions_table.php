@@ -21,7 +21,8 @@ return new class extends Migration
             $table->foreignIdFor(User::class)->constrained()->onDelete('cascade');
             $table->string('submission_number')->nullable();
             $table->enum('type', ['enrollment', 'resource', 'information']);
-            $table->enum('status', ['pending', 'approved', 'returned']);
+            $table->enum('status', ['pending', 'approved', 'returned', 
+            'edit-granted', 'edit-pending', 'edit-request', 'edit-returned']); // Post Approved Data
             $table->boolean('editable')->default(true);
             $table->timestamps();
         });

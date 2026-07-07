@@ -34,7 +34,7 @@ class IndexSubmissionsRequest extends FormRequest
             'page' => 'nullable|integer|min:1',
 
             'type' => 'in:enrollment,resource,information',
-            'status' => 'in:pending,approved,returned',
+            'status' => 'in:pending,approved,returned,edit-granted,edit-pending',
             'search' => 'string',
         ];
     }
