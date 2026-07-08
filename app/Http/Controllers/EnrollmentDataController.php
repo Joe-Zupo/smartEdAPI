@@ -64,26 +64,15 @@ class EnrollmentDataController extends Controller
      * Update Enrollment Data.
      * Used only for testing (OBSOLETE FUNCTION)
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, $id, EnrollmentDataService $service)
     {
         $this->authorize('update', EnrollmentData::class);
         DB::beginTransaction();
-        // basic update and fire totals change
-        $validated = $request->validate([
-            'male_count' => ['required','numeric', 'min:0'],
-            'female_count' => ['required','numeric', 'min:0'],
-        ]);
-
-        $enrollmentData = EnrollmentData::find($id);
-        $enrollmentData->update($validated);
-
-        // dispatch totals changed for the related academic year
-        // $yearId = $enrollmentData->submission->academic_year_id;
-        // event(new \App\Events\EnrollmentTotalsChanged($yearId));
-
+        $data = $service->getUpdate($request, $id);
         DB::commit();
+
         return $this->success('Enrollment data updated successfully', [
-        'data' => new EnrollmentDataResource($enrollmentData->load('gradeLevel')),
+        'data' => new EnrollmentDataResource($data->load('gradeLevel')),
         ]);
     }
 

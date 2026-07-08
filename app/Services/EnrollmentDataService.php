@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Services;
+use Illuminate\Support\Facades\DB;
 use App\Models\EnrollmentData;
 use App\Models\AcademicYear;
 use Illuminate\Validation\Rule;
@@ -15,6 +16,21 @@ use App\Http\Resources\EnrollmentDataResource;
 class EnrollmentDataService
 {
     use autoPaginator, GradesDisplay;
+
+    public function getUpdate($request, $id){
+        // basic update and fire totals change
+        $validated = $request->validate([
+            'male_count' => ['required','numeric', 'min:0'],
+            'female_count' => ['required','numeric', 'min:0'],
+        ]);
+
+        $data = EnrollmentData::find($id);
+        $data->update($validated);
+        // dispatch totals changed for the related academic year
+        // $yearId = $enrollmentData->submission->academic_year_id;
+        // event(new \App\Events\EollmentTotalsChanged($yearId));
+        return $data;
+    }
 
     public function getIndex($user, $request){
         
