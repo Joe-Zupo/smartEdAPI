@@ -23,9 +23,8 @@ class PublicResourceDataResource extends JsonResource
 
             'office_of_the_superintendent' =>
                 DivisionLeadershipResource::collection(
-                    $this['office_of_the_superintendent']
+                    $this['office_of_the_superintendent'] ?? collect()
                 ),
-
         ];
     }
 }

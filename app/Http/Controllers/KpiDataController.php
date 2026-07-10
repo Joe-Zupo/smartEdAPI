@@ -2,21 +2,21 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\PublicKpiDataChanged;
+use App\Events\PublicKPITrendsChanged;
 use App\Models\KpiData;
 use Illuminate\Http\Request;
-use App\Http\Requests\KPI\IndexKpiDataRequest;
 use App\Http\Resources\KpiDataResource;
 use Illuminate\Support\Facades\DB;
 use App\Models\KpiRateData;
 use App\Models\AcademicYear;
-use App\Http\Resources\DivisionLeadershipResource;
 use Illuminate\Validation\Rule;
 use App\Http\Requests\KPI\StoreKpiDataRequest;
 use App\Helpers\calculateTotal;
-use App\Models\DivisionLeadership;
-use App\Policies\KpiDataPolicy;
 use App\Http\Requests\KPI\UpdateKpiDataRequest;
-use App\Models\SchoolType;
+use App\Services\KpiDataService;
+use App\Http\Resources\KPIDataService\KPIIndexResource;
+use App\Http\Resources\KPIDataService\KPITrendResource;
 
 class KpiDataController extends Controller
 {
@@ -24,13 +24,9 @@ class KpiDataController extends Controller
     /**
      * KPI Data Index
      */
-    public function index(Request $request)
+    public function index(Request $request, KpiDataService $service)
     {
         $this->authorize('viewAny', KpiData::class);
-        $perPage = $request->get('per_page', 10);
-        $getAll  = $request->boolean('all');
-
-        // ✅ VALIDATION
         $request->validate([
             'kpi_rate' => [
                 'string',
@@ -47,50 +43,21 @@ class KpiDataController extends Controller
             'all' => ['in:true,false'],
         ]);
 
-        $query = KpiData::query();
+        $data = $service->getIndex($request, false, null);
 
-        //Query Params
-        if($request->filled('kpi_rate')){
-            $kpiRate = $query->whereHas('kpiRate', function($q) use ($query, $request){
-                $q->where('name', $request->input('kpi_rate'));
-            });
+        if($data === 'Empty Query'){
+            return $this->success('No KPI data Records Found');
         }
 
-        if($request->filled('academic_year')){
-            $academicYear = AcademicYear::query()->where('academic_year', $request->input('academic_year'))->first();
-            $query->where('academic_year_id', $academicYear->id);
-            }else{
-                $academicYear = AcademicYear::query()->where('status', 'default')->first();
-                $query->where('academic_year_id', $academicYear->id);
-            }
-
-        if ($request->filled('school_type')) {
-            $query->where('school_type', $request->school_type);
-        }
-
-        //Main Query
-        $query->with(['kpiRate', 'academicYear']);
-
-
-        $items = $getAll ? $query->get() : $query->paginate($perPage)->appends($request->query());
-        if ($items->isEmpty()) {
-            return response()->json(['message' => 'No KPI data found']);
-        }
-        
-        return $this->success('KPI data retrieved successfully', [
-            'data' => [
-                'items' => KpiDataResource::collection($items),
-                // 'kpi_trends' => $groupedTrends->toArray(),
-                // 'kpi_trends_total' => $fiveYearStats,
-            ],
-            'pagination' => $getAll ? null : $this->paginateReturn($items),
-        ]);
+            return $this->success(
+            'KPI data retrieved successfully',
+            new KpiIndexResource(
+                $data
+            )
+        );
     }
 
-    public function publicIndex(Request $request){
-            $perPage = $request->get('per_page', 10);
-            $getAll  = $request->boolean('all');
-
+    public function publicIndex(Request $request, KpiDataService $service){
             // ✅ VALIDATION
             $request->validate([
                 'kpi_rate' => [
@@ -110,60 +77,12 @@ class KpiDataController extends Controller
                 'position' => Rule::in(['Schools Division Superintendent', 'Assistant Schools Division Superintendent'])
             ]);
 
-            $filterPosition = $request['position'];
-
-            if (isset($filterPosition['position'])) {
-            $divisionLeaderships = DivisionLeadership::query()->where('position', $filterPosition['position'])
-                ->orderByRaw('CASE WHEN term_end IS NULL THEN 0 ELSE 1 END')
-                ->orderBy('term_end', 'desc')
-                ->orderBy('term_start', 'desc')
-                ->get();
-            } else {
-                $divisionLeaderships = DivisionLeadership::orderByRaw('CASE WHEN term_end IS NULL THEN 0 ELSE 1 END')
-                    ->orderBy('term_end', 'desc')
-                    ->orderBy('term_start', 'desc')
-                    ->get();
-            }
-
-            $query = KpiData::query();
-
-            //Query Params
-            if($request->filled('kpi_rate')){
-                $kpiRate = $query->whereHas('kpiRate', function($q) use ($query, $request){
-                    $q->where('name', $request->input('kpi_rate'));
-                });
-            }
-
-            if($request->filled('academic_year')){
-                $academicYear = AcademicYear::query()->where('academic_year', $request->input('academic_year'))->first();
-                $query->where('academic_year_id', $academicYear->id);
-                }else{
-                    $academicYear = AcademicYear::query()->where('status', 'default')->first();
-                    $query->where('academic_year_id', $academicYear->id);
-                }
-
-            if ($request->filled('school_type')) {
-                $query->where('school_type', $request->school_type);
-            }
-
-            //Main Query
-            $query->with(['kpiRate', 'academicYear']);
-
-
-            $items = $getAll ? $query->get() : $query->paginate($perPage)->appends($request->query());
-            if ($items->isEmpty()) {
-                return response()->json(['message' => 'No KPI data found']);
-            }
-            
-            return $this->success('KPI data retrieved successfully', [
-                'data' => [
-                    'items' => KpiDataResource::collection($items),
-                    // 'kpi_trends' => $groupedTrends->toArray(),
-                    // 'kpi_trends_total' => $fiveYearStats,
-                    'office_of_the_superintendent' => DivisionLeadershipResource::collection($divisionLeaderships),
-                ],
-                'pagination' => $getAll ? null : $this->paginateReturn($items),
-            ]);
+            return $this->success(
+            'KPI data retrieved successfully',
+            new KpiIndexResource(
+                $service->getIndex($request, true, null)
+            )
+        ); 
     }
 
     /**
@@ -264,6 +183,7 @@ class KpiDataController extends Controller
         $updated = DB::transaction(function () use ($validated) {
 
             $results = [];
+            $yearID = null;
             foreach ($validated['items'] as $item) {
                 $model = KpiData::findOrFail($item['id']);
                 $total = $this->calculateTotal($item['male'], $item['female'], $model->academic_year_id, true);
@@ -278,7 +198,11 @@ class KpiDataController extends Controller
                     'kpiRate',
                     'academicYear',
                 ]);
+
+                $yearID = $model->academic_year_id;
             }
+            //PublicKpiDataChanged::dispatch($yearID);
+            //PublicKPITrendsChanged::dispatch($yearID);
             return $results;
         });
 
@@ -288,7 +212,7 @@ class KpiDataController extends Controller
     /**
      * KPI Trends
      */
-    public function kpiTrends(Request $request){
+    public function kpiTrends(Request $request, KpiDataService $service){
 
         $this->authorize('viewAny', KpiData::class);
         $request->validate([[
@@ -312,106 +236,33 @@ class KpiDataController extends Controller
                 // Get the default year
                 $startYear = AcademicYear::query()->where('status', 'default')->first();
             }
-        
-         $kpiId = null;
-        if($request->filled('kpi_rate')){
-            $kpiId = KpiRateData::query()->where('name', $request->input('kpi_rate'))->value('id');
-        }
 
         if (!$startYear) {
             return $this->error('Academic year not found.', 404);
         }
 
-        // Get this year + 4 previous years (by ID)
-        $academicYearIds = AcademicYear::query()->where('id', '<=', $startYear->id)
-            ->orderBy('id', 'desc')
-            ->limit(5)
-            ->pluck('id');
+        $kpiId = null;
+        if($request->filled('kpi_rate')){
+            $kpiId = KpiRateData::query()->where('name', $request->input('kpi_rate'))->value('id');
+            if(!$kpiId){
+                return $this->error('KPI Rate not found!', 404);
+            }
+        }
 
-        $totalsItems5Years = KpiData::with(['academicYear', 'kpiRate'])
-            ->when($kpiId, function ($q) use ($kpiId) {
-                $q->where('kpi_id', $kpiId);
-            })
-            ->whereIn('academic_year_id', $academicYearIds)
-            ->when($request->filled('school_type'), function ($q) use ($request) {
-                $q->where('school_type', $request->input('school_type'));
-            })
-            ->get();
+            return $this->success(
+            'KPI trends and totals retrieved successfully',
+            new KpiTrendResource(
+                $service->getKpiTrends($request, false, null)
+            )
+        );
 
-          $groupedTrends = $totalsItems5Years
-            ->sortBy([
-                ['kpi_id', 'asc'],
-                ['school_type', 'asc'],
-                ['academic_year_id', 'desc'],
-            ])
-            ->values()
-            ->map(function ($item) {
-
-                return [
-                    'id' => $item->id,
-
-                    'kpi_id' => $item->kpiRate->id,
-
-                    'kpi_rate' => [
-                        'id' => $item->kpiRate->id,
-                        'name' => $item->kpiRate->name,
-                    ],
-
-                    'academic_year_id' => $item->academicYear->id,
-
-                    'academic_year' => [
-                        'id' => $item->academicYear->id,
-                        'name' => $item->academicYear->academic_year,
-                    ],
-
-                    'male' => (float) $item->male,
-                    'female' => (float) $item->female,
-                    'total' => (float) $item->total,
-
-                    'school_type' => $item->school_type,
-                ];
-            });
-
-        $fiveYearStats = $groupedTrends
-            ->groupBy('kpi_id')
-            ->map(function ($records) {
-
-                $first = $records->first();
-
-                return [
-                    'kpi_id' => $first['kpi_id'],
-                    'kpi_rate' => $first['kpi_rate'],
-
-                    'male_five_year_avg' => round(
-                        $records->avg('male'),
-                        1
-                    ),
-
-                    'female_five_year_avg' => round(
-                        $records->avg('female'),
-                        1
-                    ),
-
-                    'total_five_year_avg' => round(
-                        $records->avg('total'),
-                        1
-                    ),
-                ];
-            })
-            ->values();
-
-        
-
-        return $this->success('KPI trends and totals retrieved successfully', [
-            'data' => [
-                'kpi_trends' => $groupedTrends->toArray(),
-                'kpi_trends_total' => $fiveYearStats,
-            ],
-        ]);
 
     }
 
-    public function publicKPITrends(Request $request){
+    /**
+     * Public KPI Trends
+     */
+    public function publicKPITrends(Request $request, KpiDataService $service){
          $request->validate([[
             'kpi_rate' => [
                 'string',
@@ -443,92 +294,13 @@ class KpiDataController extends Controller
             return $this->error('Academic year not found.', 404);
         }
 
-        // Get this year + 4 previous years (by ID)
-        $academicYearIds = AcademicYear::query()->where('id', '<=', $startYear->id)
-            ->orderBy('id', 'desc')
-            ->limit(5)
-            ->pluck('id');
+            return $this->success(
+            'KPI trends and totals retrieved successfully',
+            new KpiTrendResource(
+                $service->getKpiTrends($request, true, null)
+            )
+        );
 
-        $totalsItems5Years = KpiData::with(['academicYear', 'kpiRate'])
-            ->when($kpiId, function ($q) use ($kpiId) {
-                $q->where('kpi_id', $kpiId);
-            })
-            ->whereIn('academic_year_id', $academicYearIds)
-            ->when($request->filled('school_type'), function ($q) use ($request) {
-                $q->where('school_type', $request->input('school_type'));
-            })
-            ->get();
-
-          $groupedTrends = $totalsItems5Years
-            ->sortBy([
-                ['kpi_id', 'asc'],
-                ['school_type', 'asc'],
-                ['academic_year_id', 'desc'],
-            ])
-            ->values()
-            ->map(function ($item) {
-
-                return [
-                    'id' => $item->id,
-
-                    'kpi_id' => $item->kpiRate->id,
-
-                    'kpi_rate' => [
-                        'id' => $item->kpiRate->id,
-                        'name' => $item->kpiRate->name,
-                    ],
-
-                    'academic_year_id' => $item->academicYear->id,
-
-                    'academic_year' => [
-                        'id' => $item->academicYear->id,
-                        'name' => $item->academicYear->academic_year,
-                    ],
-
-                    'male' => (float) $item->male,
-                    'female' => (float) $item->female,
-                    'total' => (float) $item->total,
-
-                    'school_type' => $item->school_type,
-                ];
-            });
-
-        $fiveYearStats = $groupedTrends
-            ->groupBy('kpi_id')
-            ->map(function ($records) {
-
-                $first = $records->first();
-
-                return [
-                    'kpi_id' => $first['kpi_id'],
-                    'kpi_rate' => $first['kpi_rate'],
-
-                    'male_five_year_avg' => round(
-                        $records->avg('male'),
-                        1
-                    ),
-
-                    'female_five_year_avg' => round(
-                        $records->avg('female'),
-                        1
-                    ),
-
-                    'total_five_year_avg' => round(
-                        $records->avg('total'),
-                        1
-                    ),
-                ];
-            })
-            ->values();
-
-        
-
-        return $this->success('KPI trends and totals retrieved successfully', [
-            'data' => [
-                'kpi_trends' => $groupedTrends->toArray(),
-                'kpi_trends_total' => $fiveYearStats,
-            ],
-        ]);
     }
 
     /**

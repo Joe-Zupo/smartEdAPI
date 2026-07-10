@@ -13,6 +13,10 @@ use App\Helpers\autoPaginator;
 use App\Helpers\EnrollmentData\GradesDisplay;
 use App\Http\Resources\EnrollmentDataResource;
 
+use App\Events\PublicEnrollmentGradesChanged;
+use App\Events\PublicEnrollmentTrendsChanged;
+use App\Events\PublicEnrollmentLevelsChanged;
+
 class EnrollmentDataService
 {
     use autoPaginator, GradesDisplay;
@@ -141,11 +145,9 @@ class EnrollmentDataService
     }
 
 
-    public function getPublicEnrollment($request){
-        $academicYear = AcademicYear::where('status', 'default')->first();
-        if (!$academicYear) {
-            return $this->error('Academic year not found', 404);
-        }
+    public function getPublicEnrollment($request, $academicYearId = null/** For broadcasts */){
+        if($request && !$academicYearId){
+        $academicYear = AcademicYear::query()->where('status', 'default')->first();
 
         $filterPosition = $request->validate(['position' => Rule::in(['Schools Division Superintendent', 'Assistant Schools Division Superintendent'])]);
 
@@ -205,6 +207,59 @@ class EnrollmentDataService
         ];
 
         return $data;
+
+        }else if($academicYearId && !$request){
+            $academicYear = AcademicYear::findOrFail($academicYearId);
+
+            $totals = EnrollmentData::query()
+                ->where('academic_year_id', $academicYearId)
+                ->selectRaw('
+                    SUM(male_count) as total_male,
+                    SUM(female_count) as total_female,
+                    SUM(total_count) as total_students
+                ')
+                ->first();
+
+            $divisionLeaderships = DivisionLeadership::orderByRaw('CASE WHEN term_end IS NULL THEN 0 ELSE 1 END')
+                ->orderBy('term_end', 'desc')
+                ->orderBy('term_start', 'desc')
+                ->get();
+
+            $data =  [
+
+                'academic_year' => [
+                    'id' => $academicYear->id,
+                    'name' => $academicYear->academic_year,
+                ],
+
+                'totals' => [
+                    'total_male' => (int) ($totals->total_male ?? 0),
+                    'total_female' => (int) ($totals->total_female ?? 0),
+                    'total_students' => (int) ($totals->total_students ?? 0),
+                ],
+
+                // 'five_year_trend' =>
+                //     $this->getFiveYearTrend(null, $academicYear, null),
+
+                // 'enrollment_by_level' =>
+                //     $this->getEnrollmentByLevel(null, $academicYear, null),
+
+                // 'enrollment_by_grade' =>
+                //     $this->getEnrollmentByGrade(null, $academicYear, null),
+
+                // 'office_of_the_superintendent' => 
+                //     DivisionLeadershipResource::collection($divisionLeaderships),
+            ];
+            $fiveYearTrend = $this->getFiveYearTrend(null, $academicYear, null);
+            $enrollmentByLevel = $this->getEnrollmentByLevel(null, $academicYear, null);
+            $enrollmentByGrade = $this->getEnrollmentByGrade(null, $academicYear, null);
+
+            PublicEnrollmentTrendsChanged::dispatch($fiveYearTrend);
+            PublicEnrollmentLevelsChanged::dispatch($enrollmentByLevel);
+            PublicEnrollmentGradesChanged::dispatch($enrollmentByGrade);
+            
+            return $data;
+        }
     }
 
     public function getDashboardData($user, $request)
@@ -287,37 +342,69 @@ class EnrollmentDataService
      */
     private function getFiveYearTrend($user, $currentAcademicYear, $request)
     {
-        // Get last 5 academic years (current + 4 previous)
-        $academicYears = AcademicYear::query()->where('id', '<=', $currentAcademicYear->id)
-            ->orderBy('id', 'desc')
-            ->limit(5)
-            ->get();
+        if($request){
+            // Get last 5 academic years (current + 4 previous)
+            $academicYears = AcademicYear::query()->where('id', '<=', $currentAcademicYear->id)
+                ->orderBy('id', 'desc')
+                ->limit(5)
+                ->get();
 
-        $trend = [];
+            $trend = [];
 
-        foreach ($academicYears as $year) {
-            $trendQuery = EnrollmentData::query()->where('academic_year_id', $year->id);
+            foreach ($academicYears as $year) {
+                $trendQuery = EnrollmentData::query()->where('academic_year_id', $year->id);
 
-                if ($user && $user->hasRole('School Account')) {
-                    $trendQuery->where('school_id', $user->school_id);
-                } elseif ($request->filled('school_name')) {
-                    $school = School::query()->where('school_name', $request['school_name'])->first();
-                    $trendQuery->where('school_id', $school->id);
-                }
+                    if ($user && $user->hasRole('School Account')) {
+                        $trendQuery->where('school_id', $user->school_id);
+                    } else if ($request->filled('school_name')) {
+                        $school = School::query()->where('school_name', $request['school_name'])->first();
+                        $trendQuery->where('school_id', $school->id);
+                    }
 
-            $yearTotals = $trendQuery->selectRaw('
-                SUM(male_count) as total_male,
-                SUM(female_count) as total_female,
-                SUM(total_count) as total_students
-            ')->first();
+                $yearTotals = $trendQuery->selectRaw('
+                    SUM(male_count) as total_male,
+                    SUM(female_count) as total_female,
+                    SUM(total_count) as total_students
+                ')->first();
 
-            $trend[] = [
-                'academic_year' => $year->academic_year,
-                'academic_year_id' => $year->id,
-                'total_male' => (int) ($yearTotals->total_male ?? 0),
-                'total_female' => (int) ($yearTotals->total_female ?? 0),
-                'total_students' => (int) ($yearTotals->total_students ?? 0),
-            ];
+                $trend[] = [
+                    'academic_year' => $year->academic_year,
+                    'academic_year_id' => $year->id,
+                    'total_male' => (int) ($yearTotals->total_male ?? 0),
+                    'total_female' => (int) ($yearTotals->total_female ?? 0),
+                    'total_students' => (int) ($yearTotals->total_students ?? 0),
+                ];
+            }
+            }else{
+                // Get last 5 academic years (current + 4 previous)
+            $academicYears = AcademicYear::query()->where('id', '<=', $currentAcademicYear->id)
+                ->orderBy('id', 'desc')
+                ->limit(5)
+                ->get();
+
+            $trend = [];
+
+            foreach ($academicYears as $year) {
+                $trendQuery = EnrollmentData::query()->where('academic_year_id', $year->id);
+
+                    if ($user && $user->hasRole('School Account')) {
+                        $trendQuery->where('school_id', $user->school_id);
+                    }
+
+                $yearTotals = $trendQuery->selectRaw('
+                    SUM(male_count) as total_male,
+                    SUM(female_count) as total_female,
+                    SUM(total_count) as total_students
+                ')->first();
+
+                $trend[] = [
+                    'academic_year' => $year->academic_year,
+                    'academic_year_id' => $year->id,
+                    'total_male' => (int) ($yearTotals->total_male ?? 0),
+                    'total_female' => (int) ($yearTotals->total_female ?? 0),
+                    'total_students' => (int) ($yearTotals->total_students ?? 0),
+                ];
+            }
         }
 
         return $trend;
@@ -343,10 +430,13 @@ class EnrollmentDataService
             $user = $user->load('school.schoolType');
             if ($user->hasRole('School Account')) {
                 $schoolType = $user->school->schoolType->name;
-            } elseif ($user->hasAnyRole(['System Admin']) && $request->filled('school_name')) {
+            }  
+            if($request){
+                if ($user->hasAnyRole(['System Admin']) && $request->filled('school_name')) {
                 $schoolName = $request->input('school_name');
                 $school = School::query()->where('school_name', $schoolName)->with('schoolType')->first();
                 $schoolType = $school ? $school->schoolType->name : 'All';
+                }
             }
         }
         // Filter grade groups based on school type
@@ -392,11 +482,15 @@ class EnrollmentDataService
 
                     if ($user && $user->hasRole('School Account')) {
                         $enrollments->where('school_id', $user->school_id);
-                    } elseif ($request->filled('school_name')) {
-                        $schoolName = $request->input('school_name');
-                        $school = School::query()->where('school_name', $schoolName)->first();
+                    } 
+                    
+                    else if($request){
+                            if ($request->filled('school_name')) {
+                            $schoolName = $request->input('school_name');
+                            $school = School::query()->where('school_name', $schoolName)->first();
 
-                        $enrollments->where('school_id', $school->id);
+                            $enrollments->where('school_id', $school->id);
+                        }
                     }
 
             $enrollments = $enrollments->get();
@@ -440,7 +534,9 @@ class EnrollmentDataService
 
     private function getEnrollmentByGrade($user, $currentAcademicYear, $request)
     {
-        $school = School::query()->where('school_name', $request->input('school_name'))->first();
+        if($request){
+            $school = School::query()->where('school_name', $request->input('school_name'))->first();
+        }
         $type = $school->schoolType->name ?? null;
 
         $allowedGrades = match ($type) {  
@@ -480,11 +576,12 @@ class EnrollmentDataService
                 if ($user && $user->hasRole('School Account')) {
                     $enrollments->where('school_id', $user->school_id);
                 }
-                else if ($request->filled('school_name')) {
-                    $schoolName = $request->input('school_name');
-                    $school = School::query()->where('school_name', $schoolName)->first();
+                else if ($request){ if ($request->filled('school_name')) {
+                        $schoolName = $request->input('school_name');
+                        $school = School::query()->where('school_name', $schoolName)->first();
 
-                    $enrollments->where('school_id', $school->id);
+                        $enrollments->where('school_id', $school->id);
+                    }
                 }
 
             $enrollments = $enrollments->get();
