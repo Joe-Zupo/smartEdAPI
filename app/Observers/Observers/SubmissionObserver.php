@@ -7,6 +7,8 @@ use App\Models\EnrollmentDataDraft;
 use App\Models\ResourceDataDraft;
 use App\Models\ResourceData;
 use App\Models\Submission;
+use App\Events\PublicEnrollmentTotalsChanged;
+use App\Events\PublicResourceTotalsChanged;
 
 class SubmissionObserver
 {
@@ -42,6 +44,7 @@ class SubmissionObserver
                     $school->save();
                 }
         }
+
         if($submission->type === 'enrollment' && $submission->status === 'approved'){
             $this->applyEnrollmentDraft($submission);
         }
@@ -63,6 +66,8 @@ class SubmissionObserver
                     'female_count' => $draft->female_count,
                 ]);
         }
+        PublicEnrollmentTotalsChanged::dispatch($submission->academic_year_id);
+
     }
 
     private function applyResourceDraft(Submission $submission)
@@ -78,6 +83,8 @@ class SubmissionObserver
                     'requirement' => $draft->requirement,
                 ]);
         }
+
+        PublicResourceTotalsChanged::dispatch($submission->academic_year_id);
     }
 
     /**

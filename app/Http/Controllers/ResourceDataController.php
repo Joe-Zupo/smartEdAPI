@@ -14,21 +14,20 @@ use App\Models\DivisionLeadership;
 use App\Http\Resources\DivisionLeadershipResource;
 use Illuminate\Http\Request;
 use App\Policies\ResourceDataPolicy;
+use App\Services\ResourceDataService;
+use App\Http\Resources\ResourceService\ResourceDataIndexResource;
+use App\Http\Resources\ResourceService\PublicResourceDataResource;
+use App\Http\Resources\ResourceService\DashboardResourceDataResource;
 
 class ResourceDataController extends Controller
 {
     /**
      * Index Resource Data
      */
-    public function index(IndexResourceRequest $request)
+    public function index(IndexResourceRequest $request, ResourceDataService $service)
     {
         $this->authorize('viewAny', ResourceData::class);
         $request->validated();
-
-        $perPage = $request['per_page'] ?? 5;
-        $sortBy = $request['sortBy'] ?? 'id';
-        $sortOrder = $request['sortOrder'] ?? 'desc';
-        $getAll = $request->boolean('all') ?? false;
 
         $user = $request->user();
         if ($user->hasRole('School Account')){
@@ -52,147 +51,26 @@ class ResourceDataController extends Controller
             return $this->error('Academic Year Not Found', 404);
         } 
 
-        //Base Query
-        $query = ResourceData::query()->where('academic_year_id', $academicYear->id);
-            if($request->has('school_name')){
-                $school = School::query()->where('school_name', $request['school_name'])->first();
-                $query->where('school_id', $school->id);
-            }
-
-        //Totals Query [testing]
-        $totalsQuery = ResourceData::query()->where('academic_year_id', $academicYear->id);
-
-            if ($request->filled('school_name')) {
-                $schoolName = $request->input('school_name');
-                $schoolID = School::query()->where('school_name', $schoolName)->value('id');
-                $totalsQuery->where('school_id', $schoolID);
-            }
-
-        $totals = $totalsQuery->selectRaw('
-            resource_name,
-            SUM(inventory) as total_inventory,
-            SUM(requirement) as total_requirement,
-            SUM(need) as total_need
-        ')
-            ->groupBy('resource_name')
-            ->get()
-            ->map(function ($item) {
-                return [
-                    'resource_name' => $item->resource_name,
-                    'inventory' => (int) $item->total_inventory,
-                    'requirement' => (int) $item->total_requirement,
-                    'need' => (int) $item->total_need,
-                ];
-            });
-
-        if ($sortBy) {
-
-            $allowedSorts = [
-                'id',
-                'resource_name',
-                'updated_at',
-                'created_at',
-            ];
-            if (!in_array($sortBy, $allowedSorts)) {
-                $sortBy = 'updated_at';
-            }
-            $query->orderBy($sortBy, $sortOrder);
-        } else {
-            $query->orderBy('updated_at', 'desc');
-        }
-
-        $resources = $getAll ? $query->get() : $query->paginate($perPage)->appends($request->query());
-
-        if (!$request->input('school_name')) {
-            return $this->success('Resource data retrieved successfully',[
-                'data' => [
-                    'academic_year' => [
-                        'id' => $academicYear->id,
-                        'name' => $academicYear->academic_year,
-                    ],
-                    'items' => ResourceDataResource::collection($resources),
-                    'totals_by_resource' => $totals,
-                ],
-                'pagination' => $getAll ? null : $this->paginateReturn($resources)
-            ]);
-        } else {
-            return $this->success('Resource data retrieved successfully',[
-                'data' => [
-                    'academic_year' => [
-                        'id' => $academicYear->id,
-                        'name' => $academicYear->academic_year,
-                    ],
-                    'items' => ResourceDataResource::collection($resources),
-                    'totals_by_resource' => $totals,
-                ],
-                'pagination' => $getAll ? null : $this->paginateReturn($resources)
-            ]);
-        }
-
+        return $this->success(
+            'Resource data retrieved successfully',
+            new ResourceDataIndexResource($service->getIndex($request->user(), $request))
+        );
     }
 
     /**
      * Public Index Resource Data
      */
-    public function publicIndex(Request $request)
+    public function publicIndex(Request $request, ResourceDataService $service)
     {
-        $academicYear = AcademicYear::query()->where('status', 'default')->first();
-
-        if (!$academicYear) {
+         $academicYear = AcademicYear::query()->where('status', 'default')->first();
+         if (!$academicYear) {
             return response()->json(['message' => 'Academic year not found'], 404);
         }
 
-        $filterPosition = $request->validate(['position' => Rule::in(['Schools Division Superintendent', 'Assistant Schools Division Superintendent'])]);
+         return response()->json([
+        'message' => 'Resource data retrieved successfully',
 
-        if (isset($filterPosition['position'])) {
-            $divisionLeaderships = DivisionLeadership::query()->where('position', $filterPosition['position'])
-                ->orderByRaw('CASE WHEN term_end IS NULL THEN 0 ELSE 1 END')
-                ->orderBy('term_end', 'desc')
-                ->orderBy('term_start', 'desc')
-                ->get();
-        } else {
-            $divisionLeaderships = DivisionLeadership::orderByRaw('CASE WHEN term_end IS NULL THEN 0 ELSE 1 END')
-                ->orderBy('term_end', 'desc')
-                ->orderBy('term_start', 'desc')
-                ->get();
-        }
-        // Base query
-        $query = ResourceData::query()->where('academic_year_id', $academicYear->id);
-
-        // Totals by resource type
-        $totalsQuery = ResourceData::query()->where('academic_year_id', $academicYear->id);
-
-        $totals = $totalsQuery->selectRaw('
-            resource_name,
-            SUM(inventory) as total_inventory,
-            SUM(requirement) as total_requirement,
-            SUM(need) as total_need
-        ')
-            ->groupBy('resource_name')
-            ->get()
-            ->map(function ($item) {
-                return [
-                    'resource_name' => $item->resource_name,
-                    'total_inventory' => (int) $item->total_inventory,
-                    'total_requirement' => (int) $item->total_requirement,
-                    'total_need' => (int) $item->total_need,
-                ];
-            });
-
-        $items = $query->get();
-
-        return response()->json([
-            'message' => 'Resource data retrieved successfully',
-            'data' => [
-                'academic_year' => [
-                    'id' => $academicYear->id,
-                    'name' => $academicYear->academic_year,
-                ],
-                'totals_by_resource' => $totals,
-                // 'items' => ResourceDataResource::collection($items),
-                'office_of_the_superintendent' => DivisionLeadershipResource::collection($divisionLeaderships),
-            ],
-        ]);
+        'data' => new PublicResourceDataResource($service->getPublicResource($request))]);
     }
 
     /**
@@ -249,7 +127,7 @@ class ResourceDataController extends Controller
     /**
      * Dashboard Resource Data
      */
-    public function dashboardResourceData(Request $request)
+    public function dashboardResourceData(Request $request, ResourceDataService $service)
     {
         $this->authorize('dashboard', ResourceData::class);
         $request->validate([
@@ -259,101 +137,9 @@ class ResourceDataController extends Controller
             ]
         ]);
 
-        $user = $request->user();
-        $academicYearId = $request->filled('academic_year')
-            ? AcademicYear::where('academic_year', $request->academic_year)->value('id')
-            : AcademicYear::where('status', 'default')->value('id');
-
-        $academicYears = AcademicYear::where('id', '<=', $academicYearId)
-            ->orderByDesc('id')
-            ->limit(5)
-            ->get();
-
-        $results = [];
-
-        foreach ($academicYears as $year) {
-
-            if($user->hasRole('School Account')){
-            // Enrollment Summary
-            $summary = EnrollmentData::query()
-                ->where('school_id', $user->school_id)
-                ->where('enrollment_data.academic_year_id', $year->id)
-                ->selectRaw('
-                    SUM(enrollment_data.total_count) as total_students
-                ')
-                ->first();
-
-            // Resource Totals
-            $resources = ResourceData::query()
-                ->where('academic_year_id', $year->id)
-                ->where('school_id', $user->school_id)
-                ->whereIn('resource_name', ['Classrooms', 'Teachers'])
-                ->selectRaw('
-                    resource_name,
-                    SUM(inventory) as total_inventory
-                ')
-                ->groupBy('resource_name')
-                ->get();
-
-            $row = [
-                'year' => $year->academic_year,
-                'total_schools' => (int) ($summary->total_schools ?? 0),
-                'total_students' => (int) ($summary->total_students ?? 0),
-            ];
-
-            foreach ($resources as $resource) {
-
-                $key = str_replace(' ', '_', strtolower($resource->resource_name));
-
-                $row[$key] = (int) $resource->total_inventory;
-            }
-
-            $results[] = $row;
-            }else{
-            // Enrollment Summary
-            $summary = EnrollmentData::query()
-                ->join('schools', 'enrollment_data.school_id', '=', 'schools.id')
-                ->where('enrollment_data.academic_year_id', $year->id)
-                ->selectRaw('
-                    COUNT(DISTINCT schools.id) as total_schools,
-                    SUM(enrollment_data.total_count) as total_students
-                ')
-                ->first();
-
-            // Resource Totals
-            $resources = ResourceData::query()
-                ->where('academic_year_id', $year->id)
-                ->whereIn('resource_name', ['Classrooms', 'Teachers'])
-                ->selectRaw('
-                    resource_name,
-                    SUM(inventory) as total_inventory
-                ')
-                ->groupBy('resource_name')
-                ->get();
-
-            $row = [
-                'year' => $year->academic_year,
-                'total_schools' => (int) ($summary->total_schools ?? 0),
-                'total_students' => (int) ($summary->total_students ?? 0),
-            ];
-
-            foreach ($resources as $resource) {
-
-                $key = str_replace(' ', '_', strtolower($resource->resource_name));
-
-                $row[$key] = (int) $resource->total_inventory;
-            }
-
-            $results[] = $row;
-            }
-        }
-
-        return $this->success(
-            'Comparative Resource Data fetched successfully.',
-            [
-                'data' => $results
-            ]
-        );
+       return $this->success(
+        'Comparative Resource Data fetched successfully.',
+        DashboardResourceDataResource::collection($service->getDashboardData($request->user(), $request)));
     }
 
     /**

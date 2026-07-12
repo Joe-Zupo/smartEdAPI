@@ -9,6 +9,8 @@ use App\Models\AcademicYear;
 use App\Http\Requests\Submissions\IndexSubmissionsRequest;
 use App\Http\Requests\Submissions\StoreSubmissionsRequest;
 use App\Http\Requests\Submissions\UpdateSubmissionsRequest;
+use App\Events\EnrollmentTotalsChanged;
+use App\Events\ResourceTotalsChanged;
 use Illuminate\Support\Facades\DB;
 use App\Models\SchoolInformationDraft;
 use Illuminate\Support\Facades\Storage;

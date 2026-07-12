@@ -10,8 +10,10 @@
         "dedoc/scramble": "^0.13.23",
         "iamaeron/scramble-ui": "^1.0",
         "laravel/framework": "^13.8",
+        "laravel/reverb": "^1.10",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^3.0",
+        "pusher/pusher-php-server": "^7.2",
         "spatie/laravel-activitylog": "^4.12",
         "spatie/laravel-permission": "^7.4",
         "spatie/laravel-query-builder": "^7.3"
