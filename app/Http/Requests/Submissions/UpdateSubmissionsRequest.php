@@ -72,9 +72,6 @@ class UpdateSubmissionsRequest extends FormRequest
                 'integer',
             ],
 
-            'details.*.position' => 'required_with:school_head,school_head_id|string|
-                                            in:Principal I,Principal II,Principal III,Principal IV',
-
             'details.*.school_type' => [
                 'exclude_unless:type,information',
                 'sometimes',
@@ -95,13 +92,6 @@ class UpdateSubmissionsRequest extends FormRequest
             //     'string',
             //     'max:500',
             // ],
-
-            'details.*.district' => [
-                'exclude_unless:type,information',
-                'sometimes',
-                'string',
-                'max:255',
-            ],
 
             'details.*.latitude' => [
                 'exclude_unless:type,information',
@@ -126,6 +116,40 @@ class UpdateSubmissionsRequest extends FormRequest
                 'max:2048',
             ],
 
+            'details.*.school_head' => [
+                'exclude_unless:type,information',
+                'nullable',
+                'string',
+                'unique:users,name',
+                'max:255'
+            ],
+
+            'details.*.position' => [
+                'exclude_unless:type,information',
+                'nullable',
+                'string',
+                'in:Principal I,Principal II,Principal III,Principal IV'
+            ],
+
+            'details.*.email' => [
+                'exclude_unless:type,information',
+                'string', 'email', 'max:255', 'unique:users,email'
+            ],
+
+            'details.*.phone_number' => [
+                'exclude_unless:type,information',
+                'string', 'string', 'max:15'
+            ],
+
+            
         ];
     }
+
+    public function messages(): array
+        {
+                return [
+                'details.*.position.in' =>
+                    'Invalid position selected. Valid positions are: Principal I,Principal II,Principal III,Principal IV.',
+            ];
+        }
 }

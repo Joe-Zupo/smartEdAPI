@@ -18,6 +18,7 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SchoolTypeController;
 use App\Http\Controllers\SubmissionsController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\BroadcastMetaController;
 use App\Http\Resources\UserResource;
 use App\Models\EnrollmentData;
 
@@ -45,6 +46,7 @@ Route::middleware('auth:sanctum')->group(function () {
     });
     Route::get('/user-submissions', [UserController::class, 'userSubmissions']);
     Route::post('logout', [AuthController::class, 'logout']);
+    Route::get('broadcast/meta', [BroadcastMetaController::class, 'index']);
 
     /*
     |--------------------------------------------------------------------------

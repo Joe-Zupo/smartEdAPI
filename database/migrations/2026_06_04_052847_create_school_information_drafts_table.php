@@ -26,6 +26,10 @@ return new class extends Migration
             $table->decimal('latitude', 10, 7)->nullable();
             $table->decimal('longitude', 10, 7)->nullable();
             $table->string('image')->nullable();
+            $table->string('school_head')->nullable();
+            $table->string('position')->nullable();
+            $table->string('phone_number')->nullable();
+            $table->string('email')->nullable();
             
             $table->timestamps();
         });
