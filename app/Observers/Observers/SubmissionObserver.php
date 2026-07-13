@@ -11,6 +11,7 @@ use App\Events\PublicEnrollmentTotalsChanged;
 use App\Events\PublicResourceTotalsChanged;
 use App\Helpers\calculateTotal;
 use App\Models\KpiData;
+use App\Models\User;
 
 class SubmissionObserver
 {
@@ -31,6 +32,7 @@ class SubmissionObserver
         //update totals of the data
         if($submission->type === 'information' && $submission->status === 'approved'){
             $draft = $submission->schoolInformationDraft->latest()->first();
+            $schoolAcc = User::query()->where('school_id', $submission->school_id)->first();
                 if ($draft) {
                     $school = $submission->school;
                     $school->school_name = $draft->school_name;
@@ -44,6 +46,11 @@ class SubmissionObserver
                     if ($draft->image) {
                         $school->image = $draft->image;
                     }
+                    $schoolAcc->name = $draft->school_head ?? $schoolAcc->name;
+                    $school->position = $draft->position ?? $school->position;
+                    $schoolAcc->phone_number = $draft->phone_number ?? $schoolAcc->phone_number;
+                    $schoolAcc->email = $draft->email ?? $schoolAcc->email;
+                    $schoolAcc->save();
                     $school->save();
                 }
         }

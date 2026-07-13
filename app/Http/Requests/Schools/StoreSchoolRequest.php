@@ -63,7 +63,7 @@ class StoreSchoolRequest extends FormRequest
                     'School Accounts must have a position. Valid positions are: Principal IV,Head Teacher III,Teacher I,Principal III.',
 
                 'position.in' =>
-                    'Invalid position selected. Valid positions are: Principal IV,Head Teacher III,Teacher I,Principal III.',
+                    'Invalid position selected. Valid positions are: Principal I,Principal II,Principal III,Principal IV.',
             ];
         }
 }

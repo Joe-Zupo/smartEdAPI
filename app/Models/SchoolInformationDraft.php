@@ -18,6 +18,10 @@ class SchoolInformationDraft extends Model
         'latitude',
         'longitude',
         'image',
+        'position',
+        'school_head',
+        'email',
+        'phone_number'
     ];
 
     protected $casts = [

@@ -99,10 +99,14 @@ class SubmissionResource extends JsonResource
                             'latitude' => $draft->latitude,
                             'longitude' => $draft->longitude,
                             'image' => $draft->image ? asset('storage/' . $draft->image) : null,
-                            'school_head' => $this->school->schoolHead->name,
-                            'principal_level' => $this->school->position,
-                            'principal_contact' => $this->school->schoolHead->phone_number,
-                            'principal_email' => $this->school->schoolHead->email,
+                            // 'school_head' => $this->school->schoolHead->name,
+                            // 'principal_level' => $this->school->position,
+                            // 'principal_contact' => $this->school->schoolHead->phone_number,
+                            // 'principal_email' => $this->school->schoolHead->email,
+                            'school_head' => $draft->school_head,
+                            'position' => $draft->position,
+                            'email' => $draft->email,
+                            'phone_number' => $draft->phone_number
                         ];    
                     }
                 }

@@ -9,7 +9,6 @@ use App\Models\AcademicYear;
 use App\Http\Requests\Submissions\IndexSubmissionsRequest;
 use App\Http\Requests\Submissions\StoreSubmissionsRequest;
 use App\Http\Requests\Submissions\UpdateSubmissionsRequest;
-use App\Events\EnrollmentTotalsChanged;
 use App\Events\ResourceTotalsChanged;
 use Illuminate\Support\Facades\DB;
 use App\Models\SchoolInformationDraft;
@@ -264,6 +263,10 @@ class SubmissionsController extends Controller
                     'district' => $info['district'] ?? null,
                     'latitude' => $info['latitude'] ?? null,
                     'longitude' => $info['longitude'] ?? null,
+                    'school_head' => $info['school_head'] ?? null,
+                    'position' => $info['position'] ?? null,
+                    'email' => $info['email'] ?? null,
+                    'phone_number' => $info['phone_number'] ?? null
 
                 ]);
 
@@ -570,6 +573,10 @@ class SubmissionsController extends Controller
                         'district' => $info['district'] ?? $draft->district,
                         'latitude' => $info['latitude'] ?? $draft->latitude,
                         'longitude' => $info['longitude'] ?? $draft->longitude,
+                        'school_head' => $info['school_head'] ?? $draft->school_head,
+                        'position' => $info['position'] ?? $draft->position,
+                        'email' => $info['email'] ?? $draft->email,
+                        'phone_number' => $info['phone_number'] ?? $draft->phone_number,
                     ]);
                     $path = $draft->image;
                     if ($request->hasFile('details.0.image')) {
