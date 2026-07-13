@@ -9,9 +9,12 @@ use App\Models\ResourceData;
 use App\Models\Submission;
 use App\Events\PublicEnrollmentTotalsChanged;
 use App\Events\PublicResourceTotalsChanged;
+use App\Helpers\calculateTotal;
+use App\Models\KpiData;
 
 class SubmissionObserver
 {
+    use calculateTotal;
     /**
      * Handle the Submission "created" event.
      */
@@ -66,6 +69,15 @@ class SubmissionObserver
                     'female_count' => $draft->female_count,
                 ]);
         }
+
+        $models = KpiData::query()->where('academic_year_id', $submission->academic_year_id)->get();
+        foreach ($models as $model) {
+                $total = $this->calculateTotal($model['male'], $model['female'], $model->academic_year_id, true);
+
+                $model->update([
+                    'total'  => $total
+                ]);
+            }
         PublicEnrollmentTotalsChanged::dispatch($submission->academic_year_id);
 
     }
