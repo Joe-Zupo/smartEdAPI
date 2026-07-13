@@ -150,6 +150,41 @@ class StoreSubmissionsRequest extends FormRequest
                 'max:2048',
             ],
 
+            'details.*.school_head' => [
+                'exclude_unless:type,information',
+                'required_if:type,information',
+                'unique:users,name',
+                'nullable',
+                'string',
+                'max:255'
+            ],
+
+            'details.*.position' => [
+                'exclude_unless:type,information',
+                'required_if:type,information',
+                'nullable',
+                'string',
+                'in:Principal I,Principal II,Principal III,Principal IV'
+            ],
+
+            'details.*.email' => [
+                'exclude_unless:type,information',
+                'required_if:type,information',
+                'string', 'email', 'max:255', 'unique:users,email'
+            ],
+
+            'details.*.phone_number' => [
+                'exclude_unless:type,information',
+                'required_if:type,information',
+                'string', 'string', 'max:15'
+            ],
         ];
     }
+        public function messages(): array
+        {
+                return [
+                'details.*.position.in' =>
+                    'Invalid position selected. Valid positions are: Principal I,Principal II,Principal III,Principal IV.',
+            ];
+        }
 }
