@@ -240,33 +240,50 @@ class SubmissionsController extends Controller
 
 
             } elseif ($validated['type'] === 'information') {
-
+                $school = School::query()->where('id', $user->school_id)->first();
                 $info = $validated['details'][0];
 
                 $school_type = SchoolType::query()->where('name', $info['school_type'])->first();
                 $info['school_type_id'] = $school_type->id ?? null;
+                
+                $addressArray = Str::of($school->address)->explode(', ');
+                if(isset($info['street'])){
+                    $street = $info['street'];
+                }else{
+                    $street = $addressArray[0];
+                }
+                if(isset($info['barangay'])){
+                    $barangay = $info['barangay'];
+                }else{
+                    $barangay =  $addressArray[1];
+                }
+                if(isset($info['city'])){
+                    $city = $info['city'];
+                }else{
+                    $city = $addressArray[2];
+                }
+                if(isset($info['province'])){
+                    $province = $info['province'];
+                }else{
+                    $province = $addressArray[3];
+                }
+                $info['address'] = "{$street}, {$barangay}, {$city}, {$province}";
 
-                $info['address'] = implode(', ', [
-                    $info['street'],
-                    $info['barangay'],
-                    $info['city'],
-                    $info['province'],
-                ]);
                 $draft = SchoolInformationDraft::create([
                     'submission_id' => $submission->id,
                     'school_id' => $user->school_id,
-                    'school_name' => $info['school_name'] ?? null,
-                    'school_code' => $info['school_code'] ?? null,
-                    'year_established' => $info['year_established'] ?? null,
-                    'school_type_id' => $info['school_type_id'] ?? null,
+                    'school_name' => $info['school_name'] ?? $school->school_name,
+                    'school_code' => $info['school_code'] ?? $school->school_code,
+                    'year_established' => $info['year_established'] ?? $school->year_established,
+                    'school_type_id' => $info['school_type_id'] ?? $school->school_type_id,
                     'address' => $info['address'] ?? null,
-                    'district' => $info['district'] ?? null,
-                    'latitude' => $info['latitude'] ?? null,
-                    'longitude' => $info['longitude'] ?? null,
-                    'school_head' => $info['school_head'] ?? null,
-                    'position' => $info['position'] ?? null,
-                    'email' => $info['email'] ?? null,
-                    'phone_number' => $info['phone_number'] ?? null
+                    'district' => $info['district'] ?? $school->district,
+                    'latitude' => $info['latitude'] ?? $school->latitude,
+                    'longitude' => $info['longitude'] ?? $school->longitude,
+                    'school_head' => $info['school_head'] ?? $user->name,
+                    'position' => $info['position'] ?? $school->position,
+                    'email' => $info['email'] ?? $user->email,
+                    'phone_number' => $info['phone_number'] ?? $user->phone_number
 
                 ]);
 
