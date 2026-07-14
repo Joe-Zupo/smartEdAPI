@@ -2,6 +2,7 @@
 
 namespace App\Observers\Observers;
 
+use App\Events\Private\EnrollmentData\EnrollmentTotalsChanged;
 use App\Models\EnrollmentData;
 use App\Models\EnrollmentDataDraft;
 use App\Models\ResourceDataDraft;
@@ -12,6 +13,7 @@ use App\Events\PublicResourceTotalsChanged;
 use App\Helpers\calculateTotal;
 use App\Models\KpiData;
 use App\Models\User;
+use App\Models\School;
 
 class SubmissionObserver
 {
@@ -32,6 +34,16 @@ class SubmissionObserver
         //update totals of the data
         if($submission->type === 'information' && $submission->status === 'approved'){
             $draft = $submission->schoolInformationDraft->latest()->first();
+            // $fields =   ['school_name',
+            //             'school_code',
+            //             'school_head',
+            //             'email',];
+            // foreach($fields as $field){
+            //     $sameRecord = School::query()->where($field, $draft->$field)->exists();
+            //     if($sameRecord){
+            //         return $this->error('Data from '. $field .' is the same as '. $sameRecord->school_name . ' please return submission', 409);
+            //     }
+            // }
             $schoolAcc = User::query()->where('school_id', $submission->school_id)->first();
                 if ($draft) {
                     $school = $submission->school;
@@ -86,7 +98,8 @@ class SubmissionObserver
                 ]);
             }
         PublicEnrollmentTotalsChanged::dispatch($submission->academic_year_id);
-
+        //EnrollmentTotalsChanged::dispatch($submission->school_id,$submission->academic_year_id,'Admin');
+        EnrollmentTotalsChanged::dispatch($submission->school_id,$submission->academic_year_id,'School');
     }
 
     private function applyResourceDraft(Submission $submission)
