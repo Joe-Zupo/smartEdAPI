@@ -172,7 +172,6 @@ class StoreSubmissionsRequest extends FormRequest
 
             'details.*.email' => [
                 'exclude_unless:type,information',
-                'required_if:type,information',
                 'string',
                 'email',
                 'max:255',
