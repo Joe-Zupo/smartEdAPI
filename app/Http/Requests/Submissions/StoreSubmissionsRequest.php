@@ -56,7 +56,7 @@ class StoreSubmissionsRequest extends FormRequest
             //
             'details.school_name' => [
                 'exclude_unless:type,information',
-                'required_if:type,information',
+                'nullable',
                 'unique:school_information_drafts,school_name',
                 'string',
                 'max:255',
@@ -64,7 +64,7 @@ class StoreSubmissionsRequest extends FormRequest
 
             'details.school_code' => [
                 'exclude_unless:type,information',
-                'required_if:type,information',
+                'nullable',
                 'string',
                 'max:50',
                 Rule::unique('schools', 'school_code')->ignore(auth()->user()->school_id),
@@ -72,14 +72,14 @@ class StoreSubmissionsRequest extends FormRequest
 
             'details.year_established' => [
                 'exclude_unless:type,information',
-                'required_if:type,information',
+                'nullable',
                 'digits:4',
                 'integer',
             ],
 
             'details.school_type' => [
                 'exclude_unless:type,information',
-                'required_if:type,information',
+                'nullable',
                 'exists:school_types,name',
                 Rule::in(SchoolType::pluck('name')->toArray())
             ],
@@ -130,14 +130,14 @@ class StoreSubmissionsRequest extends FormRequest
 
             'details.latitude' => [
                 'exclude_unless:type,information',
-                'required_if:type,information',
+                'nullable',
                 'numeric',
                 'between:-90,90',
             ],
 
             'details.longitude' => [
                 'exclude_unless:type,information',
-                'required_if:type,information',
+                'nullable',
                 'numeric',
                 'between:-180,180',
             ],
@@ -152,16 +152,14 @@ class StoreSubmissionsRequest extends FormRequest
 
             'details.school_head' => [
                 'exclude_unless:type,information',
-                'required_if:type,information',
-                'unique:users,name',
                 'nullable',
+                'unique:users,name',
                 'string',
                 'max:255'
             ],
 
             'details.position' => [
                 'exclude_unless:type,information',
-                'required_if:type,information',
                 'nullable',
                 'string',
                 'in:Principal I,Principal II,Principal III,Principal IV'
