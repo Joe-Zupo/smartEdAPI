@@ -34,16 +34,7 @@ class SubmissionObserver
         //update totals of the data
         if($submission->type === 'information' && $submission->status === 'approved'){
             $draft = $submission->schoolInformationDraft->latest()->first();
-            // $fields =   ['school_name',
-            //             'school_code',
-            //             'school_head',
-            //             'email',];
-            // foreach($fields as $field){
-            //     $sameRecord = School::query()->where($field, $draft->$field)->exists();
-            //     if($sameRecord){
-            //         return $this->error('Data from '. $field .' is the same as '. $sameRecord->school_name . ' please return submission', 409);
-            //     }
-            // }
+    
             $schoolAcc = User::query()->where('school_id', $submission->school_id)->first();
                 if ($draft) {
                     $school = $submission->school;

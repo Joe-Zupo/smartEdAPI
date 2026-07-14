@@ -4,10 +4,12 @@ namespace App\Http\Requests\Submissions;
 
 use App\Helpers\updateValidator;
 use App\Models\GradeLevel;
+use App\Models\School;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use App\Models\SchoolType;
+use App\Models\User;
 
 class StoreSubmissionsRequest extends FormRequest
 {
@@ -59,6 +61,7 @@ class StoreSubmissionsRequest extends FormRequest
             'details.*.school_name' => [
                 'exclude_unless:type,information',
                 'nullable',
+                'unique:schools,school_name',
                 'unique:school_information_drafts,school_name',
                 'string',
                 'max:255',
@@ -187,20 +190,27 @@ class StoreSubmissionsRequest extends FormRequest
     }
     protected function prepareForValidation(): void
     {
-        $submission = $this->route('submission');
 
-        $data = $this->validateUpdate(
-            $this->all(),
-            $submission,
-            [
-                'details.*.school_name',
-                'details.*.school_code',
-                'details.*.school_head',
-                'details.*.email',
-            ]
-        );
+        if ($this['type'] === 'information') {
+            $user = $this->user();
+            $school = School::query()->where('id', $user->school_id)->first();
 
-        $this->replace($data);
+            $data = $this->all();
+            if ($data['details'][0]['school_name'] === $school->school_name) {
+                unset($data['details'][0]['school_name']);
+            }
+            if ($data['details'][0]['school_code'] === $user->name) {
+                unset($data['details'][0]['school_code']);
+            }
+            if ($data['details'][0]['email'] === $user->email) {
+                unset($data['details'][0]['email']);
+            }
+            if ($data['details'][0]['school_head'] === $user->name) {
+                unset($data['details'][0]['school_head']);
+            }
+
+            $this->replace($data);
+        }
     }
 
     public function messages(): array

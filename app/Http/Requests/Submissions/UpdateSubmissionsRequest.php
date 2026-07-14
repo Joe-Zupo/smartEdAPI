@@ -2,12 +2,15 @@
 
 namespace App\Http\Requests\Submissions;
 
+use App\Helpers\updateValidator;
+use App\Models\School;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class UpdateSubmissionsRequest extends FormRequest
 {
+    use updateValidator;
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -149,6 +152,29 @@ class UpdateSubmissionsRequest extends FormRequest
 
         ];
     }
+    protected function prepareForValidation(): void
+            {
+                if($this['type'] === 'information'){
+                    $user = $this->user();
+                    $school = School::query()->where('id', $user->school_id)->first();
+
+                    $data = $this->all();
+                    if($data['details'][0]['school_name'] === $school->school_name){
+                        unset($data['details'][0]['school_name']);
+                    }
+                    if($data['details'][0]['school_code'] === $user->name){
+                        unset($data['details'][0]['school_code']);
+                    }
+                    if($data['details'][0]['email'] === $user->email){
+                        unset($data['details'][0]['email']);
+                    }
+                    if($data['details'][0]['school_head'] === $user->name){
+                        unset($data['details'][0]['school_head']);
+                    }
+
+                    $this->replace($data);
+                }
+            }
 
     public function messages(): array
     {
