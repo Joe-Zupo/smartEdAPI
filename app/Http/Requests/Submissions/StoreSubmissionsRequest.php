@@ -56,7 +56,7 @@ class StoreSubmissionsRequest extends FormRequest
             'details.*.requirement' => ['exclude_unless:type,resource', 'required', 'integer', 'min:0'],
 
             //
-            'details.school_name' => [
+            'details.*.school_name' => [
                 'exclude_unless:type,information',
                 'nullable',
                 'unique:school_information_drafts,school_name',
@@ -64,7 +64,7 @@ class StoreSubmissionsRequest extends FormRequest
                 'max:255',
             ],
 
-            'details.school_code' => [
+            'details.*.school_code' => [
                 'exclude_unless:type,information',
                 'nullable',
                 'string',
@@ -72,28 +72,28 @@ class StoreSubmissionsRequest extends FormRequest
                 Rule::unique('schools', 'school_code')->ignore(auth()->user()->school_id),
             ],
 
-            'details.year_established' => [
+            'details.*.year_established' => [
                 'exclude_unless:type,information',
                 'nullable',
                 'digits:4',
                 'integer',
             ],
 
-            'details.school_type' => [
+            'details.*.school_type' => [
                 'exclude_unless:type,information',
                 'nullable',
                 'exists:school_types,name',
                 Rule::in(SchoolType::pluck('name')->toArray())
             ],
 
-            'details.street' => [
+            'details.*.street' => [
                 'exclude_unless:type,information',
                 'required_if:type,information',
                 'string',
                 'max:255',
             ],
 
-            'details.barangay' => [
+            'details.*.barangay' => [
                 'exclude_unless:type,information',
                 'required_if:type,information',
                 'string',
@@ -101,28 +101,28 @@ class StoreSubmissionsRequest extends FormRequest
                 'exists:barangays,name',
             ],
 
-            'details.city' => [
+            'details.*.city' => [
                 'exclude_unless:type,information',
                 'required_if:type,information',
                 'string',
                 'max:255',
             ],
 
-            'details.province' => [
+            'details.*.province' => [
                 'exclude_unless:type,information',
                 'required_if:type,information',
                 'string',
                 'max:255',
             ],
 
-            'details.region' => [
+            'details.*.region' => [
                 'exclude_unless:type,information',
                 'required_if:type,information',
                 'string',
                 'max:255',
             ],
 
-            'details.district' => [
+            'details.*.district' => [
                 'exclude_unless:type,information',
                 'required_if:type,information',
                 'string',
@@ -130,21 +130,21 @@ class StoreSubmissionsRequest extends FormRequest
                 'in:North,South,East,West',
             ],
 
-            'details.latitude' => [
+            'details.*.latitude' => [
                 'exclude_unless:type,information',
                 'nullable',
                 'numeric',
                 'between:-90,90',
             ],
 
-            'details.longitude' => [
+            'details.*.longitude' => [
                 'exclude_unless:type,information',
                 'nullable',
                 'numeric',
                 'between:-180,180',
             ],
 
-            'details.image' => [
+            'details.*.image' => [
                 'exclude_unless:type,information',
                 'nullable',
                 'image',
@@ -152,7 +152,7 @@ class StoreSubmissionsRequest extends FormRequest
                 'max:2048',
             ],
 
-            'details.school_head' => [
+            'details.*.school_head' => [
                 'exclude_unless:type,information',
                 'nullable',
                 'unique:users,name',
@@ -160,14 +160,14 @@ class StoreSubmissionsRequest extends FormRequest
                 'max:255'
             ],
 
-            'details.position' => [
+            'details.*.position' => [
                 'exclude_unless:type,information',
                 'nullable',
                 'string',
                 'in:Principal I,Principal II,Principal III,Principal IV'
             ],
 
-            'details.email' => [
+            'details.*.email' => [
                 'exclude_unless:type,information',
                 'required_if:type,information',
                 'string',
@@ -176,7 +176,7 @@ class StoreSubmissionsRequest extends FormRequest
                 'unique:users,email'
             ],
 
-            'details.phone_number' => [
+            'details.*.phone_number' => [
                 'exclude_unless:type,information',
                 'nullable',
                 'string',

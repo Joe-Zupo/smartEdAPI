@@ -46,7 +46,7 @@ class UpdateSubmissionsRequest extends FormRequest
             ],
             'details.*.inventory' => ['exclude_unless:type,resource', 'required', 'integer', 'min:0'],
             'details.*.requirement' => ['exclude_unless:type,resource', 'required', 'integer', 'min:0'],
-            'details.school_name' => [
+            'details.*.school_name' => [
                 'exclude_unless:type,information',
                 'unique:school_information_drafts,school_name',
                 'sometimes',
@@ -54,7 +54,7 @@ class UpdateSubmissionsRequest extends FormRequest
                 'max:255',
             ],
 
-            'details.school_code' => [
+            'details.*.school_code' => [
                 'exclude_unless:type,information',
                 'sometimes',
                 'string',
@@ -65,26 +65,26 @@ class UpdateSubmissionsRequest extends FormRequest
             ],
 
 
-            'details.year_established' => [
+            'details.*.year_established' => [
                 'exclude_unless:type,information',
                 'sometimes',
                 'digits:4',
                 'integer',
             ],
 
-            'details.school_type' => [
+            'details.*.school_type' => [
                 'exclude_unless:type,information',
                 'sometimes',
                 'exists:school_types,name',
             ],
 
 
-            'details.street' => 'exclude_unless:type,information|string|max:255',
-            'details.barangay' => 'exclude_unless:type,information|string|max:255|exists:barangays,name', // In the context that this is for mabalacat, currently mabalacat brngys are only avail
-            'details.city' => 'exclude_unless:type,information|string|max:255',
-            'details.province' => 'exclude_unless:type,information|string|max:255',
-            'details.region' => 'exclude_unless:type,information|string|max:255',
-            'details.district' => 'exclude_unless:type,information|string|max:255|in:North,South,East,West', //Await District Requirements (rn can be Compass directions)
+            'details.*.street' => 'exclude_unless:type,information|string|max:255',
+            'details.*.barangay' => 'exclude_unless:type,information|string|max:255|exists:barangays,name', // In the context that this is for mabalacat, currently mabalacat brngys are only avail
+            'details.*.city' => 'exclude_unless:type,information|string|max:255',
+            'details.*.province' => 'exclude_unless:type,information|string|max:255',
+            'details.*.region' => 'exclude_unless:type,information|string|max:255',
+            'details.*.district' => 'exclude_unless:type,information|string|max:255|in:North,South,East,West', //Await District Requirements (rn can be Compass directions)
 
             // 'details.*.address' => [
             //     'exclude_unless:type,information',
@@ -93,21 +93,21 @@ class UpdateSubmissionsRequest extends FormRequest
             //     'max:500',
             // ],
 
-            'details.latitude' => [
+            'details.*.latitude' => [
                 'exclude_unless:type,information',
                 'sometimes',
                 'numeric',
                 'between:-90,90',
             ],
 
-            'details.longitude' => [
+            'details.*.longitude' => [
                 'exclude_unless:type,information',
                 'sometimes',
                 'numeric',
                 'between:-180,180',
             ],
 
-            'details.image' => [
+            'details.*.image' => [
                 'exclude_unless:type,information',
                 'sometimes',
                 'nullable',
@@ -116,7 +116,7 @@ class UpdateSubmissionsRequest extends FormRequest
                 'max:2048',
             ],
 
-            'details.school_head' => [
+            'details.*.school_head' => [
                 'exclude_unless:type,information',
                 'nullable',
                 'string',
@@ -124,14 +124,14 @@ class UpdateSubmissionsRequest extends FormRequest
                 'max:255'
             ],
 
-            'details.position' => [
+            'details.*.position' => [
                 'exclude_unless:type,information',
                 'nullable',
                 'string',
                 'in:Principal I,Principal II,Principal III,Principal IV'
             ],
 
-            'details.email' => [
+            'details.*.email' => [
                 'exclude_unless:type,information',
                 'string',
                 'email',
@@ -139,7 +139,7 @@ class UpdateSubmissionsRequest extends FormRequest
                 'unique:users,email'
             ],
 
-            'details.phone_number' => [
+            'details.*.phone_number' => [
                 'exclude_unless:type,information',
                 'string',
                 'string',
