@@ -381,6 +381,15 @@ class SubmissionsController extends Controller
             DB::transaction(function () use ($submission, $request) {
 
             if($submission->status === 'pending'){
+                if($submission->type === 'information'){
+                    $draft = $submission->schoolInformationDraft->latest()->first();
+
+                    $fields =   ['school_name',
+                        'school_code',
+                        'school_head',
+                        'email',];
+                }
+
                 if($submission->editable === true){
                         $submission->update([
                         'status' => 'approved',
