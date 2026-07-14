@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Submissions;
 
+use App\Helpers\updateValidator;
 use App\Models\GradeLevel;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -10,6 +11,7 @@ use App\Models\SchoolType;
 
 class StoreSubmissionsRequest extends FormRequest
 {
+    use updateValidator;
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -174,10 +176,28 @@ class StoreSubmissionsRequest extends FormRequest
             'details.*.phone_number' => [
                 'exclude_unless:type,information',
                 'nullable',
-                'string', 'string', 'max:15'
+                'string', 'string', 'max:20'
             ],
         ];
     }
+        protected function prepareForValidation(): void
+            {
+                $submission = $this->route('submission');
+
+                $data = $this->validateUpdate(
+                    $this->all(),
+                    $submission,
+                    [
+                        'details.*.school_name',
+                        'details.*.school_code',
+                        'details.*.school_head',
+                        'details.*.email',
+                    ]
+                );
+
+                $this->replace($data);
+            }
+
         public function messages(): array
         {
                 return [

@@ -24,11 +24,11 @@ class IndexEnrollmentResource extends JsonResource
 
                 'enrollments_totals' => $this['data']['enrollments_totals'],
 
-                'five_year_trend' => $this['data']['five_year_trend'],
+                'five_year_trend' => $this['data']['five_year_trend'] ?? null,
 
-                'enrollment_by_level' => $this['data']['enrollment_by_level'],
+                'enrollment_by_level' => $this['data']['enrollment_by_level'] ?? null,
 
-                'enrollment_by_grade' => $this['data']['enrollment_by_grade'],
+                'enrollment_by_grade' => $this['data']['enrollment_by_grade'] ?? null,
             ],
 
             'pagination' => $this['pagination'],
