@@ -183,7 +183,10 @@ class UserController extends Controller
                 'submission_data' => $submissionCollection->toArray()
             ]);
         } else {
-            return null;
+            return $this->success('Returned user successfully!', [
+                'user' => new UserResource($user),
+                'submission_data' => []
+            ]);
         }
     }
 
