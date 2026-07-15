@@ -166,6 +166,17 @@ class UpdateSubmissionsRequest extends FormRequest
                     if($data['details'][0]['school_head'] === $user->name){
                         unset($data['details'][0]['school_head']);
                     }
+                    if($data['details'][0]['barangay']){
+                        $capitalized = $data['details'][0]['barangay'];
+                        $capitalized = collect(explode('-', $capitalized))->map(function ($word){
+                            return ucfirst($word);
+                        })->implode('-');
+                        
+                        $capitalized = collect(explode(' ', $capitalized))->map(function ($word){
+                            return ucfirst($word);
+                        })->implode(' ');
+                        $data['details'][0]['barangay'] = ucwords($capitalized);
+                    }
 
                     $this->replace($data);
                 }

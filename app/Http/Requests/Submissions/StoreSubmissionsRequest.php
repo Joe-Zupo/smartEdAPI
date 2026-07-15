@@ -3,12 +3,14 @@
 namespace App\Http\Requests\Submissions;
 
 use App\Helpers\updateValidator;
+use App\Models\Barangay;
 use App\Models\GradeLevel;
 use App\Models\School;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use App\Models\SchoolType;
+use Illuminate\Support\Str;
 use App\Models\User;
 
 class StoreSubmissionsRequest extends FormRequest
@@ -29,6 +31,7 @@ class StoreSubmissionsRequest extends FormRequest
      */
     public function rules(): array
     {
+        //$barangays = Barangay::all()->get('name')->toArray();
         return [
             'type' => ['required', 'in:enrollment,resource,information'],
 
@@ -102,6 +105,7 @@ class StoreSubmissionsRequest extends FormRequest
                     'string',
                     'max:255',
                     'exists:barangays,name',
+                    //Rule::in($barangays)
                 ],
 
                 'details.*.city' => [
@@ -204,7 +208,20 @@ class StoreSubmissionsRequest extends FormRequest
                         unset($data['details'][0]['school_head']);
                     }
 
+                    if($data['details'][0]['barangay']){
+                        $capitalized = $data['details'][0]['barangay'];
+                        $capitalized = collect(explode('-', $capitalized))->map(function ($word){
+                            return ucfirst($word);
+                        })->implode('-');
+                        
+                        $capitalized = collect(explode(' ', $capitalized))->map(function ($word){
+                            return ucfirst($word);
+                        })->implode(' ');
+                        $data['details'][0]['barangay'] = ucwords($capitalized);
+                    }
+                    
                     $this->replace($data);
+                    
                 }
             }
 
