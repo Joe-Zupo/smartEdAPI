@@ -136,14 +136,14 @@ class StoreSubmissionsRequest extends FormRequest
             'details.*.latitude' => [
                 'exclude_unless:type,information',
                 'nullable',
-                'numeric',
+                'string',
                 'between:-90,90',
             ],
 
             'details.*.longitude' => [
                 'exclude_unless:type,information',
                 'nullable',
-                'numeric',
+                'string',
                 'between:-180,180',
             ],
 
