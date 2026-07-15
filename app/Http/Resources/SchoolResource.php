@@ -52,11 +52,11 @@ class SchoolResource extends JsonResource
             'region' => $this->region,
             'district' => $this->district,
             'latitude' => $this->latitude !== null
-                ? ($this->latitude >= 0 ? 'N ' : 'S ') . number_format(abs($this->latitude), 6)
+                ? number_format(abs($this->latitude), 6)
                 : null,
 
             'longitude' => $this->longitude !== null
-                ? ($this->longitude >= 0 ? 'E ' : 'W ') . number_format(abs($this->longitude), 6)
+                ? number_format(abs($this->longitude), 6)
                 : null,
 
             'image' => $this->image
