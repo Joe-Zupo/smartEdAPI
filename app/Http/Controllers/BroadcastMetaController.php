@@ -20,7 +20,7 @@ class BroadcastMetaController extends Controller
                         'pusher_channel' => 'public.enrollment',
                         'access' => 'public',
                         'authorization' => 'No auth required',
-                        'events' => ['PublicEnrollmentTotalsChanged,PublicEnrollmentGradesChanged,PublicEnrollmentLevelsChanged,PublicEnrollmentTrendsChanged'],
+                        'events' => ['PublicEnrollmentTotalsChanged','PublicEnrollmentGradesChanged','PublicEnrollmentLevelsChanged','PublicEnrollmentTrendsChanged'],
                         'description' => 'Broadcasts approved enrollment totals by academic year; Data is only usable for public routes for enrollment.',
                     ],
                     [
@@ -30,6 +30,14 @@ class BroadcastMetaController extends Controller
                         'authorization' => 'No auth required',
                         'events' => ['PublicResourceTotalsChanged'],
                         'description' => 'Broadcasts approved resource data totals by academic year; Data is only usable for public routes for resource data.',
+                    ],
+                    [
+                        'name' => 'school.enrollment.{schoolId}',
+                        'pusher_channel' => 'school.enrollment.{schoolId}',
+                        'access' => 'private',
+                        'authorization' => 'School Account',
+                        'events' => ['PrivateEnrollmentTotalsChanged','PrivateEnrollmentGradesChanged','PrivateEnrollmentLevelsChanged','PrivateEnrollmentTrendsChanged'],
+                        'description' => 'Broadcasts approved enrollment data totals and trends by grade and level; Data is only relevant for school accounts.',
                     ],
                 ],
             ],
