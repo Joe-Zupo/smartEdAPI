@@ -34,7 +34,6 @@ class SubmissionObserver
         //update totals of the data
         if($submission->type === 'information' && $submission->status === 'approved'){
             $draft = $submission->schoolInformationDraft->latest()->first();
-    
             $schoolAcc = User::query()->where('school_id', $submission->school_id)->first();
                 if ($draft) {
                     $school = $submission->school;
