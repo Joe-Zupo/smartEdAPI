@@ -24,7 +24,7 @@ class SchoolResource extends JsonResource
         return [
             'id' => $this->id,
             'school_name' => $this->school_name,
-            'school_head' => $this->whenLoaded('schoolHead', function (){
+            'school_head' => $this->whenLoaded('schoolHead', function () {
                 return [
                     'id' => $this->schoolHead?->id,
                     'name' => $this->schoolHead?->name,
@@ -41,10 +41,10 @@ class SchoolResource extends JsonResource
                     'name' => $this->schoolType?->name,
                 ];
             }),
-            'address' => 
+            'address' =>
                 [
                     'street' => $street,
-                    'city'  => $city,
+                    'city' => $city,
                     'barangay' => $barangay,
                     'province' => $province,
                 ]
@@ -52,17 +52,18 @@ class SchoolResource extends JsonResource
             'region' => $this->region,
             'district' => $this->district,
             'latitude' => $this->latitude !== null
-                ? ($this->latitude >= 0 ? 'N ' : 'S ') . number_format(abs($this->latitude), 6)
+                ? number_format(abs($this->latitude), 6)
                 : null,
 
             'longitude' => $this->longitude !== null
-                ? ($this->longitude >= 0 ? 'E ' : 'W ') . number_format(abs($this->longitude), 6)
+                ? number_format(abs($this->latitude), 6)
                 : null,
 
             'image' => $this->image
                 ? asset('storage/' . $this->image)
                 : null,
-                
+
+
             'created_at' => $this->created_at?->toDateTimeString(),
             'updated_at' => $this->updated_at?->toDateTimeString(),
         ];
