@@ -16,15 +16,17 @@ class EnrollmentGradesChanged implements ShouldBroadcastNow
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public array $grades;
+    public int $schoolId;
 
-    public function __construct(array $grades)
+    public function __construct(array $grades, int $schoolId)
     {
         $this->grades = $grades;
+        $this->schoolId = $schoolId;
     }
 
     public function broadcastOn(): array
     {
-        return [new Channel('public.enrollment')];
+        return [new PrivateChannel('school.enrollment.'.$this->schoolId)];
     }
 
     public function broadcastWith(): array

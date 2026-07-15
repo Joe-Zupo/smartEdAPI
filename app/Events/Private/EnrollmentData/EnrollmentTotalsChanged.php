@@ -38,7 +38,7 @@ class EnrollmentTotalsChanged implements ShouldBroadcastNow
         if($this->mode === 'Admin'){
             return [new PrivateChannel('admin.enrollment')];
         }else if($this->mode === 'School'){
-            return [new PrivateChannel('admin.enrollment.'.$this->schoolId)];
+            return [new PrivateChannel('school.enrollment.'.$this->schoolId)];
         }else{
             return [$this->error('Broadcast could not be completed', 409)];
         }
@@ -64,9 +64,9 @@ class EnrollmentTotalsChanged implements ShouldBroadcastNow
     public function broadcastAs(): string
     {
         if($this->mode === 'Admin'){
-            return 'Admin.PrivateEnrollmentTotalsChanged';
+            return 'PrivateEnrollmentTotalsChanged';
         }else if($this->mode === 'School'){
-            return 'School.PrivateEnrollmentTotalsChanged';
+            return 'PrivateEnrollmentTotalsChanged';
         }else{
             return $this->error('Broadcast could not be completed', 409);
         }

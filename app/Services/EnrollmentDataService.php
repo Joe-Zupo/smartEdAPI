@@ -108,9 +108,9 @@ class EnrollmentDataService
         $enrollmentByLevel = $this->getEnrollmentByLevel(null, $academic_year, null, $broadcastSchool);
         $enrollmentByGrade = $this->getEnrollmentByGrade(null, $academic_year, null, $broadcastSchool);
 
-        EnrollmentTrendsChanged::dispatch($fiveYearTrend);
-        EnrollmentLevelsChanged::dispatch($enrollmentByLevel);
-        EnrollmentGradesChanged::dispatch($enrollmentByGrade);
+        EnrollmentTrendsChanged::dispatch($fiveYearTrend, $selectedSchool->id);
+        EnrollmentLevelsChanged::dispatch($enrollmentByLevel, $selectedSchool->id);
+        EnrollmentGradesChanged::dispatch($enrollmentByGrade, $selectedSchool->id);
     }
 
     // Fetch items
