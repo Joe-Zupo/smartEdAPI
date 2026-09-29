@@ -15,6 +15,7 @@ use App\Models\DivisionLeadership;
 use App\Http\Resources\DivisionLeadershipResource;
 use App\Helpers\autoPaginator;
 use App\Helpers\EnrollmentData\GradesDisplay;
+use App\Support\GradeOfferings;
 use App\Http\Resources\EnrollmentDataResource;
 
 use App\Events\PublicEnrollmentGradesChanged;
@@ -563,28 +564,8 @@ class EnrollmentDataService
         $selectedSchool = $this->resolveSelectedSchool($user,$request,$broadcastSchool);
         $type = $selectedSchool?->schoolType?->name;
 
-        $allowedGrades = match ($type) {  
-                'Elementary' => [
-                    'Kinder','Grade 1','Grade 2','Grade 3','Grade 4','Grade 5','Grade 6',
-                ],
-
-                'Junior High School' => [
-                    'Grade 7','Grade 8','Grade 9','Grade 10',
-                ],
-
-                'Standalone SHS' => [
-                    'Grade 11','Grade 12',
-                ],
-
-                'Integrated School',
-                'Science High School',
-                'ALS',
-                'Junior High School with SHS' => [
-                    'Kinder','Grade 1','Grade 2','Grade 3','Grade 4','Grade 5','Grade 6','Grade 7','Grade 8','Grade 9','Grade 10','Grade 11','Grade 12',
-                ],
-
-                default => ['Kinder','Grade 1','Grade 2','Grade 3','Grade 4','Grade 5','Grade 6','Grade 7','Grade 8','Grade 9','Grade 10','Grade 11','Grade 12'],
-            };
+        // No school selected or unknown type: show every grade
+        $allowedGrades = GradeOfferings::forType($type) ?: GradeOfferings::all();
         $academicYears = AcademicYear::query()->where('id', '<=', $currentAcademicYear->id)
             ->orderBy('id', 'desc')
             ->limit(5)

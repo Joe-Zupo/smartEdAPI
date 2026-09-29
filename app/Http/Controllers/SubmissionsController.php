@@ -21,7 +21,7 @@ use App\Models\SchoolType;
 use App\Models\ResourceData;
 use App\Policies\SubmissionPolicy;
 use App\Models\ResourceDataDraft;
-use App\Models\GradeLevel;
+use App\Support\GradeOfferings;
 
 class SubmissionsController extends Controller
 {
@@ -129,34 +129,12 @@ class SubmissionsController extends Controller
             return $this->error("A {$validated['type']} submission already exists. You can only have one submission for this type, once per year.", 409); // Still needs to be asked, for now stick to this temporarily
         }
 
-        $gradeMap = [];
         if ($validated['type'] === 'enrollment') {
 
             $schoolType = $user->school->schoolType?->name;
 
-            // ✅ Allowed grades per school type
-            $allowedGrades = match ($schoolType) {
-                'Elementary' => [
-                    'Kinder','Grade 1','Grade 2','Grade 3','Grade 4','Grade 5','Grade 6',
-                ],
-
-                'Junior High School' => [
-                    'Grade 7','Grade 8','Grade 9','Grade 10',
-                ],
-
-                'Standalone SHS' => [
-                    'Grade 11','Grade 12',
-                ],
-
-                'Integrated School',
-                'Science High School',
-                'ALS',
-                'Junior High School with SHS' => [
-                    'Kinder','Grade 1','Grade 2','Grade 3','Grade 4','Grade 5','Grade 6','Grade 7','Grade 8','Grade 9','Grade 10','Grade 11','Grade 12',
-                ],
-
-                default => [],
-            };
+            // ✅ Allowed grades
+            $allowedGrades = GradeOfferings::forType($schoolType);
 
             // ✅ Get input grades
             $inputGrades = collect($validated['details'])->pluck('grade_level')->toArray();
@@ -172,9 +150,6 @@ class SubmissionsController extends Controller
             if (!empty($missingGrades)) {
                 return $this->error(['details' => ['Missing required grade levels: '. implode(', ', $missingGrades)]]);
             }
-
-            // ✅ Map only allowed grades
-            $gradeMap = GradeLevel::whereIn('name', $allowedGrades)->pluck('id', 'name');
         }
 
         if ($validated['type'] === 'resource'){
@@ -202,7 +177,7 @@ class SubmissionsController extends Controller
                 }
         }
 
-        $submission = DB::transaction(function () use ($validated, $user, $defaultYear, $gradeMap, $request) {
+        $submission = DB::transaction(function () use ($validated, $user, $defaultYear, $request) {
             $submission = Submission::create([
                 'user_id' => $user->id,
                 'school_id' => $user->school_id,

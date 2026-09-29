@@ -5,10 +5,9 @@ namespace App\Observers;
 use App\Models\AcademicYear;
 use App\Models\School;
 use App\Models\SchoolType;
-use App\Models\GradeLevel;
 use App\Models\ResourceData;
 use App\Models\EnrollmentData;
-
+use App\Support\GradeOfferings;
 
 class SchoolObserver
 {
@@ -17,34 +16,19 @@ class SchoolObserver
         //INSTANTIATE GRADES
         $academicYear = AcademicYear::query()->where('status', 'default')->first();
         $type = $school->schoolType->name;
-        $grades = GradeLevel::all();
 
-            $allowedGrades = $this->getAllowedGrades($type);
+        foreach (GradeOfferings::forType($type) as $grade) {
 
-            foreach ($grades as $grade) {
-
-                $isAllowed = in_array(
-                    $grade->name,
-                    $allowedGrades
-                );
-                if (!$isAllowed){
-                    continue;
-                }
-
-                if(!$isAllowed){
-                    continue;
-                }
-
-                if($academicYear->status === 'upcoming' || $academicYear->status === 'default'){
-                        EnrollmentData::create([
-                        'academic_year_id' => $academicYear->id,
-                        'school_id' => $school->id,
-                        'grade_level' => $grade->name,
-                        'male_count' => 0,
-                        'female_count' => 0,
-                    ]);
-                }
+            if ($academicYear->status === 'upcoming' || $academicYear->status === 'default') {
+                EnrollmentData::create([
+                    'academic_year_id' => $academicYear->id,
+                    'school_id' => $school->id,
+                    'grade_level' => $grade,
+                    'male_count' => 0,
+                    'female_count' => 0,
+                ]);
             }
+        }
         
         //INSTANTIATE RESOURCES
         $resources = ['Classrooms', 'Teachers', 'Seats', 'Learning Materials'];
@@ -72,8 +56,8 @@ class SchoolObserver
 
             $newType = $school->schoolType->name;
 
-            $oldGrades = $this->getAllowedGrades($oldType);
-            $newGrades = $this->getAllowedGrades($newType);
+            $oldGrades = GradeOfferings::forType($oldType);
+            $newGrades = GradeOfferings::forType($newType);
 
             $gradesToAdd = array_diff(
                 $newGrades,
@@ -102,34 +86,4 @@ class SchoolObserver
                 ->whereIn('grade_level', $gradesToRemove)
                 ->delete();
         }
-
-    private function getAllowedGrades(string $type): array
-    {
-        return match ($type) {
-            'Elementary' => [
-                'Kinder','Grade 1','Grade 2','Grade 3',
-                'Grade 4','Grade 5','Grade 6',
-            ],
-
-            'Junior High School' => [
-                'Grade 7','Grade 8','Grade 9','Grade 10',
-            ],
-
-            'Standalone SHS' => [
-                'Grade 11','Grade 12',
-            ],
-
-            'Integrated School',
-            'Science High School',
-            'ALS',
-            'Junior High School with SHS' => [
-                'Kinder','Grade 1','Grade 2','Grade 3',
-                'Grade 4','Grade 5','Grade 6',
-                'Grade 7','Grade 8','Grade 9','Grade 10',
-                'Grade 11','Grade 12',
-            ],
-
-            default => [],
-        };
-    }
 }

@@ -9,6 +9,7 @@ use App\Models\KpiRateData;
 use App\Models\School;
 use App\Models\ResourceData;
 use App\Models\SchoolType;
+use App\Support\GradeOfferings;
 
 class YearObserver
 {
@@ -38,7 +39,7 @@ class YearObserver
 
         foreach ($schools as $school) {
 
-            $allowedGrades = $this->getAllowedGrades($school->schoolType?->name ?? '');
+            $allowedGrades = GradeOfferings::forType($school->schoolType?->name);
 
             // Enrollment Data
             foreach ($allowedGrades as $grade) {
@@ -73,40 +74,5 @@ class YearObserver
                 ]);
             }
         }
-    }
-
-    private function getAllowedGrades(string $type): array
-    {
-        return match ($type) {
-
-            'Elementary' => [
-                'Kinder','Grade 1','Grade 2',
-                'Grade 3','Grade 4',
-                'Grade 5','Grade 6',
-            ],
-
-            'Junior High School' => [
-                'Grade 7','Grade 8',
-                'Grade 9','Grade 10',
-            ],
-
-            'Standalone SHS' => [
-                'Grade 11','Grade 12',
-            ],
-
-            'Integrated School',
-            'Science High School',
-            'ALS',
-            'Junior High School with SHS' => [
-                'Kinder','Grade 1','Grade 2',
-                'Grade 3','Grade 4',
-                'Grade 5','Grade 6',
-                'Grade 7','Grade 8',
-                'Grade 9','Grade 10',
-                'Grade 11','Grade 12',
-            ],
-
-            default => [],
-        };
     }
 }
